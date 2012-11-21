@@ -438,6 +438,7 @@
             <arg value="preferred_state" />
             <arg value="alpha" />
         </exec>
+        <!--
         <exec dir="${php-target.dir}/pear" executable="${php-target.dir}/pear/bin/webapp">
             <arg value="install" />
             <arg value="-a" />
@@ -460,6 +461,7 @@
             <arg value="install" />
             <arg value="appserver/TDProject_Webservice" />
         </exec>
+        -->
     </target>
     <!-- ==================================================================== -->
     <!-- Merges the PEAR files with the TDProject sources                     -->

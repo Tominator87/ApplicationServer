@@ -43,11 +43,11 @@ switch ($action) {
     case 'load':
         $entity = $processor->load($_REQUEST['id']);
         $name = $entity->getName();
-        $id = $entity->getId();
+        $id = $entity->getSampleId();
         break;
     case 'persist':
         $entity = new Sample();
-        $entity->setId($_POST['id']);
+        $entity->setSampleId($_POST['id']);
         $entity->setName($_POST['name']);
         $processor->persist($entity);
         $entities = $processor->findAll();
@@ -93,7 +93,7 @@ switch ($action) {
                     </tr>
                 </thead>
                 <?php foreach ($entities as $id => $entity) { ?><tr>
-                        <td><a href="index.php?action=load&id=<?php echo $entity->getId() ?>"><?php echo $entity->getId() ?></a></td>
+                        <td><a href="index.php?action=load&id=<?php echo $entity->getSampleId() ?>"><?php echo $entity->getSampleId() ?></a></td>
                         <td><?php echo $entity->getName() ?></td>
                     </tr><?php } ?> 
             </table>

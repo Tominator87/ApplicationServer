@@ -4,32 +4,27 @@ namespace TechDivision\Example\Entities;
 
 /**
  * @Entity @Table(name="sample")
- **/
+ */
 class Sample {
 
     /**
      * @Id @GeneratedValue @Column(type="integer")
      * @var int
-     **/
-    private $id;
+     */
+    private $sampleId;
 
     /**
      * @Column(type="string")
      * @var string
-     **/
+     */
     private $name;
 
-    
-    public function __construct() {
-        error_log(__METHOD__ . ':' . __LINE__);
+    public function setSampleId($sampleId) {
+        $this->sampleId = $sampleId;
     }
 
-    public function setId($id) {
-        $this->id = $id;
-    }
-
-    public function getId() {
-        return $this->id;
+    public function getSampleId() {
+        return $this->sampleId;
     }
     
     public function setName($name) {
