@@ -3,19 +3,32 @@
 namespace TechDivision\PersistenceContainer;
 
 use Doctrine\Common\ClassLoader;
-
-class Handler extends \Thread {
-
-    protected $_name;
+use TechDivision\ApplicationServer\Server;
+use TechDivision\ApplicationServerClient\Proxy;
+use TechDivision\ApplicationServerClient\Interfaces\RemoteMethod;
+// use TechDivision\ApplicationServerClient\Proxy;
+use TechDivision\PersistenceContainer\InitialContext;
     
-    protected $_maxClients = 20;
-
-    public function __construct($name) {
-        $this->_name = $name;
+class Handler extends \Thread implements Interfaces\Handler {
+    
+    protected $_host;
+    
+    protected $_port;
+    
+    protected $_maxClients;
+    
+    public function __construct($host, $port, $maxClients) {
+        $this->_host = $host;
+        $this->_port = $port;
+        $this->_maxClients = $maxClients;
     }
 
-    public function getName() {
-        return $this->_name;
+    public function getHost() {
+        return $this->_host;
+    }
+
+    public function getPort() {
+        return $this->_port;
     }
     
     public function getMaxClients() {
@@ -23,12 +36,14 @@ class Handler extends \Thread {
     }
 
     public function run() {
-
+        
         $classLoader = new ClassLoader();
         $classLoader->register();
         
-        $container = Container::singleton();
+        $initialContext = InitialContext::singleton();
         
+        $host = $this->getHost();
+        $port = $this->getPort();
         $maxClients = $this->getMaxClients();
 
         $socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
@@ -37,7 +52,7 @@ class Handler extends \Thread {
         socket_set_option($socket, SOL_TCP, SO_KEEPALIVE, -1);
         
         socket_set_nonblock($socket);
-        socket_bind($socket, '192.168.250.128', 8585);
+        socket_bind($socket, $host, $port);
         socket_listen($socket, $maxClients);
 
         $clients = array('0' => array('socket' => $socket));
@@ -62,10 +77,10 @@ class Handler extends \Thread {
                         $clients[$i]['socket'] = socket_accept($socket);
                         socket_getpeername($clients[$i]['socket'], $ip);
                         $clients[$i]['ipaddy'] = $ip;
-                        // error_log("New client $i connected: " . $clients[$i]['ipaddy']);
+                        error_log("New client $i connected: " . $clients[$i]['ipaddy']);
                         break;
                     } elseif ($i == $maxClients - 1) {
-                        // error_log("To many Clients connected!");
+                        error_log("To many clients connected!");
                     }
                     
                     if ($ready < 1) {
@@ -82,27 +97,26 @@ class Handler extends \Thread {
                     
                     if ($data === false) {
                         unset($clients[$i]);
-                        // error_log("Client $i disconnected!");
+                        error_log("Client $i disconnected!");
                         continue;
                     }
                     
                     $serialized = rtrim($data, "\r\n\r\n");
 
-                    $request = unserialize($serialized);    
+                    $remoteMethod = unserialize($serialized);
                     
-                    if ($request !== false) {
+                    if ($remoteMethod !== false) {
                         
-                        list ($class, $method, $params) = $request;
-                        $instance = new $class($container);
-                        $response = call_user_func_array(array($instance, $method), $params);
-                        $serialized = serialize($response);
-                        socket_write($clients[$i]['socket'],  $serialized . "\n");
-                    }
+                        error_log("Now handle request for client $i");
+        
+                        $response = $initialContext->handleRequest($remoteMethod);
+
+                        socket_write($clients[$i]['socket'], serialize($response) . "\n");
+                    } 
                 }
             }
             
             usleep(100);
         }
     }
-
 }

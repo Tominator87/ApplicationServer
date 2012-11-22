@@ -3,8 +3,8 @@
 namespace TechDivision\Example;
 
 use TechDivision\Example\Entities\Sample;
-use TechDivision\Example\Services\SampleRemoteProcessor;
 use TechDivision\ApplicationServer\SplClassLoader;
+use TechDivision\ApplicationServerClient\Context\Connection\Factory;
 
 // set the session timeout to unlimited
 ini_set('session.gc_maxlifetime', 0);
@@ -28,7 +28,15 @@ require_once 'TechDivision/ApplicationServer/SplClassLoader.php';
 $classLoader = new SplClassLoader();
 $classLoader->register();
 
-$processor = new SampleRemoteProcessor();
+session_start();
+
+// initialize the connection, the session and the initial context
+$connection = Factory::createContextConnection();
+$session = $connection->createContextSession();
+$initialContext = $session->createInitialContext();
+
+// lookup the remote processor implementation
+$processor = $initialContext->lookup('TechDivision\Example\Services\SampleProcessor');
 
 if (array_key_exists('action', $_REQUEST)) {
     $action = $_REQUEST['action'];

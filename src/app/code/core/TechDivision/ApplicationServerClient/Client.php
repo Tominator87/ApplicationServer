@@ -9,7 +9,7 @@ class Client {
     public function __construct() {
         $this->_socket = new \Net_Socket();
         $this->_socket->setBlocking(false);
-        $this->_socket->connect('192.168.250.128', 8585, false, 1);
+        $this->_socket->connect('172.16.0.130', 8585, false, 1);
     }
     
     public function __destruct() {

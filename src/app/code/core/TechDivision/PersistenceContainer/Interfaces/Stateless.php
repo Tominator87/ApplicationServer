@@ -4,5 +4,5 @@ namespace TechDivision\PersistenceContainer\Interfaces;
 
 interface Stateless {
 
-    public function getContainer();
+    public function getApplication();
 }
