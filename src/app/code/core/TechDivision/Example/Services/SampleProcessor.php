@@ -3,8 +3,8 @@
 namespace TechDivision\Example\Services;
 
 use TechDivision\Example\Entities\Sample;
-use TechDivision\ApplicationServer\Container;
-use TechDivision\ApplicationServer\Interfaces\Stateless;
+use TechDivision\PersistenceContainer\Container;
+use TechDivision\PersistenceContainer\Interfaces\Stateless;
 
 class SampleProcessor implements Stateless {
 

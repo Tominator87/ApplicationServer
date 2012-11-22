@@ -1,6 +1,6 @@
 <?php
 
-namespace TechDivision\ApplicationServer\Interfaces;
+namespace TechDivision\PersistenceContainer\Interfaces;
 
 interface Stateless {
 

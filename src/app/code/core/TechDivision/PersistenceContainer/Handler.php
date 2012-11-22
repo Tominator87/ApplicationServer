@@ -1,6 +1,6 @@
 <?php
 
-namespace TechDivision\ApplicationServer;
+namespace TechDivision\PersistenceContainer;
 
 use Doctrine\Common\ClassLoader;
 
