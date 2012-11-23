@@ -3,10 +3,6 @@
 namespace TechDivision\PersistenceContainer;
 
 use Doctrine\Common\ClassLoader;
-use TechDivision\ApplicationServer\Server;
-use TechDivision\ApplicationServerClient\Proxy;
-use TechDivision\ApplicationServerClient\Interfaces\RemoteMethod;
-// use TechDivision\ApplicationServerClient\Proxy;
 use TechDivision\PersistenceContainer\InitialContext;
     
 class Handler extends \Thread implements Interfaces\Handler {

@@ -52,6 +52,7 @@ switch ($action) {
         $entity = $processor->load($_REQUEST['id']);
         $name = $entity->getName();
         $id = $entity->getSampleId();
+        $entities = $processor->findAll();
         break;
     case 'persist':
         $entity = new Sample();

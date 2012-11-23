@@ -87,9 +87,6 @@ class ContextSession implements Session {
     	// connect to the container
 		$this->_connection->connect();
 		$response = $this->_connection->send($remoteMethod);
-        
-        error_log(var_export($response, true));
-        
 		// check if a proxy has been returned
 		if (method_exists($response, 'setSession')) {
 			$response->setSession($this);

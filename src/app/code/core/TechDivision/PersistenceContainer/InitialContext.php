@@ -82,7 +82,7 @@ class InitialContext {
                            error_log($te->__toString());
                        }
                        */
-
+                       
                        $applicationInstance = $this->newInstance('TechDivision\PersistenceContainer\Application', array($applicationName));
                        $applicationInstance->setEntityManager($entityManager);
 
@@ -117,26 +117,26 @@ class InitialContext {
         return $this->_applications;
     }
     
-    public function findApplication(RemoteMethod $remoteMethod) {
+    public function findApplication($className) {
         
         foreach ($this->getApplications() as $name => $application) {
             
-            if (strpos($remoteMethod->getClassName(), $name) !== false) {
+            if (strpos($className, $name) !== false) {
             
-                error_log("Found application for class name '{$remoteMethod->getClassName()}'");
+                error_log("Found application for class name '$className'");
                 
                 return $application;
             }
             
-            error_log("Now comparing '$name' on class name '{$remoteMethod->getClassName()}'");
+            error_log("Now comparing '$name' on class name '$className'");
         }
         
-        throw new \Exception("Can\'t find application for {$remoteMethod->getClassName()}");
+        throw new \Exception("Can\'t find application for '$className'");
     }
 
     public function handleRequest(RemoteMethod $remoteMethod) {
 
-        $application = $this->findApplication($remoteMethod);
+        $application = $this->findApplication($remoteMethod->getClassName());
 
         $className = $remoteMethod->getClassName();
         $methodName = $remoteMethod->getMethodName();

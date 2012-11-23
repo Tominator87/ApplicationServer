@@ -1,13 +1,13 @@
 <?php
 
+
+
 namespace TechDivision\Example;
 
 use TechDivision\Example\Entities\Sample;
+use TechDivision\ApplicationServer\SplClassLoader;
+use TechDivision\PersistenceContainer\InitialContext;
 use TechDivision\Example\Services\SampleProcessor;
-// use TechDivision\Example\Services\SampleRemoteProcessor;
-use TechDivision\ApplicationServer\Container;
-// use TechDivision\ApplicationServer\SplClassLoader;
-use Doctrine\Common\ClassLoader;
 
 // set the session timeout to unlimited
 ini_set('session.gc_maxlifetime', 0);
@@ -23,31 +23,29 @@ $paths[] = BP . DS . 'app' . DS . 'code' . DS . 'community';
 $paths[] = BP . DS . 'app' . DS . 'code' . DS . 'core';
 $paths[] = BP . DS . 'app' . DS . 'code' . DS . 'lib';
 
-
-$paths[] = BP . DS . 'app' . DS . 'code' . DS . 'vendor/doctrine/common/lib';
-$paths[] = BP . DS . 'app' . DS . 'code' . DS . 'vendor/doctrine/dbal/lib';
-$paths[] = BP . DS . 'app' . DS . 'code' . DS . 'vendor/doctrine/orm/lib';
-
 // set the new include path
 set_include_path(implode(PS, $paths) . PS . get_include_path());
 
-/*
 require_once 'TechDivision/ApplicationServer/SplClassLoader.php';
 
 $classLoader = new SplClassLoader();
 $classLoader->register();
 
-$processor = new SampleRemoteProcessor();
+session_start();
+
+$initialContext = InitialContext::singleton();
+$application = $initialContext->findApplication('TechDivision\Example\Services\SampleProcessor');
+$processor = new SampleProcessor($application);
+
+/*
+// initialize the connection, the session and the initial context
+$connection = Factory::createContextConnection();
+$session = $connection->createContextSession();
+$initialContext = $session->createInitialContext();
+
+// lookup the remote processor implementation
+$processor = $initialContext->lookup('TechDivision\Example\Services\SampleProcessor');
 */
-
-
-require 'app/code/vendor/doctrine/common/lib/Doctrine/Common/ClassLoader.php';
-
-$classLoader = new ClassLoader();
-$classLoader->register();
-
-$container = Container::singleton();
-$processor = new SampleProcessor($container);
 
 if (array_key_exists('action', $_REQUEST)) {
     $action = $_REQUEST['action'];
@@ -63,6 +61,7 @@ switch ($action) {
         $entity = $processor->load($_REQUEST['id']);
         $name = $entity->getName();
         $id = $entity->getSampleId();
+        $entities = $processor->findAll();
         break;
     case 'persist':
         $entity = new Sample();
@@ -86,7 +85,7 @@ switch ($action) {
     </head>
     <body>
         <div>
-            <form action="index.php" method="post">
+            <form action="index-script.php" method="post">
                 <input type="hidden" name="action" value="persist" />
                 <fieldset>
                     <legend>Sample</legend>
@@ -112,7 +111,7 @@ switch ($action) {
                     </tr>
                 </thead>
                 <?php foreach ($entities as $id => $entity) { ?><tr>
-                        <td><a href="index.php?action=load&id=<?php echo $entity->getSampleId() ?>"><?php echo $entity->getSampleId() ?></a></td>
+                        <td><a href="index-script.php?action=load&id=<?php echo $entity->getSampleId() ?>"><?php echo $entity->getSampleId() ?></a></td>
                         <td><?php echo $entity->getName() ?></td>
                     </tr><?php } ?> 
             </table>
