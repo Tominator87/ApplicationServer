@@ -2,6 +2,7 @@
 
 namespace TechDivision\MessageService;
 
+use TechDivision\MessageService\Services\MessageProcessor;
 use Doctrine\Common\ClassLoader;
 use TechDivision\ApplicationServer\Interfaces\HandlerInterface;
     
@@ -35,6 +36,8 @@ class Handler extends \Thread implements HandlerInterface {
         
         $classLoader = new ClassLoader();
         $classLoader->register();
+        
+        $messageProcessor = new MessageProcessor();
         
         $host = $this->getHost();
         $port = $this->getPort();
@@ -97,17 +100,15 @@ class Handler extends \Thread implements HandlerInterface {
                     
                     $serialized = rtrim($data, "\r\n\r\n");
 
-                    $remoteMethod = unserialize($serialized);
+                    $message = unserialize($serialized);
                     
-                    if ($remoteMethod !== false) {
+                    if ($message !== false) {
                         
                         error_log("Now handle request for client $i");
-        
-                        /*
-                        $response = $container->handleRequest($remoteMethod);
+                        
+                        $response = $messageProcessor->process($message);
 
                         socket_write($clients[$i]['socket'], serialize($response) . "\n");
-                        */
                     } 
                 }
             }

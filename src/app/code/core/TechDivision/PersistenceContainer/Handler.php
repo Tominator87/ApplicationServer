@@ -14,7 +14,6 @@ class Handler extends \Thread implements HandlerInterface {
     
     protected $_maxClients;
 
-
     public function __construct($host, $port, $maxClients) {
         $this->_host = $host;
         $this->_port = $port;
@@ -110,8 +109,6 @@ class Handler extends \Thread implements HandlerInterface {
                         $response = $container->handleRequest($remoteMethod);
 
                         socket_write($clients[$i]['socket'], serialize($response) . "\n");
-                        
-                        error_log("Thread-ID: {$this->getThreadId()}");
                     } 
                 }
             }
