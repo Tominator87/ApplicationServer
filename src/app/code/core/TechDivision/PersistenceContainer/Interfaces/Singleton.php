@@ -2,5 +2,7 @@
 
 namespace TechDivision\PersistenceContainer\Interfaces;
 
-interface Handler {
+interface Singleton {
+
+    public function getApplication();
 }

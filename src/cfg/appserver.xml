@@ -8,5 +8,13 @@
                 <maxClients>20</maxClients>
             </params>
         </handler>
+        <handler>
+            <type>TechDivision\MessageService\Handler</type>
+            <params>
+                <host>172.16.0.130</host>
+                <port>8586</port>
+                <maxClients>20</maxClients>
+            </params>
+        </handler>
     </handlers>
 </appserver>

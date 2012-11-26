@@ -2,21 +2,50 @@
 
 namespace TechDivision\PersistenceContainer;
 
+use TechDivision\ApplicationServer\InitialContext;
 use TechDivision\ApplicationServerClient\Proxy;
 use TechDivision\ApplicationServerClient\Interfaces\RemoteMethod;
 use Doctrine\ORM\Tools\Setup;
 use Doctrine\ORM\EntityManager;
-// use Doctrine\ORM\Tools\SchemaTool;
 
-class InitialContext {
+class Container {
 
+    /**
+     * The singleton container instance
+     * @var \TechDivision\PersistenceContainer\Container
+     */
     protected static $_instance = null;
     
+    /**
+     * Array containing the deployed applications
+     * @var array
+     */
     protected $_applications = null;
     
+    /**
+     * The initial context instance
+     * @var \TechDivision\ApplicationServer\InitialContext
+     */
+    protected $_initialContext = null;
+    
+    /**
+     * Constructor that initializes the container and deploys all
+     * applications found in the working directory.
+     * 
+     * @return void
+     */
     public function __construct() {
         
-        // $config = Factory::fromDirectory('app/code/local');
+        // intialize the initial context instance
+        $this->_initialContext = new InitialContext();
+    }
+    
+    /**
+     * 
+     */
+    public function deploy() {
+
+        error_log("Now starting deployment");
         
         // create the directory iterator
         $it = new \RecursiveIteratorIterator(
@@ -61,29 +90,9 @@ class InitialContext {
                        $config = Setup::createAnnotationMetadataConfiguration($path, true);
 
                        $entityManager = EntityManager::create($dbParams, $config);
-
-                       /*
-                       try {
-
-                           $tool = new SchemaTool($entityManager);
-
-                           $classes = array(
-                               $entityManager->getClassMetadata('TechDivision\Example\Entities\Assertion'),
-                               $entityManager->getClassMetadata('TechDivision\Example\Entities\Resource'),
-                               $entityManager->getClassMetadata('TechDivision\Example\Entities\Role'),
-                               $entityManager->getClassMetadata('TechDivision\Example\Entities\Rule'),
-                               $entityManager->getClassMetadata('TechDivision\Example\Entities\Sample'),
-                               $entityManager->getClassMetadata('TechDivision\Example\Entities\User')
-                           );
-
-                           $tool->createSchema($classes);
-
-                       } catch (\Exception $te) {
-                           error_log($te->__toString());
-                       }
-                       */
                        
                        $applicationInstance = $this->newInstance('TechDivision\PersistenceContainer\Application', array($applicationName));
+                       $applicationInstance->setInitialContext($this->getInitialContext());
                        $applicationInstance->setEntityManager($entityManager);
 
                        $this->addApplication($applicationInstance)->deploy();
@@ -95,18 +104,23 @@ class InitialContext {
             // proceed with the next folder
             $it->next();
         }
+        
+        return $this;
     }
 
     public static function singleton() {
         if (self::$_instance == null) {
-            self::$_instance = new InitialContext();
+            self::$_instance = new Container();
         }
         return self::$_instance;
     }
     
-    public function newInstance($className, $params) {    
-        $reflectionClass = new \ReflectionClass($className);
-        return $reflectionClass->newInstanceArgs($params);
+    public function getInitialContext() {
+        return $this->_initialContext;
+    }
+    
+    public function newInstance($className, array $args = array()) {
+        return $this->getInitialContext()->newInstance($className, $args);
     }
     
     public function addApplication($application) {
@@ -122,32 +136,85 @@ class InitialContext {
         foreach ($this->getApplications() as $name => $application) {
             
             if (strpos($className, $name) !== false) {
-            
-                error_log("Found application for class name '$className'");
-                
                 return $application;
             }
-            
-            error_log("Now comparing '$name' on class name '$className'");
         }
         
         throw new \Exception("Can\'t find application for '$className'");
     }
+    
+    /**
+     * 
+     * @param type $className
+     * @param type $sessionId
+     * @param type $args
+     * @return type
+     */
+    public function lookup($className, $sessionId, $args) {
+        
+        $reflectionClass = $this->getInitialContext()->newReflectionClass($className);
+        
+        if ($reflectionClass->implementsInterface('TechDivision\PersistenceContainer\Interfaces\Stateless')) {            
+            return $reflectionClass->newInstanceArgs($args);
+        }
+        
+        if ($reflectionClass->implementsInterface('TechDivision\PersistenceContainer\Interfaces\Statefull')) {
+            
+            $session = $this->getInitialContext()->getAttribute($sessionId);
+            
+            if (is_array($session)) {              
+                if (array_key_exists($className, $session)) {
+                    return $session[$className];
+                }
+            } else {
+                $session = array();
+            }
+            
+            $instance = $reflectionClass->newInstanceArgs($args);           
+            $session[$className] = $instance;           
+            $this->getInitialContext()->setAttribute($sessionId, $session);           
+            return $instance;
+        }
+        
+        if ($reflectionClass->implementsInterface('TechDivision\PersistenceContainer\Interfaces\Singleton')) {
+            
+            if ($this->getInitialContext()->getAttribute($className)) {
+                return $this->getInitialContext()->getAttribute($className);
+            }
+            
+            $instance = $reflectionClass->newInstanceArgs($args);            
+            $this->getInitialContext()->setAttribute($className, $instance);           
+            return $instance;
+        }
+    }
 
+    /**
+     * Invokes the passed remote method on the session bean
+     * and returns the result.
+     *  
+     * @param \TechDivision\ApplicationServerClient\Interfaces\RemoteMethod $remoteMethod The remote method
+     * @return mixed The result of the method invocation
+     */
     public function handleRequest(RemoteMethod $remoteMethod) {
-
+        
+        // try to find the application
         $application = $this->findApplication($remoteMethod->getClassName());
-
+        
+        // load the remote method data 
+        $sessionId = $remoteMethod->getSessionId();
         $className = $remoteMethod->getClassName();
         $methodName = $remoteMethod->getMethodName();
-        $parameters = $remoteMethod->getParameters();
+        $args = $remoteMethod->getParameters();
         
+        // if a lookup has been requested return the proxy immediately
         if ($methodName == 'lookup') {
             return Proxy::create($className); 
         }
         
-        $instance = new $className($application);
+        // if not make a lookup for the session bean
+        $instance = $this->lookup($className, $sessionId, array($application));
         
-        return call_user_func_array(array($instance, $methodName), $parameters);   
+        // invoke the method on the session bean and return the result 
+        return call_user_func_array(array($instance, $methodName), $args);   
     }
 }
