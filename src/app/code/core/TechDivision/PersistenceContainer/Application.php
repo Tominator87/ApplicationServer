@@ -2,13 +2,15 @@
     
 namespace TechDivision\PersistenceContainer;
 
+use TechDivision\ApplicationServer\InitialContext;
+
 class Application {
     
     /**
-     * The container instance
-     * @var Container
+     * The initial context instance
+     * @var InitialContext
      */
-    protected $_container = null;
+    protected $_initialContext = null;
     
     protected $_entityManager = null;
 
@@ -26,7 +28,7 @@ class Application {
         return $this->_name;
     }
     
-    public function setInitialContext(InitialContext $initialContext) {
+    public function setInitialContext($initialContext) {
         $this->_initialContext = $initialContext;
     }
     

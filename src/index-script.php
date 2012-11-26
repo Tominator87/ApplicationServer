@@ -70,6 +70,10 @@ switch ($action) {
         $processor->persist($entity);
         $entities = $processor->findAll();
         break;
+    case 'createSchema':
+        $processor->createSchema();
+        $entities = $processor->findAll();
+        break;
     default:
         $entities = $processor->findAll();
         error_log("Found " . sizeof($entities) . " entities");

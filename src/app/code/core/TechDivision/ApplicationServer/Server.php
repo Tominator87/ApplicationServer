@@ -2,7 +2,7 @@
 
 namespace TechDivision\ApplicationServer;
 
-use TechDivision\PersistenceContainer\Interfaces\Handler;
+use TechDivision\ApplicationServer\Interfaces\HandlerInterface;
 use Zend\Config\Factory;
 
 class Server {
@@ -30,7 +30,7 @@ class Server {
         }
     }
     
-    public function addHandler(Handler $handler) {
+    public function addHandler(HandlerInterface $handler) {
         return $this->_handlers[get_class($handler)] = $handler;
     }
     
@@ -40,7 +40,7 @@ class Server {
     
     public function initHandlers() {
 
-        foreach ($this->getConfig()->handlers as $handler) {
+        foreach ($this->getConfig()->handlers->handler as $handler) {
             
             $params = $handler->params->toArray();
             
@@ -56,8 +56,8 @@ class Server {
         return $this->_config;
     }
     
-    public function newInstance($className, $params) {    
+    public function newInstance($className, array $args = array()) { 
         $reflectionClass = new \ReflectionClass($className);
-        return $reflectionClass->newInstanceArgs($params);
+        return $reflectionClass->newInstanceArgs($args);
     }
 }

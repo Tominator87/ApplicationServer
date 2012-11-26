@@ -1,9 +1,8 @@
 <?php
 
-namespace TechDivision\PersistenceContainer;
+namespace TechDivision\MessageService;
 
 use Doctrine\Common\ClassLoader;
-use TechDivision\PersistenceContainer\Container;
 use TechDivision\ApplicationServer\Interfaces\HandlerInterface;
     
 class Handler extends \Thread implements HandlerInterface {
@@ -13,8 +12,7 @@ class Handler extends \Thread implements HandlerInterface {
     protected $_port;
     
     protected $_maxClients;
-
-
+    
     public function __construct($host, $port, $maxClients) {
         $this->_host = $host;
         $this->_port = $port;
@@ -37,8 +35,6 @@ class Handler extends \Thread implements HandlerInterface {
         
         $classLoader = new ClassLoader();
         $classLoader->register();
-        
-        $container = Container::singleton()->deploy();
         
         $host = $this->getHost();
         $port = $this->getPort();
@@ -107,11 +103,11 @@ class Handler extends \Thread implements HandlerInterface {
                         
                         error_log("Now handle request for client $i");
         
+                        /*
                         $response = $container->handleRequest($remoteMethod);
 
                         socket_write($clients[$i]['socket'], serialize($response) . "\n");
-                        
-                        error_log("Thread-ID: {$this->getThreadId()}");
+                        */
                     } 
                 }
             }
