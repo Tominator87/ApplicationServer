@@ -1,9 +1,9 @@
 <?php
 
-namespace TechDivision\MessageService;
+namespace TechDivision\MessagingService;
 
-use TechDivision\MessageService\Services\MessageProcessor;
 use Doctrine\Common\ClassLoader;
+use TechDivision\MessagingService\Services\MessageProcessor;
 use TechDivision\ApplicationServer\Interfaces\HandlerInterface;
     
 class Handler extends \Thread implements HandlerInterface {

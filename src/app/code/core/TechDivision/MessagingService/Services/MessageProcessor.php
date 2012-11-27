@@ -1,8 +1,8 @@
 <?php
 
-namespace TechDivision\MessageService\Services;
+namespace TechDivision\MessagingService\Services;
 
-use TechDivision\MessageService\Interfaces\MessageInterface;
+use TechDivision\MessagingServiceClient\Interfaces\MessageInterface;
 
 class MessageProcessor  {
 
