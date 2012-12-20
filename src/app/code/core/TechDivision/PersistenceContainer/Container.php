@@ -23,282 +23,256 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307,
  * USA.
  *
- * @package TechDivision\PersistenceContainer
+ * @package TechDivision\ApplicationServer
  */
 
 namespace TechDivision\PersistenceContainer;
 
-use TechDivision\ApplicationServer\InitialContext;
-use TechDivision\ApplicationServerClient\Proxy;
-use TechDivision\ApplicationServerClient\Interfaces\RemoteMethod;
-use Doctrine\ORM\Tools\Setup;
-use Doctrine\ORM\EntityManager;
+use TechDivision\Socket\Client;
+use TechDivision\PersistenceContainer\Request;
+use TechDivision\PersistenceContainer\RequestHandler;
+use TechDivision\PersistenceContainer\Application;
 
-/**
- * The container holds the deployed applications with a reference
- * to the entity manager and the lookup for the session beans. 
- *
- * @package TechDivision\PersistenceContainer
- * @author Tim Wagner <t.wagner@techdivision.com>
- * @copyright TechDivision GmbH
- * @link http://www.techdivision.com
- * @license GPL
- */
-class Container {
-
+class Container extends Client {
     /**
-     * The singleton container instance
-     * @var \TechDivision\PersistenceContainer\Container
+     * The number of parallel workers to handle client connections.
+     * @var integer
      */
-    protected static $_instance = null;
-    
+
+    const WORKER_NUMBER = 4;
+
     /**
-     * Array containing the deployed applications
+     * Array with the worker instances.
      * @var array
      */
-    protected $_applications = null;
-    
+    protected $workers = array();
+
     /**
-     * The initial context instance
-     * @var \TechDivision\ApplicationServer\InitialContext
+     * Array with deployed applications.
+     * @var array
      */
-    protected $_initialContext = null;
-    
+    protected $applications = array();
+
     /**
-     * Constructor that initializes the container and deploys all
-     * applications found in the working directory.
+     * Array for the incoming requests.
+     * @var array
+     */
+    protected $work = array();
+
+    /**
+     * Initializes the server instance with the storage.
      * 
+     * @param GlobalStorage $storage The storage instance
      * @return void
      */
-    public function __construct() {
-        $this->_initialContext = new InitialContext();
+    public function __construct($address = '0.0.0.0', $port = 8585) {
+
+        // pass address and port to the server
+        parent::__construct($address, $port);
+
+        // catch Fatal Error (Rollback)
+        register_shutdown_function(array($this, 'fatalErrorShutdown'));
+
+        // catch Ctrl+C, kill and SIGTERM (rollback)
+        pcntl_signal(SIGTERM, array($this, 'sigintShutdown'));
+        pcntl_signal(SIGINT, array($this, 'sigintShutdown'));
+
+        // deploy the applications
+        $this->deploy();
+
+        // create the worker instances
+        for ($i = 0; $i < self::WORKER_NUMBER; $i++) {
+            $this->workers[$i] = new RequestHandler($this);
+            $this->workers[$i]->start();
+        }
     }
-    
+
     /**
-     * Deploys all applications found in the app/code/local folder.
+     * Returns an array with available applications.
      * 
-     * @return \TechDivision\PersistenceContainer\Container The instance itself
+     * @return \TechDivision\Server The server instance
+     * @todo Implement real deployment here
      */
     public function deploy() {
+
+        // create the recursive directory iterator
+        $di = new \RecursiveDirectoryIterator(getcwd() . '/app/code/local');
         
-        // create the directory iterator
-        $it = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator(getcwd() . '/app/code/local')
-        );
-        
+        // create the recursive iterator
+        $it = new \RecursiveIteratorIterator($di);
+
         // iterate over the directory recursively and look for configurations
         while ($it->valid()) {
-            
+
             // check if file or subdirectory has been found
             if (!$it->isDot()) {
-                
+
                 // if a configuration file was found
                 if (basename($it->getSubPathName()) == 'appserver.xml') {
-                    
+
                     // initialize the SimpleXMLElement with the content of pointcut XML file
-                    $sxe = new \SimpleXMLElement(
-                        file_get_contents($it->getSubPathName(), true)
-                    );
-                    
+                    $sxe = new \SimpleXMLElement(file_get_contents($it->getSubPathName(), true));
+
                     // iterate over the found nodes
                     foreach ($sxe->xpath('/appserver/applications/application') as $application) {
-                       
+
                         // load the application name and the path to the entities
-                       $applicationName = (string) $application->name;
-                       $pathToEntities = (string) $application->pathToEntities;
-                        
-                       // load the database connection information
-                       foreach ($application->children() as $database) {
-                           $dbParams = array(
-                               'driver'   => (string) $database->driver,
-                               'user'     => (string) $database->user,
-                               'password' => (string) $database->password,
-                               'dbname'   => (string) $database->databaseName,
-                           );
-                       }
-                       
-                       // initialize the Doctrine EntityManager instance
-                       $path = array($pathToEntities);
-                       $config = Setup::createAnnotationMetadataConfiguration($path, true);
-                       $entityManager = EntityManager::create($dbParams, $config);
-                       
-                       // create a new application instance and deploy it
-                       $applicationInstance = $this->newInstance('TechDivision\PersistenceContainer\Application', array($applicationName));
-                       $applicationInstance->setInitialContext($this->getInitialContext());
-                       $applicationInstance->setEntityManager($entityManager);
-                       $this->addApplication($applicationInstance)->deploy();
+                        $name = (string) $application->name;
+                        $pathToEntities = (string) $application->pathToEntities;
+
+                        // load the database connection information
+                        foreach ($application->children() as $database) {
+                            $connectionParameters = array(
+                                'driver' => (string) $database->driver,
+                                'user' => (string) $database->user,
+                                'password' => (string) $database->password,
+                                'dbname' => (string) $database->databaseName,
+                            );
+                        }
+
+                        // initialize the application instance
+                        $application = new Application($name);
+                        $application->setConnectionParameters($connectionParameters);
+                        $application->setPathToEntities(array($pathToEntities));
+
+                        // add the application to the available applications
+                        $this->applications[$application->getName()] = $application;
                     }
                 }
             }
             // proceed with the next folder
             $it->next();
         }
-        
-        // finally return the instance itself
+
+        // return the server instance
         return $this;
     }
 
     /**
-     * The singleton method to get the instance.
+     * Cleanup if process has been killed unexpectedly.
      * 
-     * @return \TechDivision\PersistenceContainer\Container The singleton instance
+     * @return void
      */
-    public static function singleton() {
-        if (self::$_instance == null) {
-            self::$_instance = new Container();
-        }
-        return self::$_instance;
-    }
-    
-    /**
-     * Returns the containers intial context.
-     * 
-     * @return \TechDivision\ApplicationServer\InitialContext The initial context instance
-     */
-    public function getInitialContext() {
-        return $this->_initialContext;
-    }
-    
-    /**
-     * Creates a new instance of the class with the passed name and passes
-     * the also passed arguments to the constructor.
-     * 
-     * @param string $className The class name to create the instance for
-     * @param array $args Array with the arguments to pass to the constructor
-     * @return object The requested instance
-     */
-    public function newInstance($className, array $args = array()) {
-        return $this->getInitialContext()->newInstance($className, $args);
-    }
-    
-    /**
-     * Adds the passed application instance to the container.
-     * 
-     * @param \TechDivision\PersistenceContainer\Application $application The application instance to add
-     * @return \TechDivision\PersistenceContainer\Application The application instance
-     */
-    public function addApplication(Application $application) {
-        return $this->_applications[$application->getName()] = $application;
-    }
-    
-    /**
-     * Returns an array with the initialized application instances.
-     * 
-     * @return array An array with all initialized applications instances
-     */
-    public function getApplications() {
-        return $this->_applications;
-    }
-    
-    /**
-     * Tries to find and return the application for the passed class name.
-     * 
-     * @param string $className The name of the class to find and return the application instance
-     * @return \TechDivision\PersistenceContainer\Application The application instance
-     * @throws \Exception Is thrown if no application can be found for the passed class name
-     */
-    public function findApplication($className) {
-        
-        // iterate over all classes and check if the application name contains the class name
-        foreach ($this->getApplications() as $name => $application) {
-            if (strpos($className, $name) !== false) {
-                // if yes, return the application instance
-                return $application;
+    public function shutdown() {
+
+        // close the main socket
+        $this->close();
+
+        // shutdown the workers
+        for ($i = 0; $i < self::WORKER_NUMBER; $i++) {
+            if ($this->workers[$i] != null) {
+                $this->workers[$i]->shutdown();
             }
         }
-        
-        // if not throw an exception
-        throw new \Exception("Can\'t find application for '$className'");
-    }
-    
-    /**
-     * Run's a lookup for the session bean with the passed class name and 
-     * session ID. If the passed class name is a session bean an instance
-     * will be returned.
-     * 
-     * @param string $className The name of the session bean's class
-     * @param string $sessionId The session ID
-     * @param array $args The arguments passed to the session beans constructor
-     * @return object The requested session bean
-     * @throws \Exception Is thrown if passed class name is no session bean
-     */
-    public function lookup($className, $sessionId, array $args = array()) {
-        
-        // get the reflection class for the passed class name
-        $reflectionClass = $this->getInitialContext()->newReflectionClass($className);
-        
-        // if the class is a stateless session bean simply return a new instance
-        if ($reflectionClass->implementsInterface('TechDivision\PersistenceContainer\Interfaces\Stateless')) {            
-            return $reflectionClass->newInstanceArgs($args);
-        }
-        
-        // if the class is a statefull session bean, first check the container for a initialized instance
-        if ($reflectionClass->implementsInterface('TechDivision\PersistenceContainer\Interfaces\Statefull')) {
-            
-            // load the session's from the initial context
-            $session = $this->getInitialContext()->getAttribute($sessionId);
-            
-            // if an instance exists, load and return it
-            if (is_array($session)) {              
-                if (array_key_exists($className, $session)) {
-                    return $session[$className];
-                }
-            } else {
-                $session = array();
-            }
-            
-            // if not, initialize a new instance, add it to the container and return it
-            $instance = $reflectionClass->newInstanceArgs($args);           
-            $session[$className] = $instance;           
-            $this->getInitialContext()->setAttribute($sessionId, $session);           
-            return $instance;
-        }
-        
-        // if the class is a singleton session bean, return the singleton instance if available
-        if ($reflectionClass->implementsInterface('TechDivision\PersistenceContainer\Interfaces\Singleton')) {
-            
-            // check if an instance is available
-            if ($this->getInitialContext()->getAttribute($className)) {
-                return $this->getInitialContext()->getAttribute($className);
-            }
-            
-            // if not create a new instance and return it
-            $instance = $reflectionClass->newInstanceArgs($args);            
-            $this->getInitialContext()->setAttribute($className, $instance);           
-            return $instance;
-        }
-        
-        // if the class is no session bean, throw an exception
-        throw new \Exception("Can\'t find session bean with class name '$className'");
+
+        exit();
     }
 
     /**
-     * Invokes the passed remote method on the session bean
-     * and returns the result.
-     *  
-     * @param \TechDivision\ApplicationServerClient\Interfaces\RemoteMethod $remoteMethod The remote method
-     * @return mixed The result of the method invocation
+     * Method that is executed, when a fatal error occurs.
+     *
+     * @return void
      */
-    public function handleRequest(RemoteMethod $remoteMethod) {
-        
-        // try to find the application
-        $application = $this->findApplication($remoteMethod->getClassName());
-        
-        // load the remote method data 
-        $sessionId = $remoteMethod->getSessionId();
-        $className = $remoteMethod->getClassName();
-        $methodName = $remoteMethod->getMethodName();
-        $args = $remoteMethod->getParameters();
-        
-        // if a lookup has been requested return the proxy immediately
-        if ($methodName == 'lookup') {
-            return Proxy::create($className);
+    public function fatalErrorShutdown() {
+        $lastError = error_get_last();
+        if (!is_null($lastError) && $lastError['type'] === E_ERROR) {
+            $this->shutdown();
         }
-        
-        // if not make a lookup for the session bean
-        $instance = $this->lookup($className, $sessionId, array($application));
-        
-        // invoke the method on the session bean and return the result 
-        return call_user_func_array(array($instance, $methodName), $args);   
     }
+
+    /**
+     * Method, that is executed, if script has been killed by:
+     * 
+     * SIGINT: Ctrl+C
+     * SIGTERM: kill
+     *
+     * @param int $signal
+     */
+    public function sigintShutdown($signal) {
+        if ($signal === SIGINT || $signal === SIGTERM) {
+            $this->shutdown();
+        }
+    }
+
+    /**
+     * Main method that starts the server.
+     * 
+     * @return void
+     */
+    public function start() {
+
+        // prepare the main socket and listen
+        $this->create()
+                ->setBlock()
+                ->setReuseAddr()
+                ->setReceiveTimeout()
+                ->bind()
+                ->listen();
+
+        // start the ifinite loop and listen to clients
+        while (true) {
+
+            try {
+
+                // prepare array of readable client sockets
+                $read = array($this->resource);
+
+                // prepare the array for write/except sockets
+                $write = $except = array();
+
+                // select a socket to read from
+                $this->select($read, $write, $except);
+
+                // if ready contains the master socket, then a new connection has come in
+                if (in_array($this->resource, $read)) {
+
+                    // initialize the buffer
+                    $buffer = '';
+
+                    // load the character for line ending
+                    $newLine = $this->getNewLine();
+
+                    // get the client socket (in blocking mode)
+                    $client = $this->accept();
+
+                    // read one line (till EOL) from client socket
+                    while ($buffer .= $client->read($this->getLineLength())) {
+                        if (substr($buffer, -1) === $newLine) {
+                            $line = rtrim($buffer, $newLine);
+                            break;
+                        }
+                    }
+
+                    // close the client socket if no more data will be transmitted
+                    if ($line == null) {
+                        $client->close();
+                    } else {
+                        // pass the line to the worker instance and process it
+                        $this->getRandomWorker()->stack($this->work[] = new Request($line));
+                    }
+                }
+            } catch (Exception $e) {
+                error_log($e->__toString());
+            }
+        }
+    }
+
+    /**
+     * Returns an array with the deployed applications.
+     * 
+     * @return array The array with applications
+     */
+    public function getApplications() {
+        return $this->applications;
+    }
+
+    /**
+     * Returns a random worker.
+     * 
+     * @return \Worker The random worker instance
+     */
+    public function getRandomWorker() {
+        return $this->workers[rand(0, self::WORKER_NUMBER - 1)];
+    }
+
 }

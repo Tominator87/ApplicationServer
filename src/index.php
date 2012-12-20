@@ -4,7 +4,7 @@ namespace TechDivision\Example;
 
 use TechDivision\Example\Entities\Sample;
 use TechDivision\ApplicationServer\SplClassLoader;
-use TechDivision\ApplicationServerClient\Context\Connection\Factory;
+use TechDivision\PersistenceContainerClient\Context\Connection\Factory;
 
 // set the session timeout to unlimited
 ini_set('session.gc_maxlifetime', 0);

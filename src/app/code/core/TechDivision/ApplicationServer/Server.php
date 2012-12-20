@@ -2,60 +2,71 @@
 
 namespace TechDivision\ApplicationServer;
 
-use TechDivision\ApplicationServer\Interfaces\HandlerInterface;
-use Zend\Config\Factory;
+use TechDivision\ApplicationServer\Interfaces\ContainerInterface;
 
 class Server {
-
-    protected static $_instance = null;
     
-    protected $_handlers = array();
-    
-    protected $_config = null;
-
-    public static function singleton() {
-        if (self::$_instance == null) {
-            self::$_instance = new Server();
-        }
-        return self::$_instance;
-    }
+    protected $containers = array();
 
     public function start() {
         
-        $this->initConfiguration();
-        $this->initHandlers();
+        $this->initContainers();
         
         while (true) {
             sleep(1);
         }
     }
     
-    public function addHandler(HandlerInterface $handler) {
-        return $this->_handlers[get_class($handler)] = $handler;
+    public function addContainer(ContainerInterface $container) {
+        return $this->containers[get_class($container)] = $container;
     }
     
-    public function initConfiguration() {
-        $this->_config = Factory::fromFile('cfg/appserver.xml', true);
-    }
-    
-    public function initHandlers() {
+    /**
+     * Initializes the containers found in the cfg/appserver.xml file.
+     * 
+     * @return \TechDivision\ApplicationServer\Server The server instance
+     */
+    public function initContainers() {
+        
+        // initialize the SimpleXMLElement with the content of pointcut XML file
+        $sxe = new \SimpleXMLElement(file_get_contents('cfg/appserver.xml', true));
 
-        foreach ($this->getConfig()->handlers->handler as $handler) {
+        // iterate over the found nodes
+        foreach ($sxe->xpath('/appserver/containers/container') as $container) {
+
+            // load the application name and the path to the entities
+            $type = (string) $container->type;
+
+            // load the database connection information
+            foreach ($container->children() as $params) {
+                $parameters = array(
+                    'host' => (string) $params->host,
+                    'port' => (string) $params->port
+                );
+            }
             
-            $params = $handler->params->toArray();
+            // create and start the container instance
+            $containerInstance = $this->newInstance($type, $parameters);
+            $containerInstance->start();
             
-            $handlerInstance = $this->newInstance($handler->type, $params);
+            // add the container to the server
+            $this->addContainer($containerInstance);
             
-            $this->addHandler($handlerInstance)->start(true);
-            
-            error_log("Successfully started handler {$handler->type}");
-        }        
+            error_log("Successfully started container '$type'");
+        }
+        
+        // return the instance itself
+        return $this;
     }
     
-    public function getConfig() {
-        return $this->_config;
-    }
-    
+    /**
+     * Creates a new instance of the passed class name and passes the
+     * args to the instance constructor.
+     * 
+     * @param string $className The class name to create the instance of
+     * @param array $args The parameters to pass to the constructor
+     * @return object The created instance
+     */
     public function newInstance($className, array $args = array()) { 
         $reflectionClass = new \ReflectionClass($className);
         return $reflectionClass->newInstanceArgs($args);
