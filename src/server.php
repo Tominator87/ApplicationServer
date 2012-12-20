@@ -26,4 +26,5 @@ require 'Doctrine/Common/ClassLoader.php';
 $classLoader = new ClassLoader();
 $classLoader->register();
 
-Server::singleton()->start();
+$server = new Server();
+$server->start();

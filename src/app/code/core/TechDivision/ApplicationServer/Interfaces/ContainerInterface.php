@@ -2,5 +2,5 @@
 
 namespace TechDivision\ApplicationServer\Interfaces;
 
-interface HandlerInterface {
+interface ContainerInterface {
 }

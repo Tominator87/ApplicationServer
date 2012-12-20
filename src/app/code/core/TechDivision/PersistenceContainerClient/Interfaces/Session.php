@@ -23,43 +23,41 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307,
  * USA.
  *
- * @package TechDivision\ApplicationServerClient
+ * @package TechDivision\PersistenceContainerClient
  */
 
-namespace TechDivision\ApplicationServerClient\Interfaces;
+namespace TechDivision\PersistenceContainerClient\Interfaces;
 
 /**
  * The interface for the session.
  *
- * @package TechDivision\ApplicationServerClient
+ * @package TechDivision\PersistenceContainerClient
  * @author Tim Wagner <t.wagner@techdivision.com>
  * @copyright TechDivision GmbH
  * @link http://www.techdivision.com
  * @license GPL
  */
 interface Session {
-	
-	/**
-	 * Returns the ID of the session to use.
-	 * 
-	 * @return string The session ID
-	 */
-	public function getSessionId();
-	
-	/**
-	 * Invokes the remote method over the connection.
-	 *  
-	 * @param TechDivision\ApplicationServerClient\Interfaces\RemoteMethod $remoteMethod
-	 * 		The remote method call to invoke
-	 * @return mixed the method return value
-	 */
-	public function send(RemoteMethod $remoteMethod);
-	
-	/**
-	 * Creates a remote inital context instance.
-	 * 
-	 * @return TechDivision\ApplicationServerClient\Interfaces\RemoteObject
-	 * 		The proxy for the inital context
-	 */
-	public function createInitialContext();
+
+    /**
+     * Returns the ID of the session to use.
+     * 
+     * @return string The session ID
+     */
+    public function getSessionId();
+
+    /**
+     * Invokes the remote method over the connection.
+     *  
+     * @param TechDivision\PersistenceContainerClient\Interfaces\RemoteMethod $remoteMethod The remote method call to invoke
+     * @return mixed the method return value
+     */
+    public function send(RemoteMethod $remoteMethod);
+
+    /**
+     * Creates a remote inital context instance.
+     * 
+     * @return TechDivision\PersistenceContainerClient\Interfaces\RemoteObject The proxy for the inital context
+     */
+    public function createInitialContext();
 }

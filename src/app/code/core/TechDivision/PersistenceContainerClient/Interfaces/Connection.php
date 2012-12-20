@@ -23,56 +23,55 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307,
  * USA.
  *
- * @package TechDivision\ApplicationServerClient
+ * @package TechDivision\PersistenceContainerClient
  */
 
-namespace TechDivision\ApplicationServerClient\Interfaces;
+namespace TechDivision\PersistenceContainerClient\Interfaces;
 
 /**
  * The interface for the remote connection.
  *
- * @package TechDivision\ApplicationServerClient
+ * @package TechDivision\PersistenceContainerClient
  * @author Tim Wagner <t.wagner@techdivision.com>
  * @copyright TechDivision GmbH
  * @link http://www.techdivision.com
  * @license GPL
  */
 interface Connection {
-	
-	/**
-	 * Creates the connection to the container.
-	 * 
-	 * @return void
-	 */
-	public function connect();
-	
-	/**
-	 * Shutdown the connection to the container.
-	 * 
-	 * @return void
-	 */
-	public function disconnect();
-	
-	/**
-	 * Sends the remote method call to the container instance.
-	 * 
-	 * @param TechDivision\ApplicationServerClient\Interfaces\RemoteMethod $remoteMethod
-	 * @return mixed The response from the container
-	 */
-	public function send(RemoteMethod $remoteMethod);
-	
-	/**
-	 * Initializes a new session instance.
-	 * 
-	 * @return TechDivision\ApplicationServerClient\Interfaces\Session
-	 * 		The session instance
-	 */
-	public function createContextSession();
-	
-	/**
-	 * Returns the socket the connection is based on.
-	 * 
-	 * @return \Net_Socket The socket instance
-	 */
-	public function getSocket();
+
+    /**
+     * Creates the connection to the container.
+     * 
+     * @return void
+     */
+    public function connect();
+
+    /**
+     * Shutdown the connection to the container.
+     * 
+     * @return void
+     */
+    public function disconnect();
+
+    /**
+     * Sends the remote method call to the container instance.
+     * 
+     * @param TechDivision\PersistenceContainerClient\Interfaces\RemoteMethod $remoteMethod
+     * @return mixed The response from the container
+     */
+    public function send(RemoteMethod $remoteMethod);
+
+    /**
+     * Initializes a new session instance.
+     * 
+     * @return TechDivision\PersistenceContainerClient\Interfaces\Session The session instance
+     */
+    public function createContextSession();
+
+    /**
+     * Returns the socket the connection is based on.
+     * 
+     * @return \TechDivision\Socket\Client The socket instance
+     */
+    public function getSocket();
 }

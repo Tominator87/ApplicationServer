@@ -23,43 +23,43 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307,
  * USA.
  *
- * @package TechDivision\ApplicationServerClient
+ * @package TechDivision\PersistenceContainerClient
  */
 
-namespace TechDivision\ApplicationServerClient\Proxy;
+namespace TechDivision\PersistenceContainerClient\Proxy;
 
-use TechDivision\ApplicationServerClient\Proxy;
-use TechDivision\ApplicationServerClient\RemoteMethodCall;
+use TechDivision\PersistenceContainerClient\Proxy;
+use TechDivision\PersistenceContainerClient\RemoteMethodCall;
 
 /**
  * Proxy for the container instance itself.
  *
- * @package TechDivision\ApplicationServerClient
+ * @package TechDivision\PersistenceContainerClient
  * @author Tim Wagner <t.wagner@techdivision.com>
  * @copyright TechDivision GmbH
  * @link http://www.techdivision.com
  * @license GPL
  */
 class InitialContext extends Proxy {
-    
-	/**
-	 * Initialize the proxy instance.
-	 * 
-	 * @return void
-	 */
+
+    /**
+     * Initialize the proxy instance.
+     * 
+     * @return void
+     */
     public function __construct() {
-        parent::__construct('TechDivision\ApplicationServerClient\Proxy\InitialContext');
+        parent::__construct('TechDivision\ApplicationServer\InitialContext');
     }
-	
+
     /**
      * Runs a lookup on the container for the class with the
      * passed name.
      * 
      * @param string $className The class name to run the lookup for
-     * @return TechDivision\ApplicationServerClient\Interfaces\RemoteObject The instance
+     * @return TechDivision\PersistenceContainerClient\Interfaces\RemoteObject The instance
      */
-	public function lookup($className) {
-		$methodCall = new RemoteMethodCall($className, 'lookup', $this->getSession()->getSessionId());
-		return $this->__invoke($methodCall, $this->getSession());
-	}
+    public function lookup($className) {
+        return Proxy::create($className)->setSession($this->getSession());
+    }
+
 }

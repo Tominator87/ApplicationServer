@@ -23,19 +23,24 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307,
  * USA.
  *
- * @package TechDivision\ApplicationServerClient
+ * @package TechDivision\PersistenceContainerClient
  */
 
-namespace TechDivision\ApplicationServerClient\Exceptions;
+namespace TechDivision\PersistenceContainerClient\Context\Connection;
 
-/**
- * This is the exception that is thrown if 
- * a remote method call fails.
- *
- * @package TechDivision\ApplicationServerClient
- * @author Tim Wagner <t.wagner@techdivision.com>
- * @copyright TechDivision GmbH
- * @link http://www.techdivision.com
- * @license GPL
- */
-class RemoteMethodCallException extends Exception {}
+use TechDivision\PersistenceContainerClient\Context\ContextConnection;
+
+class Factory {
+
+    protected static $instance = null;
+
+    public static function createContextConnection() {
+        
+        if (self::$instance == null) {
+            self::$instance = new ContextConnection();
+        }
+        
+        return self::$instance;
+    }
+
+}

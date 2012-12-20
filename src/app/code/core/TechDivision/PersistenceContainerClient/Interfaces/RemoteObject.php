@@ -23,21 +23,33 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307,
  * USA.
  *
- * @package TechDivision\ApplicationServerClient
+ * @package TechDivision\PersistenceContainerClient
  */
 
-namespace TechDivision\ApplicationServerClient\Context\Connection;
+namespace TechDivision\PersistenceContainerClient\Interfaces;
 
-use TechDivision\ApplicationServerClient\Context\ContextConnection;
+/**
+ * Interface for all remote objects.
+ *
+ * @package TechDivision\PersistenceContainerClient
+ * @author Tim Wagner <t.wagner@techdivision.com>
+ * @copyright TechDivision GmbH
+ * @link http://www.techdivision.com
+ * @license GPL
+ */
+interface RemoteObject {
 
-class Factory {
+    /**
+     * Returns the session instance.
+     * 
+     * @return TechDivision\PersistenceContainerClient\Interfaces\Session The session instance
+     */
+    public function getSession();
 
-	protected static $_instance = null;
-
-	public static function createContextConnection() {
-		if (self::$_instance == null) {
-			self::$_instance = new ContextConnection();
-		}
-		return self::$_instance;
-	}
+    /**
+     * The name of the original object.
+     * 
+     * @return string The name of the original object
+     */
+    public function getClassName();
 }
