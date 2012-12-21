@@ -66,7 +66,7 @@ class Client extends Socket {
     }
     
     public function sendLine($data) {
-        return $this->send($data . PHP_EOL);
+        return $this->send($data . $this->getNewLine());
     }
     
     public function readLine() {

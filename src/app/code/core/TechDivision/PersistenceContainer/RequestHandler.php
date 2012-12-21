@@ -159,10 +159,8 @@ class RequestHandler extends \Worker {
                 // invoke the remote method call on the local instance
                 $response = call_user_func_array(array($instance, $methodName), $parameters);
                 
-            } catch (Exception $e) {
-                
-                $response = $e;
-                
+            } catch (\Exception $e) {                
+                $response = new \Exception($e);
             }
 
             // create a new socket
@@ -183,7 +181,7 @@ class RequestHandler extends \Worker {
                 // close the socket immediately
                 $socket->close();
                 
-            } catch (Exception $e) {
+            } catch (\Exception $e) {
                 
                 // log the stack trace
                 error_log($e->__toString());

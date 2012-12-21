@@ -211,6 +211,7 @@ class ContextConnection implements Connection {
 
         // unserialize the response
         $response = unserialize($serialized);
+        
         // if an exception returns, throw it again
         if ($response instanceof \Exception) {
             throw $response;

@@ -34,11 +34,11 @@ use TechDivision\PersistenceContainer\RequestHandler;
 use TechDivision\PersistenceContainer\Application;
 
 class Container extends Client {
+    
     /**
      * The number of parallel workers to handle client connections.
      * @var integer
      */
-
     const WORKER_NUMBER = 4;
 
     /**
@@ -77,8 +77,8 @@ class Container extends Client {
         pcntl_signal(SIGTERM, array($this, 'sigintShutdown'));
         pcntl_signal(SIGINT, array($this, 'sigintShutdown'));
 
-        // deploy the applications
-        $this->deploy();
+        // enable garbage collector and deploy applications
+        $this->gcEnable()->deploy();
 
         // create the worker instances
         for ($i = 0; $i < self::WORKER_NUMBER; $i++) {
@@ -203,11 +203,11 @@ class Container extends Client {
 
         // prepare the main socket and listen
         $this->create()
-                ->setBlock()
-                ->setReuseAddr()
-                ->setReceiveTimeout()
-                ->bind()
-                ->listen();
+             ->setBlock()
+             ->setReuseAddr()
+             ->setReceiveTimeout()
+             ->bind()
+             ->listen();
 
         // start the ifinite loop and listen to clients
         while (true) {
@@ -250,11 +250,58 @@ class Container extends Client {
                         // pass the line to the worker instance and process it
                         $this->getRandomWorker()->stack($this->work[] = new Request($line));
                     }
+                    
+                    // if garbage collection is enabled, force collection of cycles immediately
+                    if ($this->gcEnabled()) {
+                        error_log("Collected {$this->gc()} cycles");
+                    }
                 }
             } catch (Exception $e) {
                 error_log($e->__toString());
             }
         }
+    }
+    
+    /**
+     * Forces collection of any existing garbage cycles.
+     * 
+     * @return integer The number of collected cycles
+     * @link http://php.net/manual/en/features.gc.collecting-cycles.php
+     */
+    public function gc() {
+        return gc_collect_cycles();
+    }
+    
+    /**
+     * Returns TRUE if the PHP internal garbage collection is enabled.
+     * 
+     * @return boolean TRUE if the PHP internal garbage collection is enabled
+     * @link http://php.net/manual/en/function.gc-enabled.php
+     */
+    public function gcEnabled() {
+        return gc_enabled();
+    }
+    
+    /**
+     * Enables PHP internal garbage collection.
+     * 
+     * @return \TechDivision\PersistenceContainer\Container The container instance
+     * @link http://php.net/manual/en/function.gc-enable.php
+     */
+    public function gcEnable() {
+        gc_enable();
+        return $this;
+    }
+    
+    /**
+     * Disables PHP internal garbage collection.
+     * 
+     * @return \TechDivision\PersistenceContainer\Container The container instance
+     * @link http://php.net/manual/en/function.gc-disable.php
+     */
+    public function gcDisable() {
+        gc_disable();
+        return $this;
     }
 
     /**
