@@ -54,7 +54,7 @@ class RequestHandler
             $servlet->service($request, $response);
 
         } catch (\Exception $e) {
-            header('Status: 501');
+            header_status(500);
             $response->setContent(new String(get_class($e) . "\n\n" . $e->getMessage() . "\n\n" . ob_get_clean()));
         }
 
