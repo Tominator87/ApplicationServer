@@ -1,5 +1,6 @@
 <appserver>
     <containers>
+        <!--
         <container>
             <containerType>TechDivision\PersistenceContainer\Container</containerType>
             <configurationType>TechDivision\ApplicationServer\Configuration</configurationType>
@@ -9,13 +10,24 @@
                 <port>8585</port>
             </params>
         </container>
-        <!-- <container>
+        -->
+        <container>
+            <type>TechDivision\ServletContainer\Container</type>
+                <params>
+                    <workerNumber>4</workerNumber>
+                    <host>0.0.0.0</host>
+                    <port>8586</port>
+                </params>
+        </container>
+        <!--
+        <container>
             <type>TechDivision\MessageService\Container</type>
             <params>
-                <host>172.16.0.130</host>
-                <port>8586</port>
+                <host>0.0.0.0</host>
+                <port>8587</port>
                 <maxClients>20</maxClients>
             </params>
-        </container> -->
+        </container>
+        -->
     </containers>
 </appserver>
