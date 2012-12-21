@@ -3,6 +3,7 @@
         <container>
             <type>TechDivision\PersistenceContainer\Container</type>
             <params>
+                <workerNumber>4</workerNumber>
                 <host>0.0.0.0</host>
                 <port>8585</port>
             </params>

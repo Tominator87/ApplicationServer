@@ -51,6 +51,10 @@ class SampleProcessor implements Singleton {
         return $repository->findAll();
     }
     
+    public function changeWorker($workerNumber) {
+        return InitialContex::singleton()->setAttribute('workerNumber', $workerNumber);
+    }
+    
     public function createSchema() {
         
         $entityManager = $this->getApplication()->getEntityManager();

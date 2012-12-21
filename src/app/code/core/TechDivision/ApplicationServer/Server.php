@@ -6,17 +6,34 @@ use TechDivision\ApplicationServer\Interfaces\ContainerInterface;
 
 class Server {
     
+    /**
+     * Array with the initialized container instances.
+     * @var array
+     */
     protected $containers = array();
 
+    /**
+     * Start's the server and initializes the containers.
+     * 
+     * @return void
+     */
     public function start() {
         
+        // initialize the containers
         $this->initContainers();
         
+        // wait
         while (true) {
             sleep(1);
         }
     }
     
+    /**
+     * Adds the passed container to the Server.
+     * 
+     * @param \TechDivision\ApplicationServer\Interfaces\ContainerInterface $container The container to add
+     * @return \TechDivision\ApplicationServer\Interfaces\ContainerInterface The initialized container instance
+     */
     public function addContainer(ContainerInterface $container) {
         return $this->containers[get_class($container)] = $container;
     }
@@ -37,9 +54,10 @@ class Server {
             // load the application name and the path to the entities
             $type = (string) $container->type;
 
-            // load the database connection information
+            // load the container initialization data
             foreach ($container->children() as $params) {
                 $parameters = array(
+                    'workerNumber' => (integer) $params->workerNumber,
                     'host' => (string) $params->host,
                     'port' => (string) $params->port
                 );

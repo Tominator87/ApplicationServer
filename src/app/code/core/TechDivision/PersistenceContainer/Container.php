@@ -32,14 +32,15 @@ use TechDivision\Socket\Client;
 use TechDivision\PersistenceContainer\Request;
 use TechDivision\PersistenceContainer\RequestHandler;
 use TechDivision\PersistenceContainer\Application;
+use TechDivision\ApplicationServer\Interfaces\ContainerInterface;
 
-class Container extends Client {
+class Container extends Client implements ContainerInterface {
     
     /**
      * The number of parallel workers to handle client connections.
      * @var integer
      */
-    const WORKER_NUMBER = 4;
+    protected $workerNumber = 1;
 
     /**
      * Array with the worker instances.
@@ -62,13 +63,18 @@ class Container extends Client {
     /**
      * Initializes the server instance with the storage.
      * 
-     * @param GlobalStorage $storage The storage instance
+     * @param integer $workerNumber Number of workers to start initially
+     * @param string $address The container's IP address to listen to for incoming remote method calls
+     * @param integer $port The container's port to listen to
      * @return void
      */
-    public function __construct($address = '0.0.0.0', $port = 8585) {
+    public function __construct($workerNumber = 1, $address = '0.0.0.0', $port = 8585) {
 
         // pass address and port to the server
         parent::__construct($address, $port);
+        
+        // set the number of workers to start
+        $this->setWorkerNumber($workerNumber);
 
         // catch Fatal Error (Rollback)
         register_shutdown_function(array($this, 'fatalErrorShutdown'));
@@ -81,7 +87,7 @@ class Container extends Client {
         $this->gcEnable()->deploy();
 
         // create the worker instances
-        for ($i = 0; $i < self::WORKER_NUMBER; $i++) {
+        for ($i = 0; $i < $this->getWorkerNumber(); $i++) {
             $this->workers[$i] = new RequestHandler($this);
             $this->workers[$i]->start();
         }
@@ -159,10 +165,8 @@ class Container extends Client {
         $this->close();
 
         // shutdown the workers
-        for ($i = 0; $i < self::WORKER_NUMBER; $i++) {
-            if ($this->workers[$i] != null) {
-                $this->workers[$i]->shutdown();
-            }
+        foreach ($this->workers as $worker) {
+            $worker->shutdown();
         }
 
         exit();
@@ -305,6 +309,26 @@ class Container extends Client {
     }
 
     /**
+     * Set's the maximum number of workers to start.
+     * 
+     * @param integer $workerNumber The maximum number of worker's to start
+     * @return \TechDivision\PersistenceContainer\Container The container instance
+     */
+    public function setWorkerNumber($workerNumber) {
+        $this->workerNumber = $workerNumber;
+        return $this;
+    }
+    
+    /**
+     * Return's the maximum number of workers to start.
+     * 
+     * @return integer The maximum number of worker's to start
+     */
+    public function getWorkerNumber() {
+        return $this->workerNumber;
+    }
+    
+    /**
      * Returns an array with the deployed applications.
      * 
      * @return array The array with applications
@@ -319,7 +343,7 @@ class Container extends Client {
      * @return \Worker The random worker instance
      */
     public function getRandomWorker() {
-        return $this->workers[rand(0, self::WORKER_NUMBER - 1)];
+        return $this->workers[rand(0, $this->getWorkerNumber() - 1)];
     }
 
 }
