@@ -6,8 +6,8 @@ namespace TechDivision\Example;
 
 use TechDivision\Example\Entities\Sample;
 use TechDivision\ApplicationServer\SplClassLoader;
-use TechDivision\PersistenceContainer\InitialContext;
 use TechDivision\Example\Services\SampleProcessor;
+use TechDivision\PersistenceContainer\Application;
 
 // set the session timeout to unlimited
 ini_set('session.gc_maxlifetime', 0);
@@ -33,19 +33,21 @@ $classLoader->register();
 
 session_start();
 
-$initialContext = InitialContext::singleton();
-$application = $initialContext->findApplication('TechDivision\Example\Services\SampleProcessor');
+// load the database connection information
+$connectionParameters = array(
+    'driver' => 'pdo_mysql',
+    'user' => 'appserver',
+    'password' => 'eraZor',
+    'dbname' => 'appserver_ApplicationServer',
+);
+
+// initialize the application instance
+$application = new Application('TechDivision\Example');
+$application->setConnectionParameters($connectionParameters);
+$application->setPathToEntities(array('TechDivision/Example/Entities'));
+$application->connect();
+
 $processor = new SampleProcessor($application);
-
-/*
-// initialize the connection, the session and the initial context
-$connection = Factory::createContextConnection();
-$session = $connection->createContextSession();
-$initialContext = $session->createInitialContext();
-
-// lookup the remote processor implementation
-$processor = $initialContext->lookup('TechDivision\Example\Services\SampleProcessor');
-*/
 
 if (array_key_exists('action', $_REQUEST)) {
     $action = $_REQUEST['action'];
@@ -53,19 +55,19 @@ if (array_key_exists('action', $_REQUEST)) {
     $action = 'findAll';
 }
 
-$id = '';
+$sampleId = '';
 $name = '';
 
 switch ($action) {
     case 'load':
-        $entity = $processor->load($_REQUEST['id']);
+        $entity = $processor->load($_REQUEST['sampleId']);
         $name = $entity->getName();
-        $id = $entity->getSampleId();
+        $sampleId = $entity->getSampleId();
         $entities = $processor->findAll();
         break;
     case 'persist':
         $entity = new Sample();
-        $entity->setSampleId($_POST['id']);
+        $entity->setSampleId((integer) $_POST['sampleId']);
         $entity->setName($_POST['name']);
         $processor->persist($entity);
         $entities = $processor->findAll();
@@ -95,7 +97,7 @@ switch ($action) {
                     <legend>Sample</legend>
                     <table><tr>
                             <td>Id:</td>
-                            <td><input type="text" size="40" maxlength="40" name="id" value="<?php echo $id ?>"></td>
+                            <td><input type="text" size="40" maxlength="40" name="sampleId" value="<?php echo $sampleId ?>"></td>
                         </tr><tr>
                             <td>Name:</td>
                             <td><input type="text" size="40" maxlength="40" name="name" value="<?php echo $name ?>"></td>
@@ -114,8 +116,8 @@ switch ($action) {
                         <td>Name</td>
                     </tr>
                 </thead>
-                <?php foreach ($entities as $id => $entity) { ?><tr>
-                        <td><a href="index-script.php?action=load&id=<?php echo $entity->getSampleId() ?>"><?php echo $entity->getSampleId() ?></a></td>
+                <?php foreach ($entities as $sampleId => $entity) { ?><tr>
+                        <td><a href="index-script.php?action=load&sampleId=<?php echo $entity->getSampleId() ?>"><?php echo $entity->getSampleId() ?></a></td>
                         <td><?php echo $entity->getName() ?></td>
                     </tr><?php } ?> 
             </table>

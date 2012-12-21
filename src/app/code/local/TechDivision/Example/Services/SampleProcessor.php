@@ -23,8 +23,25 @@ class SampleProcessor implements Singleton {
     }
 
     public function persist(Sample $entity) {
+        
+        // load the entity manager
         $entityManager = $this->getApplication()->getEntityManager();
-        $entityManager->persist($entity);
+        
+        // check if a detached entity has been passed
+        if ($entity->getSampleId()) {
+            
+            // if yes, merge the state of the detached entity into the unity of work
+            $merged = $entityManager->merge($entity);
+
+            // update the entity
+            $entityManager->persist($merged);
+        } else {
+
+            // else create a new entity
+            $entityManager->persist($entity);
+        }
+        
+        // flush the entity manager
         $entityManager->flush();
     }
 

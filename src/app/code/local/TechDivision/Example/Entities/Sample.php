@@ -8,16 +8,16 @@ namespace TechDivision\Example\Entities;
 class Sample {
 
     /**
-     * @Id @GeneratedValue @Column(type="integer")
-     * @var int
+     * @Id 
+     * @Column(type="integer") 
+     * @GeneratedValue
      */
-    private $sampleId;
+    protected $sampleId;
 
     /**
-     * @Column(type="string")
-     * @var string
+     * @Column(type="string", length=255)
      */
-    private $name;
+    protected $name;
 
     public function setSampleId($sampleId) {
         $this->sampleId = $sampleId;

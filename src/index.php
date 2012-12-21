@@ -44,19 +44,19 @@ if (array_key_exists('action', $_REQUEST)) {
     $action = 'findAll';
 }
 
-$id = '';
+$sampleId = '';
 $name = '';
 
 switch ($action) {
     case 'load':
-        $entity = $processor->load($_REQUEST['id']);
+        $entity = $processor->load($_REQUEST['sampleId']);
         $name = $entity->getName();
-        $id = $entity->getSampleId();
+        $sampleId = $entity->getSampleId();
         $entities = $processor->findAll();
         break;
     case 'persist':
         $entity = new Sample();
-        $entity->setSampleId($_POST['id']);
+        $entity->setSampleId((integer) $_POST['sampleId']);
         $entity->setName($_POST['name']);
         $processor->persist($entity);
         $entities = $processor->findAll();
@@ -86,7 +86,7 @@ switch ($action) {
                     <legend>Sample</legend>
                     <table><tr>
                             <td>Id:</td>
-                            <td><input type="text" size="40" maxlength="40" name="id" value="<?php echo $id ?>"></td>
+                            <td><input type="text" size="40" maxlength="40" name="sampleId" value="<?php echo $sampleId ?>"></td>
                         </tr><tr>
                             <td>Name:</td>
                             <td><input type="text" size="40" maxlength="40" name="name" value="<?php echo $name ?>"></td>
@@ -105,8 +105,8 @@ switch ($action) {
                         <td>Name</td>
                     </tr>
                 </thead>
-                <?php foreach ($entities as $id => $entity) { ?><tr>
-                        <td><a href="index.php?action=load&id=<?php echo $entity->getSampleId() ?>"><?php echo $entity->getSampleId() ?></a></td>
+                <?php foreach ($entities as $sampleId => $entity) { ?><tr>
+                        <td><a href="index.php?action=load&sampleId=<?php echo $entity->getSampleId() ?>"><?php echo $entity->getSampleId() ?></a></td>
                         <td><?php echo $entity->getName() ?></td>
                     </tr><?php } ?> 
             </table>
