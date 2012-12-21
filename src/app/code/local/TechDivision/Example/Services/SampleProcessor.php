@@ -3,6 +3,7 @@
 namespace TechDivision\Example\Services;
 
 use TechDivision\Example\Entities\Sample;
+use TechDivision\ApplicationServer\InitialContext;
 use TechDivision\PersistenceContainer\Application;
 use TechDivision\PersistenceContainer\Interfaces\Singleton;
 use Doctrine\ORM\Tools\SchemaTool;
@@ -52,7 +53,10 @@ class SampleProcessor implements Singleton {
     }
     
     public function changeWorker($workerNumber) {
-        return InitialContex::singleton()->setAttribute('workerNumber', $workerNumber);
+        $key = 'TechDivision\PersistenceContainer\Container';
+        $configuration = InitialContext::get()->getAttribute($key);
+        $configuration->setWorkerNumber($workerNumber);
+        return InitialContext::get()->setAttribute($key, $configuration);
     }
     
     public function createSchema() {

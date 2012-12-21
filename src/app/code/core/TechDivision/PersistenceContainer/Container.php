@@ -32,7 +32,9 @@ use TechDivision\Socket\Client;
 use TechDivision\PersistenceContainer\Request;
 use TechDivision\PersistenceContainer\RequestHandler;
 use TechDivision\PersistenceContainer\Application;
+use TechDivision\ApplicationServer\InitialContext;
 use TechDivision\ApplicationServer\Interfaces\ContainerInterface;
+use TechDivision\ApplicationServer\Interfaces\ContainerConfiguration;
 
 class Container extends Client implements ContainerInterface {
     
@@ -68,13 +70,19 @@ class Container extends Client implements ContainerInterface {
      * @param integer $port The container's port to listen to
      * @return void
      */
-    public function __construct($workerNumber = 1, $address = '0.0.0.0', $port = 8585) {
+    public function __construct(ContainerConfiguration $configuration) {
 
+        // set the configuration
+        $this->setConfiguration($configuration);
+        
+        // set the configuration in the initial context
+        InitialContext::get()->setAttribute(__CLASS__, $configuration);
+        
         // pass address and port to the server
-        parent::__construct($address, $port);
+        parent::__construct($configuration->getAddress(), $configuration->getPort());
         
         // set the number of workers to start
-        $this->setWorkerNumber($workerNumber);
+        $this->setWorkerNumber($configuration->getWorkerNumber());
 
         // catch Fatal Error (Rollback)
         register_shutdown_function(array($this, 'fatalErrorShutdown'));
@@ -259,11 +267,61 @@ class Container extends Client implements ContainerInterface {
                     if ($this->gcEnabled()) {
                         error_log("Collected {$this->gc()} cycles");
                     }
+                    
+                    // check of container configuration has to be reloaded
+                    $this->checkConfig();
+                    
                 }
             } catch (Exception $e) {
                 error_log($e->__toString());
             }
         }
+    }
+    
+    /**
+     * Sets the new container configuration data.
+     * 
+     * @return void
+     */
+    public function reloadConfig() {
+        $this->setWorkerNumber($this->getConfiguration()->getWorkerNumber());
+    }
+    
+    /**
+     * Check's if container configuration as changed, if yes, the 
+     * configuration will be reloaded.
+     * 
+     * @return void
+     */
+    public function checkConfig() {
+        
+        // load the configuration from the initial context
+        $nc = InitialContext::get()->getAttribute(__CLASS__);
+        
+        // check if configuration has changed
+        if ($nc != null && !$this->getConfiguration()->equals($nc)) {
+            $this->setConfiguration($nc)->reloadConfig();
+        }
+    }
+    
+    /**
+     * Sets the passed container configuration.
+     * 
+     * @param \TechDivision\ApplicationServer\Interfaces\ContainerConfiguration $configuration The configuration for the container
+     * @return \TechDivision\PersistenceContainer\Container The container instance itself
+     */
+    public function setConfiguration(ContainerConfiguration $configuration) {
+        $this->configuration = $configuration;
+        return $this;
+    }
+
+    /**
+     * Returns the actual container configuration.
+     * 
+     * @return \TechDivision\ApplicationServer\Interfaces\ContainerConfiguration The actual container configuration
+     */
+    public function getConfiguration() {
+        return $this->configuration;
     }
     
     /**
@@ -343,7 +401,17 @@ class Container extends Client implements ContainerInterface {
      * @return \Worker The random worker instance
      */
     public function getRandomWorker() {
-        return $this->workers[rand(0, $this->getWorkerNumber() - 1)];
+        
+        // get a random worker number
+        $randomWorker = rand(0, $this->getWorkerNumber() - 1);
+        
+        // check if the worker is already initialized
+        if (!array_key_exists($randomWorker, $this->workers)) {
+            $this->workers[$randomWorker] = new RequestHandler($this);
+            $this->workers[$randomWorker]->start();            
+        }
+        
+        // return the random worker
+        return $this->workers[$randomWorker];
     }
-
 }

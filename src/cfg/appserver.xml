@@ -1,7 +1,8 @@
 <appserver>
     <containers>
         <container>
-            <type>TechDivision\PersistenceContainer\Container</type>
+            <containerType>TechDivision\PersistenceContainer\Container</containerType>
+            <configurationType>TechDivision\ApplicationServer\Configuration</configurationType>
             <params>
                 <workerNumber>4</workerNumber>
                 <host>0.0.0.0</host>

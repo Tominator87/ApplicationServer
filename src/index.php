@@ -65,6 +65,10 @@ switch ($action) {
         $processor->createSchema();
         $entities = $processor->findAll();
         break;
+    case 'changeWorker':
+        $processor->changeWorker($_REQUEST['workers']);
+        $entities = $processor->findAll();
+        break;
     default:
         $entities = $processor->findAll();
         error_log("Found " . sizeof($entities) . " entities");

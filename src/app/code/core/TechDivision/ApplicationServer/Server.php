@@ -22,20 +22,31 @@ class Server {
         // initialize the containers
         $this->initContainers();
         
-        // wait
-        while (true) {
-            sleep(1);
+        // starting the containers
+        foreach ($this->getContainers() as $containerType => $container) {
+            error_log("Now starting container '$containerType'");
+            $container->start();
+            
         }
     }
     
     /**
-     * Adds the passed container to the Server.
+     * Adds the passed container to the server.
      * 
      * @param \TechDivision\ApplicationServer\Interfaces\ContainerInterface $container The container to add
      * @return \TechDivision\ApplicationServer\Interfaces\ContainerInterface The initialized container instance
      */
     public function addContainer(ContainerInterface $container) {
         return $this->containers[get_class($container)] = $container;
+    }
+    
+    /**
+     * Returns an array with the initialized containers.
+     * 
+     * @return array The array with the containers
+     */
+    public function getContainers() {
+        return $this->containers;
     }
     
     /**
@@ -52,7 +63,8 @@ class Server {
         foreach ($sxe->xpath('/appserver/containers/container') as $container) {
 
             // load the application name and the path to the entities
-            $type = (string) $container->type;
+            $containerType = (string) $container->containerType;
+            $configurationType = (string) $container->configurationType;
 
             // load the container initialization data
             foreach ($container->children() as $params) {
@@ -63,14 +75,14 @@ class Server {
                 );
             }
             
+            // load the container configuration
+            $configuration = $this->newInstance($configurationType, $parameters);
+            
             // create and start the container instance
-            $containerInstance = $this->newInstance($type, $parameters);
-            $containerInstance->start();
+            $containerInstance = $this->newInstance($containerType, array($configuration));
             
             // add the container to the server
             $this->addContainer($containerInstance);
-            
-            error_log("Successfully started container '$type'");
         }
         
         // return the instance itself

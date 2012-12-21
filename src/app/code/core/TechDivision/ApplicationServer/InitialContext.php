@@ -36,23 +36,14 @@ class InitialContext {
      * @var \Memcached
      */
     protected $cache;
-    
-    /**
-     *  The singleton instance 
-     * @var \TechDivision\ApplicationServer\InitialContext
-     */
-    protected static $instance = null;
 
     /**
-     * Singleton implementation.
+     * Factory method implementation.
      * 
      * @return \TechDivision\ApplicationServer\InitialContext The singleton instance
      */
-    public static function singleton() {
-        if (self::$instance == null) {
-            self::$instance = new InitialContext();
-        }
-        return self::$instance;
+    public static function get() {
+        return new InitialContext();
     }
     
     /**
@@ -81,10 +72,12 @@ class InitialContext {
      * Stores the passed key value pair in the initial context.
      * 
      * @param string $key The key to store the value under
-     * @param mixed $value The value to store
+     * @param mixed $value The value to add to the inital context
+     * @return mixed The value added to the initial context
      */
     public function setAttribute($key, $value) {
-        $this->cache->add($key, $value);
+        $this->cache->set($key, $value);
+        return $value;
     }
     
     /**

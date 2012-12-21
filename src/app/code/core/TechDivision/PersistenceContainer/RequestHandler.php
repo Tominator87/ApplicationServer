@@ -150,7 +150,7 @@ class RequestHandler extends \Worker {
                 $args = array($application);
                 
                 // create inital context and lookup session bean
-                $instance = InitialContext::singleton()->lookup($className, $sessionId, $args);
+                $instance = InitialContext::get()->lookup($className, $sessionId, $args);
 
                 // prepare method name and parameters and invoke method
                 $methodName = $remoteMethod->getMethodName();
