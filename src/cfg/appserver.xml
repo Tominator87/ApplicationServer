@@ -2,9 +2,9 @@
     <containers>
         <!--
         <container>
-            <containerType>TechDivision\PersistenceContainer\Container</containerType>
             <configurationType>TechDivision\ApplicationServer\Configuration</configurationType>
             <params>
+                <containerType>TechDivision\PersistenceContainer\Container</containerType>
                 <workerNumber>4</workerNumber>
                 <host>0.0.0.0</host>
                 <port>8585</port>
