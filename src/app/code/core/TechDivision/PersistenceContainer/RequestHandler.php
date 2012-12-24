@@ -12,7 +12,7 @@
 
 namespace TechDivision\PersistenceContainer;
 
-use Doctrine\Common\ClassLoader;
+use TechDivision\SplClassLoader;
 use TechDivision\Socket;
 use TechDivision\ApplicationServer\InitialContext;
 use TechDivision\PersistenceContainerClient\Interfaces\RemoteMethod;
@@ -94,7 +94,7 @@ class RequestHandler extends \Worker {
     public function run() {
         
         // register class loader again, because we are in a thread
-        $classLoader = new ClassLoader();
+        $classLoader = new SplClassLoader();
         $classLoader->register();
         
         // initialize the array for the applications
@@ -119,7 +119,7 @@ class RequestHandler extends \Worker {
     public function processRequest($line) {
         
         // register class loader again, because we are in a thread
-        $classLoader = new ClassLoader();
+        $classLoader = new SplClassLoader();
         $classLoader->register();
         
         // unserialize the passed remote method

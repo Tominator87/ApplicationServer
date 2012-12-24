@@ -12,7 +12,7 @@
 
 namespace TechDivision\ApplicationServer;
 
-use Doctrine\Common\ClassLoader;
+use TechDivision\SplClassLoader;
 
 /**
  * @package     TechDivision\ApplicationServer
@@ -45,7 +45,7 @@ class ContainerThread extends \Thread {
     public function run() {
         
         // register class loader again, because we are in a thread
-        $classLoader = new ClassLoader();
+        $classLoader = new SplClassLoader();
         $classLoader->register();
         
         // load the container configuration

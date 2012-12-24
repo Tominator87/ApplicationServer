@@ -3,12 +3,10 @@
 
 namespace TechDivision\ApplicationServer;
 
-use Doctrine\Common\ClassLoader;
+use TechDivision\SplClassLoader;
 
 error_reporting(~E_NOTICE);
 set_time_limit (0);
-
-declare(ticks = 1);
 
 // set the session timeout to unlimited
 ini_set('session.gc_maxlifetime', 0);
@@ -27,9 +25,9 @@ $paths[] = BP . DS . 'app' . DS . 'code' . DS . 'lib';
 // set the new include path
 set_include_path(implode(PS, $paths) . PS . get_include_path());
 
-require 'Doctrine/Common/ClassLoader.php';
+require 'TechDivision/SplClassLoader.php';
 
-$classLoader = new ClassLoader();
+$classLoader = new SplClassLoader();
 $classLoader->register();
 
 $server = new Server();

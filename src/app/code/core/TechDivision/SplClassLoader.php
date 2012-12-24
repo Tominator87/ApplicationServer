@@ -10,7 +10,7 @@
  * http://opensource.org/licenses/osl-3.0.php
  */
 
-namespace TechDivision\PersistenceContainerClient;
+namespace TechDivision;
 
 /**
  * SplClassLoader implementation that implements the technical interoperability
