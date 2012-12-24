@@ -1,29 +1,13 @@
 <?php
 
 /**
- * License: GNU General Public License
+ * TechDivision_PersistenceContainer_Container
  *
- * Copyright (c) 2009 TechDivision GmbH.  All rights reserved.
- * Note: Original work copyright to respective authors
+ * NOTICE OF LICENSE
  *
- * This file is part of TechDivision GmbH - Connect.
- *
- * TechDivision_Lang is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * TechDivision_Lang is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307,
- * USA.
- *
- * @package TechDivision\ApplicationServer
+ * This source file is subject to the Open Software License (OSL 3.0)
+ * that is available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/osl-3.0.php
  */
 
 namespace TechDivision\PersistenceContainer;
@@ -34,9 +18,21 @@ use TechDivision\PersistenceContainer\RequestHandler;
 use TechDivision\PersistenceContainer\Application;
 use TechDivision\ApplicationServer\InitialContext;
 use TechDivision\ApplicationServer\Interfaces\ContainerInterface;
-use TechDivision\ApplicationServer\Interfaces\ContainerConfiguration;
 
+/**
+ * @package     TechDivision\PersistenceContainer
+ * @copyright  	Copyright (c) 2010 <info@techdivision.com> - TechDivision GmbH
+ * @license    	http://opensource.org/licenses/osl-3.0.php
+ *              Open Software License (OSL 3.0)
+ * @author      Tim Wagner <tw@techdivision.com>
+ */
 class Container extends Client implements ContainerInterface {
+    
+    /**
+     * XPath expression for the application configurations.
+     * @var string
+     */
+    const XPATH_APPLICATIONS = '/appserver/applications/application';
     
     /**
      * The number of parallel workers to handle client connections.
@@ -70,7 +66,7 @@ class Container extends Client implements ContainerInterface {
      * @param integer $port The container's port to listen to
      * @return void
      */
-    public function __construct(ContainerConfiguration $configuration) {
+    public function __construct($configuration) {
 
         // set the configuration
         $this->setConfiguration($configuration);
@@ -83,13 +79,6 @@ class Container extends Client implements ContainerInterface {
         
         // set the number of workers to start
         $this->setWorkerNumber($configuration->getWorkerNumber());
-
-        // catch Fatal Error (Rollback)
-        register_shutdown_function(array($this, 'fatalErrorShutdown'));
-
-        // catch Ctrl+C, kill and SIGTERM (rollback)
-        pcntl_signal(SIGTERM, array($this, 'sigintShutdown'));
-        pcntl_signal(SIGINT, array($this, 'sigintShutdown'));
 
         // enable garbage collector and deploy applications
         $this->gcEnable()->deploy();
@@ -127,8 +116,8 @@ class Container extends Client implements ContainerInterface {
                     // initialize the SimpleXMLElement with the content of pointcut XML file
                     $sxe = new \SimpleXMLElement(file_get_contents($it->getSubPathName(), true));
 
-                    // iterate over the found nodes
-                    foreach ($sxe->xpath('/appserver/applications/application') as $application) {
+                    // iterate over the found application nodes
+                    foreach ($sxe->xpath(self::XPATH_APPLICATIONS) as $application) {
 
                         // load the application name and the path to the entities
                         $name = (string) $application->name;
@@ -160,50 +149,6 @@ class Container extends Client implements ContainerInterface {
 
         // return the server instance
         return $this;
-    }
-
-    /**
-     * Cleanup if process has been killed unexpectedly.
-     * 
-     * @return void
-     */
-    public function shutdown() {
-
-        // close the main socket
-        $this->close();
-
-        // shutdown the workers
-        foreach ($this->workers as $worker) {
-            $worker->shutdown();
-        }
-
-        exit();
-    }
-
-    /**
-     * Method that is executed, when a fatal error occurs.
-     *
-     * @return void
-     */
-    public function fatalErrorShutdown() {
-        $lastError = error_get_last();
-        if (!is_null($lastError) && $lastError['type'] === E_ERROR) {
-            $this->shutdown();
-        }
-    }
-
-    /**
-     * Method, that is executed, if script has been killed by:
-     * 
-     * SIGINT: Ctrl+C
-     * SIGTERM: kill
-     *
-     * @param int $signal
-     */
-    public function sigintShutdown($signal) {
-        if ($signal === SIGINT || $signal === SIGTERM) {
-            $this->shutdown();
-        }
     }
 
     /**
@@ -269,7 +214,7 @@ class Container extends Client implements ContainerInterface {
                     }
                     
                     // check of container configuration has to be reloaded
-                    $this->checkConfig();
+                    $this->checkConfiguration();
                     
                 }
             } catch (Exception $e) {
@@ -283,7 +228,7 @@ class Container extends Client implements ContainerInterface {
      * 
      * @return void
      */
-    public function reloadConfig() {
+    public function reloadConfiguration() {
         $this->setWorkerNumber($this->getConfiguration()->getWorkerNumber());
     }
     
@@ -293,14 +238,14 @@ class Container extends Client implements ContainerInterface {
      * 
      * @return void
      */
-    public function checkConfig() {
+    public function checkConfiguration() {
         
         // load the configuration from the initial context
         $nc = InitialContext::get()->getAttribute(__CLASS__);
         
         // check if configuration has changed
         if ($nc != null && !$this->getConfiguration()->equals($nc)) {
-            $this->setConfiguration($nc)->reloadConfig();
+            $this->setConfiguration($nc)->reloadConfiguration();
         }
     }
     
@@ -309,8 +254,9 @@ class Container extends Client implements ContainerInterface {
      * 
      * @param \TechDivision\ApplicationServer\Interfaces\ContainerConfiguration $configuration The configuration for the container
      * @return \TechDivision\PersistenceContainer\Container The container instance itself
+     * @todo Actually it's not possible to add interfaces as type hints for method parameters, this results in an infinite loop 
      */
-    public function setConfiguration(ContainerConfiguration $configuration) {
+    public function setConfiguration($configuration) {
         $this->configuration = $configuration;
         return $this;
     }

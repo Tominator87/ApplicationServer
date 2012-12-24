@@ -5,7 +5,7 @@
 namespace TechDivision\Example;
 
 use TechDivision\Example\Entities\Sample;
-use TechDivision\ApplicationServer\SplClassLoader;
+use TechDivision\PersistenceContainerClient\SplClassLoader;
 use TechDivision\Example\Services\SampleProcessor;
 use TechDivision\PersistenceContainer\Application;
 
@@ -26,7 +26,7 @@ $paths[] = BP . DS . 'app' . DS . 'code' . DS . 'lib';
 // set the new include path
 set_include_path(implode(PS, $paths) . PS . get_include_path());
 
-require_once 'TechDivision/ApplicationServer/SplClassLoader.php';
+require_once 'TechDivision/PersistenceContainerClient/SplClassLoader.php';
 
 $classLoader = new SplClassLoader();
 $classLoader->register();

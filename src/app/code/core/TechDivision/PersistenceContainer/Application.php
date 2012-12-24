@@ -1,29 +1,13 @@
 <?php
 
 /**
- * License: GNU General Public License
+ * TechDivision_PersistenceContainer_Application
  *
- * Copyright (c) 2009 TechDivision GmbH.  All rights reserved.
- * Note: Original work copyright to respective authors
+ * NOTICE OF LICENSE
  *
- * This file is part of TechDivision GmbH - Connect.
- *
- * TechDivision_Lang is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * TechDivision_Lang is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307,
- * USA.
- *
- * @package TechDivision\PersistenceContainer
+ * This source file is subject to the Open Software License (OSL 3.0)
+ * that is available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/osl-3.0.php
  */
     
 namespace TechDivision\PersistenceContainer;
@@ -36,11 +20,11 @@ use Doctrine\ORM\Tools\Setup;
  * The application instance holds all information about the deployed application
  * and provides a reference to the entity manager and the initial context.
  *
- * @package TechDivision\PersistenceContainer
- * @author Tim Wagner <t.wagner@techdivision.com>
- * @copyright TechDivision GmbH
- * @link http://www.techdivision.com
- * @license GPL
+ * @package     TechDivision\PersistenceContainer
+ * @copyright  	Copyright (c) 2010 <info@techdivision.com> - TechDivision GmbH
+ * @license    	http://opensource.org/licenses/osl-3.0.php
+ *              Open Software License (OSL 3.0)
+ * @author      Tim Wagner <tw@techdivision.com>
  */
 class Application {
     

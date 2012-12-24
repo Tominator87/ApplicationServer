@@ -1,8 +1,14 @@
 <?php
 
+
 namespace TechDivision\ApplicationServer;
 
 use Doctrine\Common\ClassLoader;
+
+error_reporting(~E_NOTICE);
+set_time_limit (0);
+
+declare(ticks = 1);
 
 // set the session timeout to unlimited
 ini_set('session.gc_maxlifetime', 0);

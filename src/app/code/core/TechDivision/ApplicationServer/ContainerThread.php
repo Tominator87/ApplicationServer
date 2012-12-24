@@ -1,29 +1,58 @@
 <?php
 
+/**
+ * TechDivision_ApplicationServer_ContainerThread
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Open Software License (OSL 3.0)
+ * that is available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/osl-3.0.php
+ */
+
 namespace TechDivision\ApplicationServer;
 
 use Doctrine\Common\ClassLoader;
 
+/**
+ * @package     TechDivision\ApplicationServer
+ * @copyright  	Copyright (c) 2010 <info@techdivision.com> - TechDivision GmbH
+ * @license    	http://opensource.org/licenses/osl-3.0.php
+ *              Open Software License (OSL 3.0)
+ * @author      Tim Wagner <tw@techdivision.com>
+ */
 class ContainerThread extends \Thread {
     
-    protected $xpath;
+    /**
+     * The fully qualified class name of the container to start in the thread.
+     * @var string
+     */
+    protected $configuration;
     
-    public function __construct($xpath) {
-        $this->xpath = $xpath;
+    /**
+     * Set's the fully qualified class name of the container to start 
+     * in the thread.
+     * 
+     * @param string $containerType The container's fully qualified class name
+     */
+    public function __construct($configuration) {
+        $this->configuration = $configuration;
     }
     
+    /**
+     * @see \Thread::run()
+     */
     public function run() {
         
         // register class loader again, because we are in a thread
         $classLoader = new ClassLoader();
         $classLoader->register();
         
+        // load the container configuration
         $configuration = $this->getConfiguration();
         
-        // load the container type
+        // load the container type to initialize
         $containerType = $configuration->getContainerType();
-        
-        error_log("Now starting container $containerType");
         
         // create and start the container instance
         $containerInstance = $this->newInstance($containerType, array($configuration));
@@ -39,38 +68,15 @@ class ContainerThread extends \Thread {
      * @return object The created instance
      */
     public function newInstance($className, array $args = array()) { 
-        $reflectionClass = new \ReflectionClass($className);
-        return $reflectionClass->newInstanceArgs($args);
+        return InitialContext::get()->newInstance($className, $args);
     }
     
     /**
-     * Initializes the containers found in the cfg/appserver.xml file.
+     * The configuration found in the cfg/appserver.xml file.
      * 
-     * @return \TechDivision\ApplicationServer\Server The server instance
+     * @return \TechDivision\ApplicationServer\Configuration The configuration instance
      */
     public function getConfiguration() {
-        
-        // initialize the SimpleXMLElement with the content of pointcut XML file
-        $sxe = new \SimpleXMLElement(file_get_contents('cfg/appserver.xml', true));
-
-        // iterate over the found nodes
-        foreach ($sxe->xpath($this->xpath) as $container) {
-
-            // load the application name and the path to the entities
-            $configurationType = (string) $container->configurationType;
-
-            // load the container initialization data
-            foreach ($container->children() as $params) {
-                $parameters = array(
-                    'containerType' => (string) $params->containerType,
-                    'workerNumber' => (integer) $params->workerNumber,
-                    'host' => (string) $params->host,
-                    'port' => (string) $params->port
-                );
-            }
-            
-            // load the container configuration
-            return $this->newInstance($configurationType, $parameters);
-        }
+        return $this->configuration;
     }
 }

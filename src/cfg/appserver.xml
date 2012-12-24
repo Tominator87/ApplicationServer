@@ -1,6 +1,5 @@
 <appserver>
     <containers>
-        <!--
         <container>
             <configurationType>TechDivision\ApplicationServer\Configuration</configurationType>
             <params>
@@ -10,7 +9,7 @@
                 <port>8585</port>
             </params>
         </container>
-        -->
+        <!--
         <container>
             <type>TechDivision\ServletContainer\Container</type>
                 <params>
@@ -19,6 +18,7 @@
                     <port>8586</port>
                 </params>
         </container>
+        -->
         <!--
         <container>
             <type>TechDivision\MessageService\Container</type>
