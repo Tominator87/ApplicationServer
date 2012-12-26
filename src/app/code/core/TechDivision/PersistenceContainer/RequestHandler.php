@@ -13,7 +13,6 @@
 namespace TechDivision\PersistenceContainer;
 
 use TechDivision\SplClassLoader;
-use TechDivision\Socket;
 use TechDivision\ApplicationServer\InitialContext;
 use TechDivision\PersistenceContainerClient\Interfaces\RemoteMethod;
 
@@ -166,7 +165,7 @@ class RequestHandler extends \Worker {
                 $serializedResponse = serialize($response);
                 
                 // send the data back to the client
-                $sender->send($serializedResponse . PHP_EOL);
+                $sender->sendLine($serializedResponse);
 
                 // close the sender immediately
                 $sender->close();

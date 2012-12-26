@@ -27,7 +27,7 @@ use TechDivision\PersistenceContainerClient\Interfaces\RemoteMethod;
  *              Open Software License (OSL 3.0)
  * @author      Tim Wagner <tw@techdivision.com>
  */
-class ContextConnection implements Connection {
+class ContextConnectionSocket implements Connection {
 
     /**
      * The client socket's IP address.

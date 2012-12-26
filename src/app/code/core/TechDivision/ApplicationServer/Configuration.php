@@ -179,6 +179,16 @@ class Configuration implements ContainerConfiguration {
     }
     
     /**
+     * Wrapper method to set the container's maximum worker number to start.
+     * 
+     * @param integer $workerNumber The maximum worker number
+     * @return void
+     */
+    public function setWorkerNumber($workerNumber) {
+        $this->setData('workerNumber', $workerNumber);
+    }
+    
+    /**
      * Wrapper method for the container's maximum worker number to start.
      * 
      * @return integer The maximum worker number

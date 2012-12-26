@@ -1,7 +1,7 @@
 <?php
 
 /**
- * TechDivision_PersistenceContainer_Container_Sender
+ * TechDivision_PersistenceContainer_Container_SocketSender
  *
  * NOTICE OF LICENSE
  *
@@ -22,7 +22,7 @@ use TechDivision\ApplicationServer\Interfaces\SenderInterface;
  *              Open Software License (OSL 3.0)
  * @author      Tim Wagner <tw@techdivision.com>
  */
-class Sender extends Client implements SenderInterface {
+class SocketSender extends Client implements SenderInterface {
     
     /**
      * The container instance.

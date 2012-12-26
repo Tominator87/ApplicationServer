@@ -1,7 +1,7 @@
 <?php
 
 /**
- * TechDivision_PersistenceContainer_Container_Receiver
+ * TechDivision_PersistenceContainer_Container_SocketReceiver
  *
  * NOTICE OF LICENSE
  *
@@ -22,7 +22,7 @@ use TechDivision\ApplicationServer\Interfaces\ReceiverInterface;
  *              Open Software License (OSL 3.0)
  * @author      Tim Wagner <tw@techdivision.com>
  */
-class Receiver extends Client implements ReceiverInterface {
+class SocketReceiver extends Client implements ReceiverInterface {
     
     /**
      * The container instance.

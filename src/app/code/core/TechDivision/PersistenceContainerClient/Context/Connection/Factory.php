@@ -12,8 +12,6 @@
 
 namespace TechDivision\PersistenceContainerClient\Context\Connection;
 
-use TechDivision\PersistenceContainerClient\Context\ContextConnection;
-
 /**
  * Connection factory to create a new context connection.
  *
@@ -25,12 +23,25 @@ use TechDivision\PersistenceContainerClient\Context\ContextConnection;
  */
 class Factory {
 
+    /**
+     * The instance as singleton.
+     * @var \TechDivision\PersistenceContainerClient\Interfaces\Connection 
+     */
     protected static $instance = null;
 
-    public static function createContextConnection() {
+    /**
+     * Simple factory to create a new context connection 
+     * of the requested type.
+     * 
+     * @param string $type The context connection type to create
+     * @return \TechDivision\PersistenceContainerClient\Interfaces\Connection The requested context connection
+     */
+    public static function createContextConnection($type = 'Socket') {
         
         if (self::$instance == null) {
-            self::$instance = new ContextConnection();
+            $className = "TechDivision\PersistenceContainerClient\Context\ContextConnection$type";
+            $reflectionClass = new \ReflectionClass($className);
+            self::$instance = $reflectionClass->newInstance();
         }
         
         return self::$instance;

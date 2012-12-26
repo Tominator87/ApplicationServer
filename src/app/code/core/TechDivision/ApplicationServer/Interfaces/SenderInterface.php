@@ -27,7 +27,7 @@ interface SenderInterface {
      * @param string $data Serialized data to send to the client
      * @return void
      */
-    public function send($data);
+    public function sendLine($data);
     
     /**
      * Closes the sender and all connections, e. g. to the client.

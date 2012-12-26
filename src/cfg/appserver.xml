@@ -1,16 +1,45 @@
 <appserver>
     <containers>
+        <!--
         <container type="TechDivision\PersistenceContainer\Container">
+            <description>
+            <![CDATA[
+                This is an example of a container that uses a message queue
+                for sending and receiving messages. The message queue uses
+                Unix System V IPC and can only be used for a client on the
+                same machine.
+            ]]>
+            </description>
             <params>
                 <workerNumber>4</workerNumber>
             </params>
-            <receiver type="TechDivision\PersistenceContainer\Container\Receiver">
+            <receiver type="TechDivision\PersistenceContainer\Container\QueueReceiver">
                 <params>
                     <address>0.0.0.0</address>
                     <port>8585</port>
                 </params>
             </receiver>
-            <sender type="TechDivision\PersistenceContainer\Container\Sender"/>
+            <sender type="TechDivision\PersistenceContainer\Container\QueueSender"/>
+        </container>
+        -->
+        <container type="TechDivision\PersistenceContainer\Container">
+            <description>
+            <![CDATA[
+                This is an example of a container that uses a socket
+                for sending and receiving messages. This solution can be used
+                for clients conncting over a network.
+            ]]>
+            </description>
+            <params>
+                <workerNumber>4</workerNumber>
+            </params>
+            <receiver type="TechDivision\PersistenceContainer\Container\SocketReceiver">
+                <params>
+                    <address>0.0.0.0</address>
+                    <port>8585</port>
+                </params>
+            </receiver>
+            <sender type="TechDivision\PersistenceContainer\Container\SocketSender"/>
         </container>
         <!--
         <container>
