@@ -20,5 +20,44 @@ namespace TechDivision\ApplicationServer\Interfaces;
  * @author      Tim Wagner <tw@techdivision.com>
  */
 interface ContainerInterface {
+    
+    /**
+     * Returns the maximum number of workers to start.
+     * 
+     * @return integer The maximum worker number 
+     */
     public function getWorkerNumber();
+
+    /**
+     * Main method that starts the server.
+     * 
+     * @return void
+     */
+    public function start();
+    
+    /**
+     * Returns the receiver instance ready to be started.
+     * 
+     * @return \TechDivision\ApplicationServer\Interfaces\ReceiverInterface The receiver instance
+     */
+    public function getReceiver();
+    
+    /**
+     * Returns the sender instance ready to be prepared.
+     * 
+     * @return TechDivision\ApplicationServer\Interfaces\ReceiverInterface The receiver instance
+     */
+    public function getSender();
+    
+    /**
+     * Stacks the passed remote method call (serialized) to one of the
+     * internal workers and returns.
+     * 
+     * If enabled the garbage collection will be run and the configuration
+     * will be refreshed.
+     * 
+     * @param string $line The serialized remote method call to stack
+     * @return void
+     */
+    public function stack($line);
 }

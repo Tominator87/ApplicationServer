@@ -52,7 +52,7 @@ class ContainerThread extends \Thread {
         $configuration = $this->getConfiguration();
         
         // load the container type to initialize
-        $containerType = $configuration->getContainerType();
+        $containerType = $configuration->getType();
         
         // create and start the container instance
         $containerInstance = $this->newInstance($containerType, array($configuration));

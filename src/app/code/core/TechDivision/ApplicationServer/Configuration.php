@@ -22,137 +22,168 @@ use TechDivision\ApplicationServer\Interfaces\ContainerConfiguration;
  * @author      Tim Wagner <tw@techdivision.com>
  */
 class Configuration implements ContainerConfiguration {
-    
+
     /**
-     * The fully qualified class name of the container the configuration is for.
+     * The object type the configuration is related with.
      * @var string
      */
-    protected $containerType;
+    protected $type;
     
     /**
-     * Maximum number of workers to start in the container.
-     * @var integer
+     * The array with the child configurations.
+     * @var array
      */
-    protected $workerNumber = 0;
+    protected $children = array();
     
     /**
-     * The container's IP address to listen to.
-     * @var string
+     * The array with configuration parameters.
+     * @var array
      */
-    protected $address = '0.0.0.0';
+    protected $data = array();
     
     /**
-     * The container's port to listen to.
-     * @var integer
-     */
-    protected $port = 8585;
-    
-    /**
-     * Initializes the configuration with the container information necessary
-     * to create and start a new instance.
+     * Initializes the configuration with the object type the
+     * configuration is related with.
      * 
-     * @param string $containerType The fully qualified class name of the container the configuration is for
-     * @param integer $workerNumber Maximum number of workers to start in the container
-     * @param string $address The container's IP address to listen to
-     * @param integer $port The container's port to listen to
+     * @param string $type The object type
      */
-    public function __construct($containerType, $workerNumber = 1, $address = '0.0.0.0', $port = 8585) {
-        $this->setContainerType($containerType);
-        $this->setWorkerNumber($workerNumber);
-        $this->setAddress($address);
-        $this->setPort($port);
+    public function __construct($type = 'root') {
+        $this->type = $type;
     }
     
     /**
-     * Checks if the passed configuration is equal. If yes, the method
-     * returns TRUE, if not FALSE.
-     * 
-     * @param \TechDivision\ApplicationServer\Interfaces\ContainerConfiguration $configuration The configuration to compare to
-     * @return boolean TRUE if the configurations are equal, else FALSE
-     * @todo Actually it's not possible to add interfaces as type hints for method parameters, this results in an infinite loop 
+     * @see \TechDivision\ApplicationServer\Interfaces\ContainerConfiguration::equals()
      */
     public function equals($configuration) {
          return $this === $configuration;
     }
     
     /**
-     * Set's the fully qualified class name of the container the 
-     * configuration is for.
-     * 
-     * @param string The container type
-     * @return \TechDivision\ApplicationServer\Interfaces\ContainerConfiguration The configuration instance
+     * @see \TechDivision\ApplicationServer\Interfaces\ContainerConfiguration::getType()
      */
-    public function setContainerType($containerType) {
-        $this->containerType = $containerType;
-        return $this;
+    public function getType() {
+        return $this->type;
     }
     
     /**
-     * Returns the fully qualified container's class name.
+     * Adds a new child configuration.
      * 
-     * @return string The container type 
+     * @param string $name The unique child configuration name
+     * @param Configuration $configuration The child configuration itself
      */
-    public function getContainerType() {
-        return $this->containerType;
+    public function addChild($name, $configuration) {
+        $this->children[$name] = $configuration;
     }
     
     /**
-     * Set's the maximum number of workers to start in the container.
+     * Returns the child configuration with the passed name.
      * 
-     * @param integer $workerNumber The maximum number of workers
-     * @return \TechDivision\ApplicationServer\Interfaces\ContainerConfiguration The configuration instance
+     * @param string $name The name of the configuration to return
+     * @return Configuration The requested configuration
      */
-    public function setWorkerNumber($workerNumber) {
-        $this->workerNumber = $workerNumber;
-        return $this;
+    public function getChild($name) {
+        return $this->children[$name];
     }
     
     /**
-     * Return's the maximum number of workers to start in the container.
+     * Returns all child configurations.
      * 
-     * @return integer The maximum number of workers
+     * @return array The child configurations 
      */
-    public function getWorkerNumber() {
-        return $this->workerNumber;
+    public function getChildren() {
+        return $this->children;
     }
     
     /**
-     * Set's the container's IP address to listen to.
+     * Adds the passed configuration value.
      * 
-     * @param string $address The IP address
-     * @return \TechDivision\ApplicationServer\Interfaces\ContainerConfiguration The configuration instance
+     * @param string $key Name of the configuration value
+     * @param mixed $value The configuration value
      */
-    public function setAddress($address) {
-        $this->address = $address;
-        return $this;
+    public function setData($key, $value) {
+        $this->data[$key] = $value;
     }
     
     /**
-     * Return's the container's IP address to listen to.
+     * Returns the configuration value with the passed name.
      * 
-     * @return string The container's IP address 
+     * @param string $key The name of the requested configuration value.
+     * @return mixed The configuration value itself
+     */
+    public function getData($key) {
+        if (array_key_exists($key, $this->data)) {
+            return $this->data[$key];
+        }
+    }
+    
+    /**
+     * Wrapper method for getter/setter methods.
+     * 
+     * @param string $method The called method name
+     * @param array $args The methods arguments
+     * @return mixed The value if a getter has been invoked
+     * @throws \Exception Is thrown if nor a getter/setter has been invoked
+     */
+    public function __call($method, $args) {
+                
+        // lowercase the first character of the member
+        $key = lcfirst(substr($method, 3));
+        
+        // check if a getter/setter has been called
+        switch (substr($method, 0, 3)) {
+            case 'get':
+                return $this->getData($key);
+                break;
+            case 'set':
+                $this->setData($key, isset($args[0]) ? $args[0] : null);
+                break;
+            default:
+                throw new \Exception("Invalid method " . get_class($this) . "::" . $method . "(" . print_r($args, 1) . ")");
+        }
+    }
+    
+    /**
+     * Wrapper method for the sender configuration.
+     * 
+     * @return \TechDivision\ApplicationServer\Interfaces\ContainerConfiguration The sender configuration
+     */
+    public function getSender() {
+        return $this->getChild('sender');
+    }
+    
+    /**
+     * Wrapper method for the receiver configuration.
+     * 
+     * @return \TechDivision\ApplicationServer\Interfaces\ContainerConfiguration The sender configuration
+     */
+    public function getReceiver() {
+        return $this->getChild('receiver');
+    }
+    
+    /**
+     * Wrapper method for the receiver's IP address.
+     * 
+     * @return string The receiver's IP address
      */
     public function getAddress() {
-        return $this->address;
+        return $this->getData('address');
     }
     
     /**
-     * Set's the container's port to listen to.
+     * Wrapper method for the receiver's port.
      * 
-     * @param string $address The IP address
-     * @return \TechDivision\ApplicationServer\Interfaces\ContainerConfiguration The configuration instance
-     */
-    public function setPort($port) {
-        $this->port = $port;
-        return $this;
-    }
-    
-    /**
-     * Return's the container's port to listen to.
-     * 
-     * @return integer The container's port
+     * @return string The receiver's port
      */
     public function getPort() {
-        return $this->port;
+        return $this->getData('port');
+    }
+    
+    /**
+     * Wrapper method for the container's maximum worker number to start.
+     * 
+     * @return integer The maximum worker number
+     */
+    public function getWorkerNumber() {
+        return $this->getData('workerNumber');
     }
 }

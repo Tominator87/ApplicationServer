@@ -153,32 +153,31 @@ class RequestHandler extends \Worker {
             } catch (\Exception $e) {                
                 $response = new \Exception($e);
             }
-
-            // create a new socket
-            $socket = new Socket();
+            
+            // load the sender instance
+            $sender = $this->getContainer()->getSender($remoteMethod);
 
             try {
                 
+                // prepare the sender instance
+                $sender->prepare($remoteMethod);
+                
                 // serialize the response
                 $serializedResponse = serialize($response);
+                
+                // send the data back to the client
+                $sender->send($serializedResponse . PHP_EOL);
 
-                // set port and address and send the data back to the client
-                $socket->setAddress($remoteMethod->getAddress())
-                       ->setPort($remoteMethod->getPort())
-                       ->create()
-                       ->connect()
-                       ->send($serializedResponse . PHP_EOL);
-
-                // close the socket immediately
-                $socket->close();
+                // close the sender immediately
+                $sender->close();
                 
             } catch (\Exception $e) {
                 
                 // log the stack trace
                 error_log($e->__toString());
                 
-                // close the socket immediately
-                $socket->close();
+                // close the sender immediately
+                $sender->close();
             }
             
         } else {

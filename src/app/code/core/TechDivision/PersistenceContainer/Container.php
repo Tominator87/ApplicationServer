@@ -12,7 +12,6 @@
 
 namespace TechDivision\PersistenceContainer;
 
-use TechDivision\Socket\Client;
 use TechDivision\PersistenceContainer\Request;
 use TechDivision\PersistenceContainer\RequestHandler;
 use TechDivision\PersistenceContainer\Application;
@@ -26,7 +25,7 @@ use TechDivision\ApplicationServer\Interfaces\ContainerInterface;
  *              Open Software License (OSL 3.0)
  * @author      Tim Wagner <tw@techdivision.com>
  */
-class Container extends Client implements ContainerInterface {
+class Container implements ContainerInterface {
     
     /**
      * XPath expression for the application configurations.
@@ -73,9 +72,6 @@ class Container extends Client implements ContainerInterface {
         
         // set the configuration in the initial context
         InitialContext::get()->setAttribute(__CLASS__, $configuration);
-        
-        // pass address and port to the server
-        parent::__construct($configuration->getAddress(), $configuration->getPort());
         
         // set the number of workers to start
         $this->setWorkerNumber($configuration->getWorkerNumber());
@@ -152,75 +148,52 @@ class Container extends Client implements ContainerInterface {
     }
 
     /**
-     * Main method that starts the server.
-     * 
-     * @return void
+     * @see \TechDivision\ApplicationServer\Interfaces\ContainerInterface::start()
      */
     public function start() {
+        $this->getReceiver()->start();
+    }
+    
+    /**
+     * @see \TechDivision\ApplicationServer\Interfaces\ContainerInterface::getReceiver()
+     */
+    public function getReceiver() {
+        
+        // load the receiver type from the configuration
+        $receiverType = $this->getConfiguration()->getReceiver()->getType();
+        
+        // create and return a new receiver instance
+        return $this->newInstance($receiverType, array($this));
+    }
+    
+    /**
+     * @see \TechDivision\ApplicationServer\Interfaces\ContainerInterface::getSender()
+     */
+    public function getSender() {
 
-        // prepare the main socket and listen
-        $this->create()
-             ->setBlock()
-             ->setReuseAddr()
-             ->setReceiveTimeout()
-             ->bind()
-             ->listen();
+        // load the sender type from the configuration
+        $senderType = $this->getConfiguration()->getSender()->getType();
+        
+        // create and return a new sender instance
+        return $this->newInstance($senderType, array($this));
+        
+    }
+    
+    /**
+     * @see \TechDivision\ApplicationServer\Interfaces\ContainerInterface::stack()
+     */
+    public function stack($line) {
+                        
+        // pass the line to the worker instance and process it
+        $this->getRandomWorker()->stack($this->work[] = new Request($line));
 
-        // start the ifinite loop and listen to clients
-        while (true) {
-
-            try {
-
-                // prepare array of readable client sockets
-                $read = array($this->resource);
-
-                // prepare the array for write/except sockets
-                $write = $except = array();
-
-                // select a socket to read from
-                $this->select($read, $write, $except);
-
-                // if ready contains the master socket, then a new connection has come in
-                if (in_array($this->resource, $read)) {
-
-                    // initialize the buffer
-                    $buffer = '';
-
-                    // load the character for line ending
-                    $newLine = $this->getNewLine();
-
-                    // get the client socket (in blocking mode)
-                    $client = $this->accept();
-
-                    // read one line (till EOL) from client socket
-                    while ($buffer .= $client->read($this->getLineLength())) {
-                        if (substr($buffer, -1) === $newLine) {
-                            $line = rtrim($buffer, $newLine);
-                            break;
-                        }
-                    }
-
-                    // close the client socket if no more data will be transmitted
-                    if ($line == null) {
-                        $client->close();
-                    } else {
-                        // pass the line to the worker instance and process it
-                        $this->getRandomWorker()->stack($this->work[] = new Request($line));
-                    }
-                    
-                    // if garbage collection is enabled, force collection of cycles immediately
-                    if ($this->gcEnabled()) {
-                        error_log("Collected {$this->gc()} cycles");
-                    }
-                    
-                    // check of container configuration has to be reloaded
-                    $this->checkConfiguration();
-                    
-                }
-            } catch (Exception $e) {
-                error_log($e->__toString());
-            }
+        // if garbage collection is enabled, force collection of cycles immediately
+        if ($this->gcEnabled()) {
+            error_log("Collected {$this->gc()} cycles");
         }
+
+        // check of container configuration has to be reloaded
+        $this->checkConfiguration();
     }
     
     /**
@@ -359,5 +332,17 @@ class Container extends Client implements ContainerInterface {
         
         // return the random worker
         return $this->workers[$randomWorker];
+    }
+    
+    /**
+     * Creates a new instance of the passed class name and passes the
+     * args to the instance constructor.
+     * 
+     * @param string $className The class name to create the instance of
+     * @param array $args The parameters to pass to the constructor
+     * @return object The created instance
+     */
+    public function newInstance($className, array $args = array()) { 
+        return InitialContext::get()->newInstance($className, $args);
     }
 }

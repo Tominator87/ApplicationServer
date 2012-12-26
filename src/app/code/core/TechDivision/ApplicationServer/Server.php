@@ -12,6 +12,7 @@
 
 namespace TechDivision\ApplicationServer;
 
+use TechDivision\ApplicationServer\Configuration;
 use TechDivision\ApplicationServer\ContainerThread;
 
 /**
@@ -30,43 +31,45 @@ class Server {
     const XPATH_CONTAINERS = '/appserver/containers/container';
     
     /**
+     * The container configurations.
+     * @var array
+     */
+    protected $configurations = array();
+    
+    /**
      * Initializes the containers found in the cfg/appserver.xml file.
      * 
      * @return array The array with the container configurations
      */
-    public function loadConfigurations() {
-        
-        // initialize an array for the container configurations
-        $configurations = array();
-        
-        // initialize the SimpleXMLElement with the content of pointcut XML file
-        $sxe = simplexml_load_file('cfg/appserver.xml');
+    public function loadConfigurations($parent, $sxe, $xpath) {
 
         // iterate over the found nodes
-        foreach ($sxe->xpath(self::XPATH_CONTAINERS) as $container) {
-
-            // load the application name and the path to the entities
-            $configurationType = (string) $container->configurationType;
-
+        foreach ($sxe->xpath($xpath) as $node) {
+            
+            // create a new configuration node
+            $cnt = new Configuration((string) $node['type']);
+            
             // load the container initialization data
-            foreach ($container->children() as $params) {
-                $parameters = array(
-                    'containerType' => (string) $params->containerType,
-                    'workerNumber' => (integer) $params->workerNumber,
-                    'host' => (string) $params->host,
-                    'port' => (string) $params->port
-                );
+            foreach ($node->children() as $name => $param) {
+                
+                // if params are specified, set the parameters
+                if ($name == 'params') {
+                    
+                    // parse the params and add them to the configuration
+                    foreach ($param as $key => $value) {
+                        $methodName = 'set' . ucfirst($key);
+                        $cnt->$methodName((string) $value);
+                    }
+                    
+                } else {
+                    // parse the configuration recursive
+                    $this->loadConfigurations($cnt, $node, $name);
+                }
             }
             
-            // create a new configuration instance
-            $configuration = $this->newInstance($configurationType, $parameters);
-            
-            // add the configuration instance to the configurations
-            $configurations[$configurationType] = $configuration;
+            // append the configuration node to the parent
+            $parent->addChild($node->getName(), $cnt);
         }
-        
-        // return the initialized configurations
-        return $configurations;
     }
     
     /**
@@ -75,12 +78,18 @@ class Server {
      * @return void
      */
     public function start() {
+        
+        // initialize the SimpleXMLElement with the content of pointcut XML file
+        $sxe = simplexml_load_file('cfg/appserver.xml');
             
+        // create a new root configuration node
+        $cnt = new Configuration();
+        
         // load the container configurations
-        $configurations = $this->loadConfigurations();
+        $this->loadConfigurations($cnt, $sxe, self::XPATH_CONTAINERS);
         
         // start each container in his own thread
-        foreach ($configurations as $configuration) {
+        foreach ($cnt->getChildren() as $configuration) {
             $thread = new ContainerThread($configuration);
             $thread->start();
         }
