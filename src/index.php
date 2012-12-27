@@ -31,6 +31,11 @@ $classLoader->register();
 session_start();
 
 // initialize the connection, the session and the initial context
+/*
+ * Pass parameter 'Queue' to create a queue based client.
+ * 
+ * $connection = Factory::createContextConnection('Queue');
+ */
 $connection = Factory::createContextConnection();
 $session = $connection->createContextSession();
 $initialContext = $session->createInitialContext();

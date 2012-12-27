@@ -31,37 +31,13 @@ class ContextConnectionQueue implements Connection {
      * The unique numeric key for the sending message queue. 
      * @var integer
      */
-    protected $sendKey = 8585;
-    
-    /**
-     * The unique numeric key for the receiving message queue. 
-     * @var integer
-     */
-    protected $receiveKey = 8586;
-    
-    /**
-     * The message type of messages to receive.
-     * @var integer
-     */
-    protected $messageType = 0;
+    protected $key = 8585;
 
     /**
      * The ArrayObject for the sessions.
      * @var ArrayObject
      */
     protected $sessions = null;
-
-    /**
-     * The client socket instance.
-     * @var \TechDivision\Socket\Client
-     */
-    protected $client = null;
-
-    /**
-     * The server socket instance.
-     * @var \TechDivision\Socket\Server
-     */
-    protected $server = null;
 
     /**
      * Initializes the connection.
@@ -73,18 +49,13 @@ class ContextConnectionQueue implements Connection {
         // initialize the ArrayObject for the sessions
         $this->sessions = new \ArrayObject();
     }
-    
-    public function __destruct() {
-        // do nothing here
-    }
 
     /**
      * (non-PHPdoc)
      * @see TechDivision\PersistenceContainerClient\Interfaces\Connection::connect()
      */
     public function connect() {
-        $this->setSocket(msg_get_queue($this->sendKey));
-        $this->setServer(msg_get_queue($this->receiveKey));
+        $this->setSocket(msg_get_queue($this->key));
     }
 
     /**
@@ -111,25 +82,6 @@ class ContextConnectionQueue implements Connection {
      */
     public function getSocket() {
         return $this->socket;
-    }
-
-    /**
-     * Sets the socket to use for the connection, a Socket instance by default.
-     * 
-     * @param resource $server The server instance
-     */
-    public function setServer($server) {
-        $this->server = $server;
-        return $this;
-    }
-
-    /**
-     * Returns the internal socket server instance.
-     * 
-     * @return resource The server instance
-     */
-    public function getServer() {
-        return $this->server;
     }
 
     /**
@@ -177,16 +129,20 @@ class ContextConnectionQueue implements Connection {
         
         // prepare the remote method
         $remoteMethod->setAddress('0.0.0.0');
-        $remoteMethod->setPort($port = rand(1, time()));
+        $remoteMethod->setPort($port = rand(1, PHP_INT_MAX));
         
         // serialize the remote method and write it to the socket
-        msg_send($this->getSocket(), 1, $remoteMethod, true);
+        msg_send($this->getSocket(), 1, $remoteMethod);
         
         // intialize a new variable that contains the response
         $response = null;
+        $messageType = 0;
+        
+        // create a new queue to receive the response
+        $queue = msg_get_queue($port);
         
         // read the response
-        msg_receive($this->getServer(), $port, $this->messageType, 1024000, $response, true);
+        msg_receive($queue, 0, $messageType, 1024000, $response);
         
         // if an exception returns, throw it again
         if ($response instanceof \Exception) {

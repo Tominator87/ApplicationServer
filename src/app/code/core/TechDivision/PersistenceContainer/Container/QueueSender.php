@@ -28,18 +28,6 @@ class QueueSender implements SenderInterface {
      * @var resource 
      */
     protected $queue;
-
-    /**
-     * The port of client queue (the message type in this case).
-     * @var integer
-     */
-    protected $port;
-    
-    /**
-     * The unique key of the sending queue.
-     * @var integer
-     */
-    protected $key = 8586;
     
     /**
      * The container instance.
@@ -80,17 +68,14 @@ class QueueSender implements SenderInterface {
     public function prepare($remoteMethod) {
         
         // initialize the queue
-        $this->queue = msg_get_queue($this->key);
-        
-        // set the queue ID of the client queue
-        $this->port = $remoteMethod->getPort();
+        $this->queue = msg_get_queue($remoteMethod->getPort());
     }
     
     /**
      * @see TechDivision\ApplicationServer\Interfaces\SenderInterface::sendLine()
      */
     public function sendLine($data) {
-        msg_send($this->queue, $this->port, $data, false);
+        msg_send($this->queue, 1, $data, false, true);
     }
     
     /**
