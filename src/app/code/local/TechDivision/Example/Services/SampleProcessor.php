@@ -53,7 +53,7 @@ class SampleProcessor implements Singleton {
     }
     
     public function changeWorker($workerNumber) {
-        $key = 'TechDivision\PersistenceContainer\Container';
+        $key = 'TechDivision\ApplicationServer\AbstractReceiver';
         $configuration = InitialContext::get()->getAttribute($key);
         $configuration->setWorkerNumber($workerNumber);
         return InitialContext::get()->setAttribute($key, $configuration);

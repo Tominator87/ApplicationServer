@@ -75,15 +75,6 @@ abstract class AbstractReceiver implements ReceiverInterface {
     }
     
     /**
-     * Returns the refrence to the container instance.
-     * 
-     * @return \TechDivision\ApplicationServer\Interfaces\ContainerInterface The container instance
-     */
-    public function getContainer() {
-        return $this->container;
-    }
-    
-    /**
      * @see \TechDivision\ApplicationServer\Interfaces\ReceiverInterface::stack()
      */
     public function stack($line) {
@@ -126,6 +117,15 @@ abstract class AbstractReceiver implements ReceiverInterface {
         
         // return the random worker
         return $this->workers[$randomWorker];
+    }
+    
+    /**
+     * Returns the refrence to the container instance.
+     * 
+     * @return \TechDivision\ApplicationServer\Interfaces\ContainerInterface The container instance
+     */
+    public function getContainer() {
+        return $this->container;
     }
 
     /**
