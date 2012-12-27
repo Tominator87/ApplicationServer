@@ -13,7 +13,7 @@
 namespace TechDivision\PersistenceContainer\Container;
 
 use TechDivision\Socket\Client;
-use TechDivision\ApplicationServer\Interfaces\SenderInterface;
+use TechDivision\ApplicationServer\AbstractSender;
 
 /**
  * @package     TechDivision\PersistenceContainer
@@ -22,13 +22,7 @@ use TechDivision\ApplicationServer\Interfaces\SenderInterface;
  *              Open Software License (OSL 3.0)
  * @author      Tim Wagner <tw@techdivision.com>
  */
-class SocketSender implements SenderInterface {
-    
-    /**
-     * The container instance.
-     * @var \TechDivision\ApplicationServer\Interfaces\ContainerInterface
-     */
-    protected $container;
+class SocketSender extends AbstractSender {
     
     /**
      * The socket instance use to send the data back to the client.
@@ -43,20 +37,11 @@ class SocketSender implements SenderInterface {
      */
     public function __construct($container) {
         
-        // set the container
-        $this->container = $container;
+        // pass the container to the superclass
+        parent::__construct($container);
         
         // initialize the socket
         $this->socket = new Client();
-    }
-    
-    /**
-     * Returns the refrence to the container instance.
-     * 
-     * @return \TechDivision\ApplicationServer\Interfaces\ContainerInterface The container instance
-     */
-    public function getContainer() {
-        return $this->container;
     }
     
     /**
@@ -66,15 +51,6 @@ class SocketSender implements SenderInterface {
      */
     public function getSocket() {
         return $this->socket;
-    }
-    
-    /**
-     * Returns the sender configuration.
-     * 
-     * @return \TechDivision\ApplicationServer\Interfaces\ContainerConfiguration
-     */
-    public function getConfiguration() {
-        return $this->getContainer()->getConfiguration()->getSender();
     }
     
     /**

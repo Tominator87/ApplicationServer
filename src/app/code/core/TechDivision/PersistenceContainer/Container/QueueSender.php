@@ -12,7 +12,7 @@
 
 namespace TechDivision\PersistenceContainer\Container;
 
-use TechDivision\ApplicationServer\Interfaces\SenderInterface;
+use TechDivision\ApplicationServer\AbstractSender;
 
 /**
  * @package     TechDivision\PersistenceContainer
@@ -21,7 +21,7 @@ use TechDivision\ApplicationServer\Interfaces\SenderInterface;
  *              Open Software License (OSL 3.0)
  * @author      Tim Wagner <tw@techdivision.com>
  */
-class QueueSender implements SenderInterface {
+class QueueSender extends AbstractSender {
     
     /**
      * The message queue resource
@@ -30,43 +30,9 @@ class QueueSender implements SenderInterface {
     protected $queue;
     
     /**
-     * The container instance.
-     * @var \TechDivision\ApplicationServer\Interfaces\ContainerInterface
-     */
-    protected $container;
-    
-    /**
-     * Sets the reference to the container instance.
-     * 
-     * @param \TechDivision\ApplicationServer\Interfaces\ContainerInterface $container The container instance
-     */
-    public function __construct($container) {
-        $this->container = $container;
-    }
-    
-    /**
-     * Returns the refrence to the container instance.
-     * 
-     * @return \TechDivision\ApplicationServer\Interfaces\ContainerInterface The container instance
-     */
-    public function getContainer() {
-        return $this->container;
-    }
-    
-    /**
-     * Returns the sender configuration.
-     * 
-     * @return \TechDivision\ApplicationServer\Interfaces\ContainerConfiguration
-     */
-    public function getConfiguration() {
-        return $this->getContainer()->getConfiguration()->getSender();
-    }
-    
-    /**
      * @see TechDivision\ApplicationServer\Interfaces\SenderInterface::prepare()
      */
-    public function prepare($remoteMethod) {
-        
+    public function prepare($remoteMethod) {      
         // initialize the queue
         $this->queue = msg_get_queue($remoteMethod->getPort());
     }
