@@ -69,6 +69,11 @@ class ContextConnectionSocket implements Connection {
         $this->sessions = new \ArrayObject();
     }
     
+    /**
+     * Close the sockets that will not be needed anymore.
+     * 
+     * @return void
+     */
     public function __destruct() {
         $this->getSocket()->close();
         $this->getServer()->close();
