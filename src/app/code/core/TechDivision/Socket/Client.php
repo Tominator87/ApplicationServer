@@ -27,14 +27,12 @@ class Client extends Socket {
     
     protected $lineLength = 2048;
     
-    protected $newLine = PHP_EOL;
+    protected $newLine = "\n";
 
-    public function __construct($address, $port = 0) {
+    public function __construct($address = '0.0.0.0', $port = 0) {
         
-        parent::__construct();
-        
-        $this->address = $address;
-        $this->port = $port;
+        $this->setAddress($address);
+        $this->setPort($port);
     }
     
     public function getLineLength() {
@@ -51,6 +49,10 @@ class Client extends Socket {
     
     public function sendLine($data) {
         return $this->send($data . $this->getNewLine());
+    }
+    
+    public function getResource() {
+        return $this->resource;
     }
     
     public function readLine() {

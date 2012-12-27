@@ -75,7 +75,7 @@ class QueueSender implements SenderInterface {
      * @see TechDivision\ApplicationServer\Interfaces\SenderInterface::sendLine()
      */
     public function sendLine($data) {
-        msg_send($this->queue, 1, $data, false, true);
+        msg_send($this->queue, 1, $data, true, true);
     }
     
     /**

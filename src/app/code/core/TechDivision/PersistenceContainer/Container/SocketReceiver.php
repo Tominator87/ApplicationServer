@@ -13,7 +13,11 @@
 namespace TechDivision\PersistenceContainer\Container;
 
 use TechDivision\Socket\Client;
+use TechDivision\PersistenceContainer\Request;
+use TechDivision\PersistenceContainer\RequestHandler;
+use TechDivision\ApplicationServer\InitialContext;
 use TechDivision\ApplicationServer\Interfaces\ReceiverInterface;
+use TechDivision\PersistenceContainerClient\Interfaces\RemoteMethod;
 
 /**
  * @package     TechDivision\PersistenceContainer
@@ -22,7 +26,7 @@ use TechDivision\ApplicationServer\Interfaces\ReceiverInterface;
  *              Open Software License (OSL 3.0)
  * @author      Tim Wagner <tw@techdivision.com>
  */
-class SocketReceiver extends Client implements ReceiverInterface {
+class SocketReceiver implements ReceiverInterface {
     
     /**
      * The container instance.
@@ -31,12 +35,53 @@ class SocketReceiver extends Client implements ReceiverInterface {
     protected $container;
     
     /**
+     * The socket instance use to send the data back to the client.
+     * @var \TechDivision\Socket\Client 
+     */
+    protected $socket;
+    
+    /**
+     * The number of parallel workers to handle client connections.
+     * @var integer
+     */
+    protected $workerNumber = 1;
+
+    /**
+     * Array with the worker instances.
+     * @var array
+     */
+    protected $workers = array();
+
+    /**
+     * Array for the incoming requests.
+     * @var array
+     */
+    protected $work = array();
+    
+    /**
      * Sets the reference to the container instance.
      * 
      * @param \TechDivision\ApplicationServer\Interfaces\ContainerInterface $container The container instance
      */
     public function __construct($container) {
+        
+        // set the container instance
         $this->container = $container;
+        
+        // initialize the socket
+        $this->socket = new Client();
+        
+        // load the receiver configuration
+        $configuration = $this->getContainer()->getConfiguration()->getReceiver();
+
+        // set the receiver configuration
+        $this->setConfiguration($configuration);
+        
+        // set the configuration in the initial context
+        InitialContext::get()->setAttribute(__CLASS__, $configuration);
+        
+        // enable garbage collector and check configuration
+        $this->gcEnable()->checkConfiguration();
     }
     
     /**
@@ -49,28 +94,31 @@ class SocketReceiver extends Client implements ReceiverInterface {
     }
     
     /**
-     * Returns the receiver configuration.
+     * Returns the socket instance used to send the data back to the client.
      * 
-     * @return \TechDivision\ApplicationServer\Interfaces\ContainerConfiguration
+     * @return \TechDivision\Socket\Client
      */
-    public function getConfiguration() {
-        return $this->getContainer()->getConfiguration()->getReceiver();
+    public function getSocket() {
+        return $this->socket;
     }
     
     /**
      * @see TechDivision\ApplicationServer\Interfaces\ReceiverInterface::start()
      */
     public function start() {
-
+        
+        // load the socket instance
+        $socket = $this->getSocket();
+        
         // prepare the main socket and listen
-        $this->create()
-             ->setAddress($this->getConfiguration()->getAddress())
-             ->setPort($this->getConfiguration()->getPort())
-             ->setBlock()
-             ->setReuseAddr()
-             ->setReceiveTimeout()
-             ->bind()
-             ->listen();
+        $socket->create()
+               ->setAddress($this->getConfiguration()->getAddress())
+               ->setPort($this->getConfiguration()->getPort())
+               ->setBlock()
+               ->setReuseAddr()
+               ->setReceiveTimeout()
+               ->bind()
+               ->listen();
 
         // start the ifinite loop and listen to clients
         while (true) {
@@ -78,28 +126,28 @@ class SocketReceiver extends Client implements ReceiverInterface {
             try {
 
                 // prepare array of readable client sockets
-                $read = array($this->resource);
+                $read = array($socket->getResource());
 
                 // prepare the array for write/except sockets
                 $write = $except = array();
 
                 // select a socket to read from
-                $this->select($read, $write, $except);
+                $socket->select($read, $write, $except);
 
                 // if ready contains the master socket, then a new connection has come in
-                if (in_array($this->resource, $read)) {
+                if (in_array($socket->getResource(), $read)) {
 
                     // initialize the buffer
                     $buffer = '';
 
                     // load the character for line ending
-                    $newLine = $this->getNewLine();
+                    $newLine = $socket->getNewLine();
 
                     // get the client socket (in blocking mode)
-                    $client = $this->accept();
+                    $client = $socket->accept();
 
                     // read one line (till EOL) from client socket
-                    while ($buffer .= $client->read($this->getLineLength())) {
+                    while ($buffer .= $client->read($socket->getLineLength())) {
                         if (substr($buffer, -1) === $newLine) {
                             $line = rtrim($buffer, $newLine);
                             break;
@@ -110,13 +158,165 @@ class SocketReceiver extends Client implements ReceiverInterface {
                     if ($line == null) {
                         $client->close();
                     } else {
-                        $this->getContainer()->stack($line);
+                        $this->stack($line);
                     }
-                    
                 }
+                
             } catch (Exception $e) {
                 error_log($e->__toString());
             }
         }
+    }
+    
+    /**
+     * @see \TechDivision\ApplicationServer\Interfaces\ReceiverInterface::stack()
+     */
+    public function stack($line) {
+        
+        // unserialize the passed remote method
+        $remoteMethod = unserialize($line);
+        
+        // check if a remote method has been passed
+        if ($remoteMethod instanceof RemoteMethod) {
+            // pass the line to the worker instance and process it
+            $this->getRandomWorker()->stack($this->work[] = new Request($remoteMethod));
+        } else {
+            error_log('Invalid remote method call');           
+        }
+
+        // if garbage collection is enabled, force collection of cycles immediately
+        if ($this->gcEnabled()) {
+            error_log("Collected {$this->gc()} cycles");
+        }
+
+        // check of container configuration has to be reloaded
+        $this->checkConfiguration();
+    }
+
+    /**
+     * Returns a random worker.
+     * 
+     * @return \Worker The random worker instance
+     */
+    public function getRandomWorker() {
+        
+        // get a random worker number
+        $randomWorker = rand(0, $this->getWorkerNumber() - 1);
+        
+        // check if the worker is already initialized
+        if (!array_key_exists($randomWorker, $this->workers)) {
+            $this->workers[$randomWorker] = new RequestHandler($this->getContainer());
+            $this->workers[$randomWorker]->start();            
+        }
+        
+        // return the random worker
+        return $this->workers[$randomWorker];
+    }
+
+    /**
+     * Set's the maximum number of workers to start.
+     * 
+     * @param integer $workerNumber The maximum number of worker's to start
+     * @return \TechDivision\ApplicationServer\Interfaces\ReceiverInterface The receiver instance
+     */
+    public function setWorkerNumber($workerNumber) {
+        $this->workerNumber = $workerNumber;
+        return $this;
+    }
+    
+    /**
+     * @see \TechDivision\ApplicationServer\Interfaces\ReceiverInterface::getWorkerNumber()
+     */
+    public function getWorkerNumber() {
+        return $this->workerNumber;
+    }
+    
+    /**
+     * Sets the passed container configuration.
+     * 
+     * @param \TechDivision\ApplicationServer\Interfaces\ContainerConfiguration $configuration The configuration for the container
+     * @return \TechDivision\ApplicationServer\Interfaces\ReceiverInterface The receiver instance
+     * @todo Actually it's not possible to add interfaces as type hints for method parameters, this results in an infinite loop 
+     */
+    public function setConfiguration($configuration) {
+        $this->configuration = $configuration;
+        return $this;
+    }
+
+    /**
+     * Returns the actual container configuration.
+     * 
+     * @return \TechDivision\ApplicationServer\Interfaces\ContainerConfiguration The actual container configuration
+     */
+    public function getConfiguration() {
+        return $this->configuration;
+    }
+    
+    /**
+     * Sets the new container configuration data.
+     * 
+     * @return void
+     */
+    public function reloadConfiguration() {
+        $this->setWorkerNumber($this->getConfiguration()->getWorkerNumber());
+    }
+    
+    /**
+     * Check's if container configuration as changed, if yes, the 
+     * configuration will be reloaded.
+     * 
+     * @return void
+     */
+    public function checkConfiguration() {
+        
+        // load the configuration from the initial context
+        $nc = InitialContext::get()->getAttribute(__CLASS__);
+        
+        // check if configuration has changed
+        if ($nc != null && !$this->getConfiguration()->equals($nc)) {
+            $this->setConfiguration($nc)->reloadConfiguration();
+        }
+    }
+    
+    /**
+     * Forces collection of any existing garbage cycles.
+     * 
+     * @return integer The number of collected cycles
+     * @link http://php.net/manual/en/features.gc.collecting-cycles.php
+     */
+    public function gc() {
+        return gc_collect_cycles();
+    }
+    
+    /**
+     * Returns TRUE if the PHP internal garbage collection is enabled.
+     * 
+     * @return boolean TRUE if the PHP internal garbage collection is enabled
+     * @link http://php.net/manual/en/function.gc-enabled.php
+     */
+    public function gcEnabled() {
+        return gc_enabled();
+    }
+    
+    /**
+     * Enables PHP internal garbage collection.
+     * 
+     * @return \TechDivision\PersistenceContainer\Container The container instance
+     * @link http://php.net/manual/en/function.gc-enable.php
+     */
+    public function gcEnable() {
+        gc_enable();
+        return $this;
+    }
+    
+    /**
+     * Disables PHP internal garbage collection.
+     * 
+     * @return \TechDivision\PersistenceContainer\Container The container instance
+     * @link http://php.net/manual/en/function.gc-disable.php
+     */
+    public function gcDisable() {
+        gc_disable();
+        return $this;
     }
 }

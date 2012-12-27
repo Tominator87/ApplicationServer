@@ -27,4 +27,23 @@ interface ReceiverInterface {
      * @return void
      */
     public function start();
+    
+    /**
+     * Stacks the passed remote method call (serialized) to one of the
+     * internal workers and returns.
+     * 
+     * If enabled the garbage collection will be run and the configuration
+     * will be refreshed.
+     * 
+     * @param string $line The serialized remote method call to stack
+     * @return void
+     */
+    public function stack($line);
+    
+    /**
+     * Returns the maximum number of workers to start.
+     * 
+     * @return integer The maximum worker number 
+     */
+    public function getWorkerNumber();
 }

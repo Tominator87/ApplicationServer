@@ -10,11 +10,9 @@
                 same machine.
             ]]>
             </description>
-            <params>
-                <workerNumber>4</workerNumber>
-            </params>
             <receiver type="TechDivision\PersistenceContainer\Container\QueueReceiver">
                 <params>
+                    <workerNumber>4</workerNumber>
                     <address>0.0.0.0</address>
                     <port>8585</port>
                 </params>
@@ -30,11 +28,9 @@
                 for clients conncting over a network.
             ]]>
             </description>
-            <params>
-                <workerNumber>4</workerNumber>
-            </params>
             <receiver type="TechDivision\PersistenceContainer\Container\SocketReceiver">
                 <params>
+                    <workerNumber>4</workerNumber>
                     <address>0.0.0.0</address>
                     <port>8585</port>
                 </params>

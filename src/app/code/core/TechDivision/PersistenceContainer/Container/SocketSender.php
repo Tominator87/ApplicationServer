@@ -22,7 +22,7 @@ use TechDivision\ApplicationServer\Interfaces\SenderInterface;
  *              Open Software License (OSL 3.0)
  * @author      Tim Wagner <tw@techdivision.com>
  */
-class SocketSender extends Client implements SenderInterface {
+class SocketSender implements SenderInterface {
     
     /**
      * The container instance.
@@ -31,12 +31,23 @@ class SocketSender extends Client implements SenderInterface {
     protected $container;
     
     /**
+     * The socket instance use to send the data back to the client.
+     * @var \TechDivision\Socket\Client 
+     */
+    protected $socket;
+    
+    /**
      * Sets the reference to the container instance.
      * 
      * @param \TechDivision\ApplicationServer\Interfaces\ContainerInterface $container The container instance
      */
     public function __construct($container) {
+        
+        // set the container
         $this->container = $container;
+        
+        // initialize the socket
+        $this->socket = new Client();
     }
     
     /**
@@ -46,6 +57,15 @@ class SocketSender extends Client implements SenderInterface {
      */
     public function getContainer() {
         return $this->container;
+    }
+    
+    /**
+     * Returns the socket instance used to send the data back to the client.
+     * 
+     * @return \TechDivision\Socket\Client
+     */
+    public function getSocket() {
+        return $this->socket;
     }
     
     /**
@@ -63,12 +83,26 @@ class SocketSender extends Client implements SenderInterface {
     public function prepare($remoteMethod) {
 
         // set port and address and send the data back to the client
-        $this->setAddress($remoteMethod->getAddress())
+        $this->getSocket()
+             ->setAddress($remoteMethod->getAddress())
              ->setPort($remoteMethod->getPort())
-             ->create()
-             ->connect();
+             ->start();
         
         // return the sender instance
         return $this;
+    }
+    
+    /**
+     * @see TechDivision\ApplicationServer\Interfaces\SenderInterface::sendLine()
+     */
+    public function sendLine($data) {
+        $this->getSocket()->sendLine(serialize($data));
+    }
+    
+    /**
+     * @see TechDivision\ApplicationServer\Interfaces\SenderInterface::close()
+     */
+    public function close() {
+        $this->getSocket()->close();
     }
 }

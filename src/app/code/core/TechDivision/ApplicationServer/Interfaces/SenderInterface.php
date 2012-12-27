@@ -24,7 +24,7 @@ interface SenderInterface {
     /**
      * Sends the passed data to the receiver (the client by default).
      * 
-     * @param string $data Serialized data to send to the client
+     * @param string $data The data to send to the client
      * @return void
      */
     public function sendLine($data);

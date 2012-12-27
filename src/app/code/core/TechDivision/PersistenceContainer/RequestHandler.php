@@ -14,7 +14,6 @@ namespace TechDivision\PersistenceContainer;
 
 use TechDivision\SplClassLoader;
 use TechDivision\ApplicationServer\InitialContext;
-use TechDivision\PersistenceContainerClient\Interfaces\RemoteMethod;
 
 /**
  * @package     TechDivision\PersistenceContainer
@@ -112,77 +111,62 @@ class RequestHandler extends \Worker {
     /**
      * Process the the request that has been passed as string.
      * 
-     * @param string $line The serialized request
+     * @param \TechDivision\PersistenceContainerClient\Interfaces\RemoteMethod $remoteMethod The remote method call
      * @return void
      */
-    public function processRequest($line) {
+    public function processRequest($remoteMethod) {
         
         // register class loader again, because we are in a thread
         $classLoader = new SplClassLoader();
         $classLoader->register();
-        
-        // unserialize the passed remote method
-        $remoteMethod = unserialize($line);
-        
-        // check if a remote method has been passed
-        if ($remoteMethod instanceof RemoteMethod) {
 
-            try {
-                
-                // load class name and session ID from remote method
-                $className = $remoteMethod->getClassName();
-                $sessionId = $remoteMethod->getSessionId();
-                
-                // load the referenced application from the server
-                $application = $this->findApplication($className);
-                
-                // initialize the array with params to be passed to the session bean
-                $args = array($application);
-                
-                // create inital context and lookup session bean
-                $instance = InitialContext::get()->lookup($className, $sessionId, $args);
+        try {
 
-                // prepare method name and parameters and invoke method
-                $methodName = $remoteMethod->getMethodName();
-                $parameters = $remoteMethod->getParameters();
+            // load class name and session ID from remote method
+            $className = $remoteMethod->getClassName();
+            $sessionId = $remoteMethod->getSessionId();
 
-                // invoke the remote method call on the local instance
-                $response = call_user_func_array(array($instance, $methodName), $parameters);
-                
-            } catch (\Exception $e) {                
-                $response = new \Exception($e);
-            }
-            
-            // load the sender instance
-            $sender = $this->getContainer()->getSender($remoteMethod);
+            // load the referenced application from the server
+            $application = $this->findApplication($className);
 
-            try {
-                
-                // prepare the sender instance
-                $sender->prepare($remoteMethod);
-                
-                // serialize the response
-                $serializedResponse = serialize($response);
-                
-                // send the data back to the client
-                $sender->sendLine($serializedResponse);
+            // initialize the array with params to be passed to the session bean
+            $args = array($application);
 
-                // close the sender immediately
-                $sender->close();
-                
-            } catch (\Exception $e) {
-                
-                // log the stack trace
-                error_log($e->__toString());
-                
-                // close the sender immediately
-                $sender->close();
-            }
-            
-        } else {
-            
-            error_log('Invalid remote method call');
-            
+            // create inital context and lookup session bean
+            $instance = InitialContext::get()->lookup($className, $sessionId, $args);
+
+            // prepare method name and parameters and invoke method
+            $methodName = $remoteMethod->getMethodName();
+            $parameters = $remoteMethod->getParameters();
+
+            // invoke the remote method call on the local instance
+            $response = call_user_func_array(array($instance, $methodName), $parameters);
+
+        } catch (\Exception $e) {                
+            $response = new \Exception($e);
+        }
+
+        // load the sender instance
+        $sender = $this->getContainer()->getSender($remoteMethod);
+
+        try {
+
+            // prepare the sender instance
+            $sender->prepare($remoteMethod);
+
+            // send the data back to the client
+            $sender->sendLine($response);
+
+            // close the sender immediately
+            $sender->close();
+
+        } catch (\Exception $e) {
+
+            // log the stack trace
+            error_log($e->__toString());
+
+            // close the sender immediately
+            $sender->close();
         }
     }
 }
