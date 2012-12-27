@@ -45,6 +45,13 @@ class SampleProcessor implements Singleton {
         // flush the entity manager
         $entityManager->flush();
     }
+    
+    public function delete($id) {
+        $entityManager = $this->getApplication()->getEntityManager();
+        $entityManager->remove($this->load($id));
+        $entityManager->flush();
+        return $this->findAll();
+    }
 
     public function findAll() {
         $entityManager = $this->getApplication()->getEntityManager();

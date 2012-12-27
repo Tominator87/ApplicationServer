@@ -59,6 +59,9 @@ switch ($action) {
         $sampleId = $entity->getSampleId();
         $entities = $processor->findAll();
         break;
+    case 'delete':
+        $entities = $processor->delete($_REQUEST['sampleId']);
+        break;
     case 'persist':
         $entity = new Sample();
         $entity->setSampleId((integer) $_POST['sampleId']);
@@ -89,6 +92,9 @@ switch ($action) {
     </head>
     <body>
         <div>
+            <ul><li><a href="index.php?action=findAll">Home</a></li></ul>
+        </div>
+        <div>
             <form action="index.php" method="post">
                 <input type="hidden" name="action" value="persist" />
                 <fieldset>
@@ -112,11 +118,13 @@ switch ($action) {
                     <tr>
                         <td>Id</td>
                         <td>Name</td>
+                        <td>Actions</td>
                     </tr>
                 </thead>
                 <?php foreach ($entities as $sampleId => $entity) { ?><tr>
                         <td><a href="index.php?action=load&sampleId=<?php echo $entity->getSampleId() ?>"><?php echo $entity->getSampleId() ?></a></td>
                         <td><?php echo $entity->getName() ?></td>
+                        <td><a href="index.php?action=delete&sampleId=<?php echo $entity->getSampleId() ?>">Delete</a></td>
                     </tr><?php } ?> 
             </table>
         </div>
