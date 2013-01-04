@@ -22,7 +22,16 @@ namespace TechDivision;
  * @author      Tim Wagner <tw@techdivision.com>
  */
 class Socket {
-    
+
+    // *nix socket error number for Resource Temporarily Unavailable state
+    const SOCKET_ERROR_RESOURCE_TEMPORARILY_UNAVAILABLE = 11;
+
+    // times to retry reading from one socket if error 11 occurs
+    const SOCKET_READ_RETRY_COUNT = 10;
+
+    // time to wait between two read attempts on one socket in microseconds (here: 0.1 sec)
+    const SOCKET_READ_RETRY_WAIT_TIME_USEC = 100000;
+
     public $resource = null;
     
     protected $address = '127.0.0.1';
@@ -272,17 +281,47 @@ class Socket {
         
         return new Socket($client);
     }
-    
+
+    /**
+     * OO Wrapper for PHP's socket_read function. Except for the "Resource temporarily
+     * unavailable" error, only an Exception is thrown. Typed exception is thrown to
+     * allow handling of that error, since it should be treated in a special way.
+     *
+     * @param $length
+     * @param int $type
+     * @throws \Exception
+     * @param int $type
+     * @return string
+     */
     public function read($length, $type = PHP_BINARY_READ) {
-        
-        if (($result = socket_read($this->resource, $length, $type)) === false) {
+
+        // record the number of read attempts
+        $readAttempts = 0;
+
+        while (($result = socket_read($this->resource, $length, $type)) === false) {
 
             $errorcode = socket_last_error();
             $errormsg = socket_strerror($errorcode);
-            
+
+            // for regular workflow, it is necessary to allow retrying a read operation on a socket which
+            // signnals that it is not ready yet. At least under Linux, this is an acceptable
+            // and normal condition. It is not sufficient to just end the connection and continue in the
+            // main loop, since the original client connection would hang indefinitely until a timeout
+            // occurs. Instead, it is necessary to retry reading while the socket is not ready yet, which
+            // is usually no longer than a a few msecs.
+            if ($errorcode == self::SOCKET_ERROR_RESOURCE_TEMPORARILY_UNAVAILABLE
+                && $readAttempts++ < self::SOCKET_READ_RETRY_COUNT)
+            {
+                // sleep for a certain time
+                usleep(self::SOCKET_READ_RETRY_WAIT_TIME_USEC);
+                // continue with the next read attempt
+                continue;
+            }
+
+            // on any other socket error, or if the max. number of read attempts has been reached, throw exception
             throw new \Exception("SOCKET: Couldn't read from socket : [$errorcode] $errormsg");
         }
-        
+
         return $result;
     }
         
