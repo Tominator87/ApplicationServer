@@ -81,6 +81,8 @@ abstract class AbstractReceiver implements ReceiverInterface {
         
         // unserialize the passed remote method
         $remoteMethod = unserialize($line);
+
+        error_log("Now stacking remote method call for class {$remoteMethod->getClassName()}->{$remoteMethod->getMethodName()}");
         
         // check if a remote method has been passed
         if ($remoteMethod instanceof RemoteMethod) {

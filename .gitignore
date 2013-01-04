@@ -1,3 +1,6 @@
 /nbproject
 /target
 build.properties
+/src/flow/nbproject/private/
+/src/app/code/lib/
+/src/app/code/lib/FLOW3

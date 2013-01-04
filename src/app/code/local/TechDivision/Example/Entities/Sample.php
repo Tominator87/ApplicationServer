@@ -12,12 +12,12 @@ class Sample {
      * @Column(type="integer") 
      * @GeneratedValue
      */
-    protected $sampleId;
+    public $sampleId;
 
     /**
      * @Column(type="string", length=255)
      */
-    protected $name;
+    public $name;
 
     public function setSampleId($sampleId) {
         $this->sampleId = $sampleId;

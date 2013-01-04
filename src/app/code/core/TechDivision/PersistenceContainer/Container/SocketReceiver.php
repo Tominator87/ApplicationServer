@@ -109,7 +109,10 @@ class SocketReceiver extends AbstractReceiver {
                     if ($line == null) {
                         $client->close();
                     } else {
+
                         $this->stack($line);
+
+                        $line = null;
                     }
                 }
                 

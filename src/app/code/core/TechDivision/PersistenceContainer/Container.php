@@ -12,7 +12,6 @@
 
 namespace TechDivision\PersistenceContainer;
 
-use TechDivision\PersistenceContainer\Application;
 use TechDivision\ApplicationServer\InitialContext;
 use TechDivision\ApplicationServer\Interfaces\ContainerInterface;
 
@@ -82,6 +81,14 @@ class Container implements ContainerInterface {
 
                     // iterate over the found application nodes
                     foreach ($sxe->xpath(self::XPATH_APPLICATIONS) as $application) {
+                        
+                        $attributes = $application->attributes();
+                        
+                        $type = (string) $attributes['type'];
+                        
+                        if (empty($type)) {
+                            $type = 'TechDivision\PersistenceContainer\Application';
+                        } 
 
                         // load the application name and the path to the entities
                         $name = (string) $application->name;
@@ -98,7 +105,7 @@ class Container implements ContainerInterface {
                         }
 
                         // initialize the application instance
-                        $application = new Application($name);
+                        $application = $this->newInstance($type, array($name));
                         $application->setConnectionParameters($connectionParameters);
                         $application->setPathToEntities(array($pathToEntities));
 

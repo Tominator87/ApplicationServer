@@ -32,8 +32,16 @@ class Socket {
     // time to wait between two read attempts on one socket in microseconds (here: 0.1 sec)
     const SOCKET_READ_RETRY_WAIT_TIME_USEC = 100000;
 
-    public $resource = null;
+    /**
+     * The socket resource.
+     * @var resource
+     */
+    protected $resource = null;
     
+    /**
+     *
+     * @var type 
+     */
     protected $address = '127.0.0.1';
     
     protected $port = 0;

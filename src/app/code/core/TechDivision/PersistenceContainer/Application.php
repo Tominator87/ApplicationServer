@@ -12,6 +12,7 @@
     
 namespace TechDivision\PersistenceContainer;
 
+use TechDivision\ApplicationServer\InitialContext;
 use Doctrine\Common\Persistence\ObjectManager;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Tools\Setup;
@@ -158,4 +159,14 @@ class Application {
         return $this->entityManager;
     }
     
+    /**
+     * 
+     * @param type $className
+     * @param type $sessionId
+     * @param type $args
+     * @return type
+     */
+    public function lookup($className, $sessionId) {
+        return InitialContext::get()->lookup($className, $sessionId, array($this));
+    }
 }

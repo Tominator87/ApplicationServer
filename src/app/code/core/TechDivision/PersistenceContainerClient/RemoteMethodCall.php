@@ -69,7 +69,7 @@ class RemoteMethodCall implements RemoteMethod {
      * @param string $sessionId The session ID to use for the method call
      * @return void
      */
-    public function __construct($className, $methodName, $sessionId) {
+    public function __construct($className, $methodName, $sessionId = null) {
         $this->className = $className;
         $this->methodName = $methodName;
         $this->sessionId = $sessionId;

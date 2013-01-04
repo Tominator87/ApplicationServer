@@ -13,7 +13,6 @@
 namespace TechDivision\PersistenceContainer;
 
 use TechDivision\SplClassLoader;
-use TechDivision\ApplicationServer\InitialContext;
 
 /**
  * @package     TechDivision\PersistenceContainer
@@ -125,15 +124,12 @@ class RequestHandler extends \Worker {
             // load class name and session ID from remote method
             $className = $remoteMethod->getClassName();
             $sessionId = $remoteMethod->getSessionId();
-
+            
             // load the referenced application from the server
             $application = $this->findApplication($className);
 
-            // initialize the array with params to be passed to the session bean
-            $args = array($application);
-
             // create inital context and lookup session bean
-            $instance = InitialContext::get()->lookup($className, $sessionId, $args);
+            $instance = $application->lookup($className, $sessionId);
 
             // prepare method name and parameters and invoke method
             $methodName = $remoteMethod->getMethodName();
