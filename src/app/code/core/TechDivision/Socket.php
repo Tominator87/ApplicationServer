@@ -58,7 +58,15 @@ class Socket {
     protected $backlog = 100;
     
     public function __construct($resource = null) {
+        $this->setResource($resource);
+    }
+
+    public function setResource($resource) {
         $this->resource = $resource;
+    }
+
+    public function getResource() {
+        return $this->resource;
     }
     
     public function setAddress($address) {

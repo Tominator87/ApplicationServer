@@ -1,5 +1,21 @@
 <appserver>
     <containers>
+        <container type="TechDivision\PersistenceContainer\Container">
+            <description>
+                <![CDATA[
+                This is an example of a container that uses a socket for
+                sending and receiving messages. This solution can be used
+                for clients conncting over a network.
+            ]]>
+            </description>
+            <receiver type="TechDivision\PersistenceContainer\Container\SingleSocketReceiver">
+                <params>
+                    <workerNumber>4</workerNumber>
+                    <address>0.0.0.0</address>
+                    <port>8585</port>
+                </params>
+            </receiver>
+        </container>
         <!--
         <container type="TechDivision\PersistenceContainer\Container">
             <description>
@@ -20,12 +36,13 @@
             <sender type="TechDivision\PersistenceContainer\Container\QueueSender"/>
         </container>
         -->
+        <!--
         <container type="TechDivision\PersistenceContainer\Container">
             <description>
             <![CDATA[
-                This is an example of a container that uses a socket
-                for sending and receiving messages. This solution can be used
-                for clients conncting over a network.
+                This is an example of a container that uses a bi-directional socket
+                for sending and receiving messages. This solution can be used for
+                clients connecting over a network.
             ]]>
             </description>
             <receiver type="TechDivision\PersistenceContainer\Container\SocketReceiver">
@@ -37,6 +54,7 @@
             </receiver>
             <sender type="TechDivision\PersistenceContainer\Container\SocketSender"/>
         </container>
+        -->
         <!--
         <container>
             <type>TechDivision\ServletContainer\Container</type>

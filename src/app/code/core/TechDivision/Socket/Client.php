@@ -51,10 +51,6 @@ class Client extends Socket {
         return $this->send($data . $this->getNewLine());
     }
     
-    public function getResource() {
-        return $this->resource;
-    }
-    
     public function readLine() {
             
         // initialize the buffer
@@ -62,9 +58,7 @@ class Client extends Socket {
 
         $newLine = $this->getNewLine();
 
-        $client = $this->accept();
-
-        while ($buffer .= $client->read($this->getLineLength())) {
+        while ($buffer .= $this->read($this->getLineLength())) {
             if (substr($buffer, -1) === $newLine) {
                 return rtrim($buffer, $newLine);
             }

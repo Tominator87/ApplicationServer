@@ -35,8 +35,10 @@ session_start();
  * Pass parameter 'Queue' to create a queue based client.
  * 
  * $connection = Factory::createContextConnection('Queue');
+ * $connection = Factory::createContextConnection('SingleSocket');
  */
-$connection = Factory::createContextConnection();
+// $connection = Factory::createContextConnection();
+$connection = Factory::createContextConnection('SingleSocket');
 $session = $connection->createContextSession();
 $initialContext = $session->createInitialContext();
 
