@@ -58,7 +58,7 @@ class RequestHandler extends \Worker {
     /**
      * Returns the array with the available applications.
      * 
-     * @return array The avaliable applications
+     * @return array The available applications
      */
     public function getApplications() {
         return $this->applications;
@@ -128,7 +128,7 @@ class RequestHandler extends \Worker {
             // load the referenced application from the server
             $application = $this->findApplication($className);
 
-            // create inital context and lookup session bean
+            // create initial context and lookup session bean
             $instance = $application->lookup($className, $sessionId);
 
             // prepare method name and parameters and invoke method

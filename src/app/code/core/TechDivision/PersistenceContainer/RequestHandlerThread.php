@@ -14,7 +14,6 @@ namespace TechDivision\PersistenceContainer;
 
 use TechDivision\SplClassLoader;
 use TechDivision\Socket\Client;
-use TechDivision\PersistenceContainer\Request;
 use TechDivision\PersistenceContainerClient\Interfaces\RemoteMethod;
 
 /**
@@ -38,7 +37,7 @@ class RequestHandlerThread extends \Thread {
      * @var resource
      */
     protected $socket;
-    
+
     /**
      * Array with the available applications.
      * @var array
@@ -49,7 +48,7 @@ class RequestHandlerThread extends \Thread {
      * Passes a reference to the container instance.
      * 
      * @param \TechDivision\PersistenceContainer\Container $container The container instance
-     * @param resource The client socket resource
+     * @param resource $socket The client socket resource
      * @return void
      */
     public function __construct($container, $socket) {
@@ -70,25 +69,25 @@ class RequestHandlerThread extends \Thread {
     public function getContainer() {
         return $this->container;
     }
-    
+
     /**
      * Returns the array with the available applications.
-     * 
+     *
      * @return array The available applications
      */
     public function getApplications() {
         return $this->applications;
     }
-    
+
     /**
      * Tries to find and return the application for the passed class name.
-     * 
+     *
      * @param string $className The name of the class to find and return the application instance
      * @return \TechDivision\PersistenceContainer\Application The application instance
      * @throws \Exception Is thrown if no application can be found for the passed class name
      */
     public function findApplication($className) {
-        
+
         // iterate over all classes and check if the application name contains the class name
         foreach ($this->getApplications() as $name => $application) {
             if (strpos($className, $name) !== false) {
@@ -96,7 +95,7 @@ class RequestHandlerThread extends \Thread {
                 return $application;
             }
         }
-        
+
         // if not throw an exception
         throw new \Exception("Can\'t find application for '$className'");
     }
@@ -105,39 +104,45 @@ class RequestHandlerThread extends \Thread {
      * @see \Thread::run()
      */
     public function run() {
-        
-        // register class loader again, because we are in a thread
-        $classLoader = new SplClassLoader();
-        $classLoader->register();
-        
-        // initialize the array for the applications
-        $applications = array();
-        
-        // load the available applications from the container
-        foreach ($this->getContainer()->getApplications() as $name => $application) {
-            // set the applications and connect the entity manager
-            $applications[$name] = $application->connect();
-        }
-        
-        // set the applications in the worker instance
-        $this->applications = $applications;
 
-        // initialize a new client socket
-        $client = new Client();
+        try {
 
-        // set the client socket resource
-        $client->setResource($this->socket);
-
-        // read a line from the client
-        $line = $client->readLine();
-
-        // unserialize the passed remote method
-        $remoteMethod = unserialize($line);
-
-        // check if a remote method has been passed
-        if ($remoteMethod instanceof RemoteMethod) {
+            // register class loader again, because we are in a thread
+            $classLoader = new SplClassLoader();
+            $classLoader->register();
 
             try {
+
+                // initialize the array for the applications
+                $applications = array();
+
+                // load the available applications from the container
+                foreach ($this->getContainer()->getApplications() as $name => $application) {
+                    // set the applications and connect the entity manager
+                    $applications[$name] = $application->connect();
+                }
+
+                // set the applications in the worker instance
+                $this->applications = $applications;
+
+                // initialize a new client socket
+                $client = new Client();
+
+                // set the client socket resource
+                $client->setResource($this->socket);
+
+                // read a line from the socket
+                $line = $client->readLine();
+
+                // read a line from the client and unserialize the passed remote method
+                if (($remoteMethod = unserialize($line)) === false) {
+                    throw new \Exception("Can't unserialize remote method '$line'");
+                }
+
+                // check if a remote method has been passed
+                if (($remoteMethod instanceof RemoteMethod) === false) {
+                    throw new \Exception('Invalid remote method call');
+                }
 
                 // load class name and session ID from remote method
                 $className = $remoteMethod->getClassName();
@@ -160,25 +165,16 @@ class RequestHandlerThread extends \Thread {
                 $response = new \Exception($e);
             }
 
-            try {
+            // send the data back to the client
+            $client->sendLine(serialize($response));
 
-                // send the data back to the client
-                $client->sendLine(serialize($response));
+            // close the socket immediately
+            $client->close();
 
-                // close the socket immediately
-                $client->close();
+        } catch (\Exception $e) {
 
-            } catch (\Exception $e) {
-
-                // log the stack trace
-                error_log($e->__toString());
-
-                // close the socket immediately
-                $client->close();
-            }
-
-        } else {
-            error_log('Invalid remote method call');
+            // catch and log the exception
+            error_log($e->__toString());
         }
     }
 }

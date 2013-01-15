@@ -59,6 +59,7 @@ class Client extends Socket {
         $newLine = $this->getNewLine();
 
         while ($buffer .= $this->read($this->getLineLength())) {
+
             if (substr($buffer, -1) === $newLine) {
                 return rtrim($buffer, $newLine);
             }

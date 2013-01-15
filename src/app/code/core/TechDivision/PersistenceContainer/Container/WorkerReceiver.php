@@ -14,7 +14,7 @@ namespace TechDivision\PersistenceContainer\Container;
 
 use TechDivision\Socket\Client;
 use TechDivision\ApplicationServer\AbstractReceiver;
-use TechDivision\PersistenceContainer\RequestHandlerThread;
+use TechDivision\PersistenceContainer\WorkerRequest;
 
 /**
  * @package     TechDivision\PersistenceContainer
@@ -23,7 +23,7 @@ use TechDivision\PersistenceContainer\RequestHandlerThread;
  *              Open Software License (OSL 3.0)
  * @author      Tim Wagner <tw@techdivision.com>
  */
-class SingleSocketReceiver extends AbstractReceiver {
+class WorkerReceiver extends AbstractReceiver {
     
     /**
      * The socket instance use to send the data back to the client.
@@ -58,7 +58,7 @@ class SingleSocketReceiver extends AbstractReceiver {
      * @see TechDivision\ApplicationServer\Interfaces\ReceiverInterface::start()
      */
     public function start() {
-
+        
         // load the socket instance
         $socket = $this->getSocket();
         
@@ -92,8 +92,11 @@ class SingleSocketReceiver extends AbstractReceiver {
                     // get the client socket (in blocking mode)
                     $client = $socket->accept();
 
-                    // start a new thread to handle the request and pass container and socket resource
-                    $this->work[] = new RequestHandlerThread($this->getContainer(), $client->getResource());
+                    // initialize a new worker request instance
+                    $request = new WorkerRequest($client->getResource());
+
+                    // start a new worker and stack the request
+                    $this->getRandomWorker()->stack($this->work[] = $request);
                 }
                 
             } catch (Exception $e) {

@@ -86,7 +86,7 @@
     <!-- ==================================================================== -->
     <target name="apidoc" description="Generates the API documentation.">
         <exec executable="${pear.bin.dir}/phpdoc">
-            <arg line="-ct type -ue on -s on -t ${php-target.dir}/docs -o HTML:frames:earthli -d ${php-src.dir}"/>
+            <arg line="-ct type -ue on -s on -t ${php-target.dir}/docs -o HTML:frames:earthli -d ${php-src.dir}/app/code/core"/>
         </exec>
     </target>
     <!-- ==================================================================== -->
