@@ -34,6 +34,18 @@ class Application {
      * @var string
      */
     protected $name;
+
+    /**
+     * The path to the web application.
+     * @var string
+     */
+    protected $webappPath;
+
+    /**
+     * The data source name to use.
+     * @var string
+     */
+    protected $dataSourceName;
     
     /**
      * The path to the doctrine entities.
@@ -69,11 +81,10 @@ class Application {
      * @return \TechDivision\PersistenceContainer\Application The connected application
      */
     public function connect() {
+
+        $pathToEntities = array($this->getPathToEntities());
         
-        // initialize the Doctrine EntityManager instance
-        $pathToEntities = $this->getPathToEntities();
-        
-        // load the doctrine metadate information
+        // load the doctrine metadata information
         $metadataConfiguration = Setup::createAnnotationMetadataConfiguration($pathToEntities, true);
         
         // load the connection parameters
@@ -97,6 +108,25 @@ class Application {
      */
     public function getName() {
         return $this->name;
+    }
+
+    /**
+     * Sets the data source name.
+     *
+     * @param string $dataSourceName The data source name
+     * @return string
+     */
+    public function setDataSourceName($dataSourceName) {
+        $this->dataSourceName = $dataSourceName;
+    }
+
+    /**
+     * Returns the data source name.
+     *
+     * @return string The data source name
+     */
+    public function getDataSourceName() {
+        return $this->dataSourceName;
     }
     
     /**
@@ -157,6 +187,26 @@ class Application {
      */
     public function getEntityManager() {
         return $this->entityManager;
+    }
+
+    /**
+     * Set's the path to the web application.
+     *
+     * @param string $webappPath The path to the web application
+     * @return \TechDivision\ServletContainer\Application The application instance
+     */
+    public function setWebappPath($webappPath) {
+        $this->webappPath = $webappPath;
+        return $this;
+    }
+
+    /**
+     * Return's the path to the web application.
+     *
+     * @return string The path to the web application
+     */
+    public function getWebappPath() {
+        return $this->webappPath;
     }
     
     /**

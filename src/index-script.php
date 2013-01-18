@@ -1,11 +1,9 @@
 <?php
 
-
-
 namespace TechDivision\Example;
 
-use TechDivision\Example\Entities\Sample;
 use TechDivision\SplClassLoader;
+use TechDivision\Example\Entities\Sample;
 use TechDivision\Example\Services\SampleProcessor;
 use TechDivision\PersistenceContainer\Application;
 
@@ -18,6 +16,7 @@ define('DS', DIRECTORY_SEPARATOR);
 define('PS', PATH_SEPARATOR);
 define('BP', dirname(__FILE__));
 
+$paths[] = BP . DS . 'webapps' . DS .'example' . DS . 'META-INF' . DS . 'classes';
 $paths[] = BP . DS . 'app' . DS . 'code' . DS . 'local';
 $paths[] = BP . DS . 'app' . DS . 'code' . DS . 'community';
 $paths[] = BP . DS . 'app' . DS . 'code' . DS . 'core';

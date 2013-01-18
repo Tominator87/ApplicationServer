@@ -1,6 +1,6 @@
 <?php
 
-namespace TechDivision\ExampleWebapp\Servlets;
+namespace TechDivision\Example\Servlets;
 
 /**
  * Created by JetBrains PhpStorm.
