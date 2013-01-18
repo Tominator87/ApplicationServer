@@ -1,7 +1,7 @@
 <?php
 
 /**
- * TechDivision_ApplicationServer_AbstractReceiver
+ * TechDivision\ApplicationServer\AbstractReceiver
  *
  * NOTICE OF LICENSE
  *
@@ -19,7 +19,7 @@ use TechDivision\ApplicationServer\Interfaces\ReceiverInterface;
 use TechDivision\PersistenceContainerClient\Interfaces\RemoteMethod;
 
 /**
- * @package     TechDivision\PersistenceContainer
+ * @package     TechDivision\ApplicationServer
  * @copyright  	Copyright (c) 2010 <info@techdivision.com> - TechDivision GmbH
  * @license    	http://opensource.org/licenses/osl-3.0.php
  *              Open Software License (OSL 3.0)
@@ -68,7 +68,7 @@ abstract class AbstractReceiver implements ReceiverInterface {
         $this->setConfiguration($configuration);
         
         // set the configuration in the initial context
-        InitialContext::get()->setAttribute(__CLASS__, $configuration);
+        InitialContext::get()->setAttribute(get_class($this), $configuration);
         
         // enable garbage collector and check configuration
         $this->gcEnable()->checkConfiguration();
@@ -187,8 +187,8 @@ abstract class AbstractReceiver implements ReceiverInterface {
     public function checkConfiguration() {
         
         // load the configuration from the initial context
-        $nc = InitialContext::get()->getAttribute(__CLASS__);
-        
+        $nc = InitialContext::get()->getAttribute(get_class($this));
+
         // check if configuration has changed
         if ($nc != null && !$this->getConfiguration()->equals($nc)) {
             $this->setConfiguration($nc)->reloadConfiguration();

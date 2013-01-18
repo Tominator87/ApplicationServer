@@ -1,7 +1,7 @@
 <?php
 
 /**
- * TechDivision_Socket_Server
+ * TechDivision\Socket\Server
  *
  * NOTICE OF LICENSE
  *
@@ -24,43 +24,23 @@ use TechDivision\Socket\Client;
  * @author      Tim Wagner <tw@techdivision.com>
  */
 class Server extends Client {
-    
+
+    /**
+     * Starts a socket server listen to the specified IP address and port.
+     *
+     * @return \TechDivision\Socket\Server The server instance itself
+     */
     public function start() {
-        
+
+        // create, bind and listen
         $this->create()
              ->setBlock()
              ->setReuseAddr()
              ->setReceiveTimeout()
              ->bind()
              ->listen();
-        
-        return $this;
-    }
-    
-    public function readLine() {
-        
-        // prepare array of readable client sockets
-        $read = array($this->resource);
-        
-        $write = $except = array();
-        
-        $this->select($read, $write, $except);
 
-        // if ready contains the master socket, then a new connection has come in
-        if (in_array($this->resource, $read)) {
-            
-            // initialize the buffer
-            $buffer = '';
-        
-            $newLine = $this->getNewLine();
-            
-            $client = $this->accept();
-            
-            while ($buffer .= $client->read($this->getLineLength())) {
-                if (substr($buffer, -1) === $newLine) {
-                    return rtrim($buffer, $newLine);
-                }
-            }
-        }
+        // return the instance
+        return $this;
     }
 }

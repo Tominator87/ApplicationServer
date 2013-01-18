@@ -1,7 +1,7 @@
 <?php
 
 /**
- * TechDivision/SocketException
+ * TechDivision\SocketException
  *
  * NOTICE OF LICENSE
  *

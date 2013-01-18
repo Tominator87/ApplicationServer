@@ -1,7 +1,7 @@
 <?php
 
 /**
- * TechDivision_PersistenceContainer_Container_SocketSender
+ * TechDivision\PersistenceContainer\Container\SocketSender
  *
  * NOTICE OF LICENSE
  *

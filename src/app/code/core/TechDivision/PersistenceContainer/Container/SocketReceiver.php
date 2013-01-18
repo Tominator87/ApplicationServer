@@ -1,7 +1,7 @@
 <?php
 
 /**
- * TechDivision_PersistenceContainer_Container_SocketReceiver
+ * TechDivision\PersistenceContainer\Container\SocketReceiver
  *
  * NOTICE OF LICENSE
  *

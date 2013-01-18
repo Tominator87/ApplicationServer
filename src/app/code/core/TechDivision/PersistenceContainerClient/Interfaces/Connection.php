@@ -1,7 +1,7 @@
 <?php
 
 /**
- * TechDivision_PersistenceContainerClient_Interfaces_Connection
+ * TechDivision\PersistenceContainerClient\Interfaces\Connection
  *
  * NOTICE OF LICENSE
  *

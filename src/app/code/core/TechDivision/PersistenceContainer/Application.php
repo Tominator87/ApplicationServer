@@ -1,7 +1,7 @@
 <?php
 
 /**
- * TechDivision_PersistenceContainer_Application
+ * TechDivision\PersistenceContainer\Application
  *
  * NOTICE OF LICENSE
  *

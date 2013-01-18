@@ -1,7 +1,7 @@
 <?php
 
 /**
- * TechDivision_ApplicationServer_Server
+ * TechDivision\ApplicationServer\Server
  *
  * NOTICE OF LICENSE
  *
@@ -68,7 +68,7 @@ class Server {
             }
             
             // append the configuration node to the parent
-            $parent->addChild($node->getName(), $cnt);
+            $parent->addChild($cnt);
         }
     }
     
@@ -78,8 +78,11 @@ class Server {
      * @return void
      */
     public function start() {
+
+        // initialize the array for the running threads
+        $threads = array();
         
-        // initialize the SimpleXMLElement with the content of pointcut XML file
+        // initialize the SimpleXMLElement with the content XML configuration file
         $sxe = simplexml_load_file('cfg/appserver.xml');
             
         // create a new root configuration node
@@ -89,9 +92,9 @@ class Server {
         $this->loadConfigurations($cnt, $sxe, self::XPATH_CONTAINERS);
         
         // start each container in his own thread
-        foreach ($cnt->getChildren() as $configuration) {
-            $thread = new ContainerThread($configuration);
-            $thread->start();
+        foreach ($cnt->getChildren() as $i => $configuration) {
+            $threads[$i] = new ContainerThread($configuration);
+            $threads[$i]->start();
         }
     }
     

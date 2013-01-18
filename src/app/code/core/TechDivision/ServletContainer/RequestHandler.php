@@ -1,68 +1,120 @@
 <?php
 
-namespace TechDivision\ServletContainer\HTTP;
+/**
+ * TechDivision\ServletContainer\RequestHandler
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Open Software License (OSL 3.0)
+ * that is available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/osl-3.0.php
+ */
 
+namespace TechDivision\ServletContainer;
+
+use TechDivision\SplClassLoader;
 use TechDivision\ServletContainer\Exceptions\BadRequestException;
-use TechDivision\ServletContainer\ServletLocator;
-use TechDivision\ServletContainer\HttpResponse;
-use TechDivision\ServletContainer\HttpRequest;
 
-use TechDivision_Lang_String as String;
+/**
+ * @package     TechDivision\ServletContainer
+ * @copyright  	Copyright (c) 2010 <info@techdivision.com> - TechDivision GmbH
+ * @license    	http://opensource.org/licenses/osl-3.0.php
+ *              Open Software License (OSL 3.0)
+ * @author      Tim Wagner <tw@techdivision.com>
+ */
+class RequestHandler extends \Worker {
 
-class RequestHandler
-{
-    public $servletContainer;
+    /**
+     * A reference to the container instance.
+     *
+     * @var \TechDivision\ServletContainer\Container
+     */
+    protected $container;
 
-    public $servletLocator;
+    /**
+     * Array with the available applications.
+     * @var array
+     */
+    protected $applications;
 
-    public function __construct()
-    {
-        // register the servlet locator
-        $this->servletLocator = new ServletLocator();
+    /**
+     * Passes a reference to the container instance.
+     *
+     * @param \TechDivision\ServletContainer\Container $container The container instance
+     * @return void
+     */
+    public function __construct($container) {
+        $this->container = $container;
     }
 
     /**
-     * @return \Net_Server_Driver_Sequential
+     * Returns the container instance.
+     *
+     * @return \TechDivision\ServletContainer\Container The container instance
      */
-    protected function getServerReference()
-    {
-        return $this->_server;
+    public function getContainer() {
+        return $this->container;
     }
 
     /**
-     * @param int    $clientId
-     * @param string $data
-     * @throws BadRequestException
-     * @return null|void
+     * Returns the array with the available applications.
+     *
+     * @return array The available applications
      */
-    public function onReceiveData($clientId = 0, $data = '')
-    {
-        // initialize response container
-        $response = new HttpServletResponse();
+    public function getApplications() {
+        return $this->applications;
+    }
 
-        try {
-            // instanciate request and response containers
-            $request = HttpServletRequest::factory(new String($data));
+    /**
+     * Tries to find and return the application for the passed request.
+     *
+     * @param string $request The request to find and return the application instance for
+     * @return \TechDivision\ServletContainer\Application The application instance
+     * @throws \TechDivision\ServletContainer\Exceptions\BadRequestException Is thrown if no application can be found for the passed application name
+     */
+    public function findApplication($request) {
 
-            // try to locate a servlet which could service the current request
-            if (!$servlet = $this->servletLocator->locate($request)) {
-                // if no servlet could be located for the request, use fallback
-                $servlet = new StaticResourceServlet();
+        // load the servlet request
+        if ($servletRequest = $request->getRequest()) {
+
+            // load the path info
+            $pathInfo = $servletRequest->getPathInfo();
+
+            // strip the leading slash and explode the application name
+            list ($applicationName, $path) = explode('/', substr($pathInfo, 1));
+
+            // load the array with the applications
+            $applications = $this->getApplications();
+
+            // check if the requested application has been deployed
+            if (array_key_exists($applicationName, $applications)) {
+                return $applications[$applicationName];
             }
-
-            // let the servlet process the request and store the result in the response
-            $servlet->service($request, $response);
-
-        } catch (\Exception $e) {
-            header_status(500);
-            $response->setContent(new String(get_class($e) . "\n\n" . $e->getMessage() . "\n\n" . ob_get_clean()));
         }
 
-        // return the string representation of the response content to the client
-        $this->getServerReference()->sendData($clientId, (string)$response->getContent());
-
-        // close the socket connection to the client
-        $this->getServerReference()->closeConnection($clientId);
+        // if not throw an exception
+        throw new BadRequestException("Can\'t find application for '$applicationName'");
     }
+    
+    /**
+     * @see \Worker::run()
+     */
+    public function run() {
+        
+        // register class loader again, because we are in a thread
+        $classLoader = new SplClassLoader();
+        $classLoader->register();
 
+        // initialize the array for the applications
+        $applications = array();
+
+        // load the available applications from the container
+        foreach ($this->getContainer()->getApplications() as $name => $application) {
+            // set the applications and connect the entity manager
+            $applications[$name] = $application->connect();
+        }
+
+        // set the applications in the worker instance
+        $this->applications = $applications;
+    }
 }

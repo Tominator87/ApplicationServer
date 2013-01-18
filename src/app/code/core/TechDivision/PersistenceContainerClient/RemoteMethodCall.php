@@ -1,7 +1,7 @@
 <?php
 
 /**
- * TechDivision_PersistenceContainerClient_RemoteMethodCall
+ * TechDivision\PersistenceContainerClient\RemoteMethodCall
  *
  * NOTICE OF LICENSE
  *

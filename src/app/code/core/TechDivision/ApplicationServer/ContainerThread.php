@@ -1,7 +1,7 @@
 <?php
 
 /**
- * TechDivision_ApplicationServer_ContainerThread
+ * TechDivision\ApplicationServer\ContainerThread
  *
  * NOTICE OF LICENSE
  *

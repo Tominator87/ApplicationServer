@@ -1,7 +1,7 @@
 <?php
 
 /**
- * TechDivision_PersistenceContainerClient_SplClassLoader
+ * TechDivision\SplClassLoader
  *
  * NOTICE OF LICENSE
  *

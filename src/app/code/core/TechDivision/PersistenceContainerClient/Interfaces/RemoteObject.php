@@ -1,7 +1,7 @@
 <?php
 
 /**
- * TechDivision_PersistenceContainerClient_Interfaces_RemoteObject
+ * TechDivision\PersistenceContainerClient\Interfaces\RemoteObject
  *
  * NOTICE OF LICENSE
  *

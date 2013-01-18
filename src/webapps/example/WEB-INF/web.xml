@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<web-app version="2.4">
+
+    <display-name>Simple Web Servlet Example</display-name>
+    <description>Simple Web Servlet Example</description>
+
+    <servlet>
+        <description/>
+        <display-name>HelloWorldServlet</display-name>
+        <servlet-name>HelloWorldServlet</servlet-name>
+        <servlet-class>\TechDivision\ExampleWebapp\Servlets\HelloWorldServlet</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>HelloWorldServlet</servlet-name>
+        <url-pattern>/hello-world</url-pattern>
+    </servlet-mapping>
+
+</web-app>
+

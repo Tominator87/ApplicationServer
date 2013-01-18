@@ -1,7 +1,7 @@
 <?php
 
 /**
- * TechDivision_PersistenceContainer_RequestHandlerThread
+ * TechDivision\PersistenceContainer\RequestHandlerThread
  *
  * NOTICE OF LICENSE
  *

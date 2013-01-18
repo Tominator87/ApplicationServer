@@ -1,7 +1,7 @@
 <?php
 
 /**
- * TechDivision_PersistenceContainerClient_Proxy
+ * TechDivision\PersistenceContainerClient\Proxy
  *
  * NOTICE OF LICENSE
  *

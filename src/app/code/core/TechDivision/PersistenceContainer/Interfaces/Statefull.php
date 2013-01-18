@@ -1,7 +1,7 @@
 <?php
 
 /**
- * TechDivision_PersistenceContainer_Interfaces_Statefull
+ * TechDivision\PersistenceContainer\Interfaces\Statefull
  *
  * NOTICE OF LICENSE
  *

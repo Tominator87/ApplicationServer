@@ -1,7 +1,7 @@
 <?php
 
 /**
- * TechDivision_ApplicationServer_Interfaces_ContainerInterface
+ * TechDivision\ApplicationServer\Interfaces\ContainerInterface
  *
  * NOTICE OF LICENSE
  *

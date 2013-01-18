@@ -1,7 +1,7 @@
 <?php
 
 /**
- * TechDivision_PersistenceContainer_Interfaces_Singleton
+ * TechDivision\PersistenceContainer\Interfaces\Singleton
  *
  * NOTICE OF LICENSE
  *

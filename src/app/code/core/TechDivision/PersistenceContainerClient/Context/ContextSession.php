@@ -1,7 +1,7 @@
 <?php
 
 /**
- * TechDivision_PersistenceContainerClient_Context_ContextSession
+ * TechDivision\PersistenceContainerClient\Context\ContextSession
  *
  * NOTICE OF LICENSE
  *

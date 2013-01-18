@@ -1,7 +1,7 @@
 <?php
 
 /**
- * TechDivision_PersistenceContainer_Container_QueueSender
+ * TechDivision\PersistenceContainer\Container\QueueSender
  *
  * NOTICE OF LICENSE
  *

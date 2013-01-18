@@ -1,7 +1,7 @@
 <?php
 
 /**
- * TechDivision_ApplicationServer_Interfaces_ReceiverInterface
+ * TechDivision\ApplicationServer\Interfaces\ReceiverInterface
  *
  * NOTICE OF LICENSE
  *

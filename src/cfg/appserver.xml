@@ -1,18 +1,30 @@
 <appserver>
     <containers>
+        <!--
+            This is an example of a container that uses a socket for
+            sending and receiving messages. This solution can be used
+            for clients connecting over a network.
+        -->
         <container type="TechDivision\PersistenceContainer\Container">
-            <description>
-                <![CDATA[
-                This is an example of a container that uses a socket for
-                sending and receiving messages. This solution can be used
-                for clients conncting over a network.
-            ]]>
-            </description>
             <receiver type="TechDivision\PersistenceContainer\Container\WorkerReceiver">
                 <params>
                     <workerNumber>4</workerNumber>
                     <address>0.0.0.0</address>
                     <port>8585</port>
+                </params>
+            </receiver>
+        </container>
+        <!--
+            This is an example of a servlet container that uses a socket for
+            sending and receiving messages. This solution can be used for
+            clients connecting over a network.
+        -->
+        <container type="TechDivision\ServletContainer\Container">
+            <receiver type="TechDivision\ServletContainer\Container\WorkerReceiver">
+                <params>
+                    <workerNumber>4</workerNumber>
+                    <address>0.0.0.0</address>
+                    <port>8586</port>
                 </params>
             </receiver>
         </container>
@@ -71,16 +83,6 @@
                 </params>
             </receiver>
             <sender type="TechDivision\PersistenceContainer\Container\SocketSender"/>
-        </container>
-        -->
-        <!--
-        <container>
-            <type>TechDivision\ServletContainer\Container</type>
-                <params>
-                    <workerNumber>4</workerNumber>
-                    <host>0.0.0.0</host>
-                    <port>8586</port>
-                </params>
         </container>
         -->
         <!--

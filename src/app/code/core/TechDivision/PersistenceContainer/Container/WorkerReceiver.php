@@ -1,7 +1,7 @@
 <?php
 
 /**
- * TechDivision_PersistenceContainer_Container_SingleSocketReceiver
+ * TechDivision\PersistenceContainer\Container\SingleSocketReceiver
  *
  * NOTICE OF LICENSE
  *
@@ -72,32 +72,16 @@ class WorkerReceiver extends AbstractReceiver {
                ->bind()
                ->listen();
 
-        // start the infinite loop and listen to clients
-        while (true) {
+        // start the infinite loop and listen to clients (in blocking mode)
+        while ($client = $socket->accept()) {
 
             try {
 
-                // prepare array of readable client sockets
-                $read = array($socket->getResource());
+                // initialize a new worker request instance
+                $request = new WorkerRequest($client->getResource());
 
-                // prepare the array for write/except sockets
-                $write = $except = array();
-
-                // select a socket to read from
-                $socket->select($read, $write, $except);
-
-                // if ready contains the master socket, then a new connection has come in
-                if (in_array($socket->getResource(), $read)) {
-
-                    // get the client socket (in blocking mode)
-                    $client = $socket->accept();
-
-                    // initialize a new worker request instance
-                    $request = new WorkerRequest($client->getResource());
-
-                    // start a new worker and stack the request
-                    $this->getRandomWorker()->stack($this->work[] = $request);
-                }
+                // start a new worker and stack the request
+                $this->getRandomWorker()->stack($this->work[] = $request);
                 
             } catch (Exception $e) {
                 error_log($e->__toString());

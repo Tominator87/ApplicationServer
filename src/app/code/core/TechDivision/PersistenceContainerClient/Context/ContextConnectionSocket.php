@@ -1,7 +1,7 @@
 <?php
 
 /**
- * TechDivision_PersistenceContainerClient_Context_ContextConnection
+ * TechDivision\PersistenceContainerClient\Context\ContextConnection
  *
  * NOTICE OF LICENSE
  *

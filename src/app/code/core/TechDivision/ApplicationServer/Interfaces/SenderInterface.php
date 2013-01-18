@@ -1,7 +1,7 @@
 <?php
 
 /**
- * TechDivision_ApplicationServer_Interfaces_SenderInterface
+ * TechDivision\ApplicationServer\Interfaces\SenderInterface
  *
  * NOTICE OF LICENSE
  *

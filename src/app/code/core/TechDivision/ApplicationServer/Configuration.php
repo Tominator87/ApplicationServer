@@ -1,7 +1,7 @@
 <?php
 
 /**
- * TechDivision_ApplicationServer_Configuration
+ * TechDivision\ApplicationServer\Configuration
  *
  * NOTICE OF LICENSE
  *
@@ -67,22 +67,27 @@ class Configuration implements ContainerConfiguration {
     
     /**
      * Adds a new child configuration.
-     * 
-     * @param string $name The unique child configuration name
+     *
      * @param Configuration $configuration The child configuration itself
+     * @return \TechDivision\ApplicationServer\Configuration The configuration instance
      */
-    public function addChild($name, $configuration) {
-        $this->children[$name] = $configuration;
+    public function addChild($configuration) {
+        $this->children[] = $configuration;
     }
     
     /**
-     * Returns the child configuration with the passed name.
+     * Returns the child configuration with the passed type.
      * 
      * @param string $name The name of the configuration to return
      * @return Configuration The requested configuration
      */
-    public function getChild($name) {
-        return $this->children[$name];
+    public function getChild($type) {
+        foreach ($this->getChildren() as $child) {
+            $reflectionClass = new \ReflectionClass($child->getType());
+            if ($reflectionClass->implementsInterface($type)) {
+                return $child;
+            }
+        }
     }
     
     /**
@@ -148,7 +153,7 @@ class Configuration implements ContainerConfiguration {
      * @return \TechDivision\ApplicationServer\Interfaces\ContainerConfiguration The sender configuration
      */
     public function getSender() {
-        return $this->getChild('sender');
+        return $this->getChild('\TechDivision\ApplicationServer\Interfaces\SenderInterface');
     }
     
     /**
@@ -157,7 +162,7 @@ class Configuration implements ContainerConfiguration {
      * @return \TechDivision\ApplicationServer\Interfaces\ContainerConfiguration The sender configuration
      */
     public function getReceiver() {
-        return $this->getChild('receiver');
+        return $this->getChild('\TechDivision\ApplicationServer\Interfaces\ReceiverInterface');
     }
     
     /**

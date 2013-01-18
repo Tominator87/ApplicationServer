@@ -1,7 +1,7 @@
 <?php
 
 /**
- * TechDivision_ApplicationServer_InitialContext
+ * TechDivision\ApplicationServer\InitialContext
  *
  * NOTICE OF LICENSE
  *
