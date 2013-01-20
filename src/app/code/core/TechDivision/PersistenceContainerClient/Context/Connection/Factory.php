@@ -36,7 +36,7 @@ class Factory {
      * @param string $type The context connection type to create
      * @return \TechDivision\PersistenceContainerClient\Interfaces\Connection The requested context connection
      */
-    public static function createContextConnection($type = 'Socket') {
+    public static function createContextConnection($type = 'SingleSocket') {
         
         if (self::$instance == null) {
             $className = "TechDivision\PersistenceContainerClient\Context\ContextConnection$type";

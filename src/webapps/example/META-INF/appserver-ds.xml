@@ -1,5 +1,5 @@
 <datasources>
-    <datasource>
+    <datasource type="TechDivision\PersistenceContainer\Application">
         <name>TechDivision\Example</name>
         <pathToEntities>TechDivision/Example/Entities</pathToEntities>
         <database>

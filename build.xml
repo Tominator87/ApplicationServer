@@ -428,7 +428,7 @@
     <!-- Initializes the PEAR channel in the target directory, necessary for  -->
     <!-- the packages this project is related                                 -->
     <!-- ==================================================================== -->
-    <target name="UPDATE-create" depends="UPDATE-setup">
+    <!-- target name="UPDATE-create" depends="UPDATE-setup">
         <exec dir="${php-target.dir}/pear" executable="${php-target.dir}/pear/bin/webapp">
             <arg value="channel-discover" />
             <arg value="project.tdintern.de/appserver" />
@@ -438,35 +438,11 @@
             <arg value="preferred_state" />
             <arg value="alpha" />
         </exec>
-        <!--
-        <exec dir="${php-target.dir}/pear" executable="${php-target.dir}/pear/bin/webapp">
-            <arg value="install" />
-            <arg value="-a" />
-            <arg value="appserver/TDProject" />
-        </exec>
-        <exec dir="${php-target.dir}/pear" executable="${php-target.dir}/pear/bin/webapp">
-            <arg value="install" />
-            <arg value="-a" />
-            <arg value="appserver/TDProject_Channel" />
-        </exec>
-        <exec dir="${php-target.dir}/pear" executable="${php-target.dir}/pear/bin/webapp">
-            <arg value="install" />
-            <arg value="appserver/TDProject_Statistic" />
-        </exec>
-        <exec dir="${php-target.dir}/pear" executable="${php-target.dir}/pear/bin/webapp">
-            <arg value="install" />
-            <arg value="appserver/TDProject_Report" />
-        </exec>
-        <exec dir="${php-target.dir}/pear" executable="${php-target.dir}/pear/bin/webapp">
-            <arg value="install" />
-            <arg value="appserver/TDProject_Webservice" />
-        </exec>
-        -->
-    </target>
+    </target -->
     <!-- ==================================================================== -->
     <!-- Merges the PEAR files with the TDProject sources                     -->
     <!-- ==================================================================== -->
-    <target name="UPDATE-merge" depends="UPDATE-create" description="Merges the PEAR files with the TDProject sources.">
+    <target name="UPDATE-merge" depends="UPDATE-setup" description="Merges the PEAR files with the TDProject sources.">
         <move todir="${php-target.dir}/appserver-${appserver.version}">
             <fileset dir="${php-target.dir}/pear">
                 <include name="**/*"/>

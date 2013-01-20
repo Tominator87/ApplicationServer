@@ -69,7 +69,6 @@ class WorkerReceiver extends AbstractReceiver {
                ->setPort($this->getConfiguration()->getPort())
                ->setBlock()
                ->setReuseAddr()
-               ->setReceiveTimeout()
                ->bind()
                ->listen();
 
