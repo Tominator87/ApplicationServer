@@ -100,33 +100,37 @@ class ServletManager {
             foreach ($config->xpath('/web-app/servlet-mapping') as $mapping) {
 
                 // try to resolve the mapped servlet class
-                $classname = $config->xpath(
+                $className = $config->xpath(
                     '/web-app/servlet[servlet-name="' . $mapping->{'servlet-name'} . '"]/servlet-class');
 
-                if (!count($classname)) {
+                if (!count($className)) {
                     throw new InvalidApplicationArchiveException(sprintf(
                         'No servlet class defined for servlet %s', $mapping->{'servlet-name'}));
                 }
 
                 // get the string classname
-                $classname = (string) array_shift($classname);
+                $className = (string) array_shift($className);
 
                 // set the additional servlet include paths
                 set_include_path($folder . DS . 'WEB-INF' . DS . 'classes' . PS . get_include_path());
                 set_include_path($folder . DS . 'WEB-INF' . DS . 'lib' . PS . get_include_path());
 
                 // instanciate the servlet
-                /** @var $servlet Servlet */
-                $servlet = new $classname();
+                $servlet = new $className();
 
                 // initialize the servlet
                 $servlet->init();
 
+                // load the url pattern
+                $urlPattern = (string) $mapping->{'url-pattern'};
+
+                // check if the url pattern starts with a leading slash and prepend it if necessary
+                if (strpos('/', $urlPattern) !== 0) {
+                    $urlPattern = '/' . $urlPattern;
+                }
+
                 // the servlet is added to the dictionary using the complete request path as the key
-                $this->addServlet(
-                    '/' . basename($folder) . (string) $mapping->{'url-pattern'},
-                    $servlet
-                );
+                $this->addServlet('/' . basename($folder) . $urlPattern,  $servlet);
             }
         }
     }

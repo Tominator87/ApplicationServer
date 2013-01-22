@@ -43,13 +43,14 @@ class ContextSession implements Session {
     /**
      * 
      * @param TechDivision\PersistenceContainerClient\Interfaces\Connection $connection
-     * @throws Exception
+     * @todo Refactor session handling
      */
     public function __construct(Connection $connection) {
         $this->_connection = $connection;
-        // check if alread a session id exists in the session
+        // check if already a session id exists in the session
         if (($this->_sessionId = session_id()) == null) {
-            throw new \Exception("No session available");
+            // if not, create a unique ID
+            $this->_sessionId = uniqid();
         }
     }
 

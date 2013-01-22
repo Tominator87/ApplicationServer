@@ -117,6 +117,20 @@ switch ($action) {
                             <td colspan="2"><input type="submit" value="Save"></td>
                         </tr>
                     </table>
+                    <?php if (isset($entity)) { ?><table>
+                        <thead>
+                            <tr>
+                                <td>Username</td>
+                                <td>Locale</td>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($entity->getUsers() as $user) { ?><tr>
+                                <td><?php echo $user->getUsername() ?></td>
+                                <td><?php echo $user->getUserLocale() ?></td>
+                            </tr><?php } ?>
+                        </tbody>
+                    </table><?php } ?>
                 </fieldset>
             </form>
         </div>

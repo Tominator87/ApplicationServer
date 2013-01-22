@@ -5,6 +5,13 @@
     <description>Simple Web Servlet Example</description>
 
     <servlet>
+        <description><![CDATA[A generic servlet that executes usual php scripts.]]></description>
+        <display-name>PhpServlet</display-name>
+        <servlet-name>PhpServlet</servlet-name>
+        <servlet-class>\TechDivision\ServletContainer\Servlets\PhpServlet</servlet-class>
+    </servlet>
+
+    <servlet>
         <description/>
         <display-name>HelloWorldServlet</display-name>
         <servlet-name>HelloWorldServlet</servlet-name>
@@ -14,6 +21,11 @@
     <servlet-mapping>
         <servlet-name>HelloWorldServlet</servlet-name>
         <url-pattern>/hello-world.do</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>PhpServlet</servlet-name>
+        <url-pattern>*.php</url-pattern>
     </servlet-mapping>
 
 </web-app>

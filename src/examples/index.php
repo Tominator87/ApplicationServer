@@ -115,6 +115,20 @@ switch ($action) {
                             <td colspan="2"><input type="submit" value="Save"></td>
                         </tr>
                     </table>
+                    <?php if (isset($entity)) { ?><table>
+                        <thead>
+                            <tr>
+                                <td>Username</td>
+                                <td>Locale</td>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($entity->getUsers() as $user) { ?><tr>
+                                <td><?php echo $user->getUsername() ?></td>
+                                <td><?php echo $user->getUserLocale() ?></td>
+                            </tr><?php } ?>
+                        </tbody>
+                    </table><?php } ?>
                 </fieldset>
             </form>
         </div>
@@ -127,11 +141,13 @@ switch ($action) {
                         <td>Actions</td>
                     </tr>
                 </thead>
-                <?php foreach ($entities as $sampleId => $entity) { ?><tr>
+                <tbody>
+                    <?php foreach ($entities as $sampleId => $entity) { ?><tr>
                         <td><a href="index.php?action=load&sampleId=<?php echo $entity->getSampleId() ?>"><?php echo $entity->getSampleId() ?></a></td>
                         <td><?php echo $entity->getName() ?></td>
                         <td><a href="index.php?action=delete&sampleId=<?php echo $entity->getSampleId() ?>">Delete</a></td>
-                    </tr><?php } ?> 
+                    </tr><?php } ?>
+                </tbody>
             </table>
         </div>
     </body>

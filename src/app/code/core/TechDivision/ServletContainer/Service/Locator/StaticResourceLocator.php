@@ -35,7 +35,7 @@ class StaticResourceLocator extends AbstractResourceLocator {
     public function locate(ServletRequest $request) {
 
         // build the path from url part and base path
-        $path = BP . urldecode($request->getRequestUrl());
+        $path = BP . DS . 'webapps' . urldecode($request->getRequestUrl());
 
         // make sure the requested file exists
         if (!file_exists($path)) {

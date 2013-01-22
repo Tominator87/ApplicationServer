@@ -19,7 +19,7 @@ class SampleProcessor implements Singleton {
     }
 
     public function load($id) {
-        $entityManager = $this->getApplication()->getEntityManager();     
+        $entityManager = $this->getApplication()->getEntityManager();
         return $entityManager->find('TechDivision\Example\Entities\Sample', $id);
     }
 

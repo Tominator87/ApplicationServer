@@ -15,6 +15,10 @@ namespace TechDivision\ServletContainer\Service\Locator;
 use TechDivision\ServletContainer\Service\Locator\ResourceLocatorInterface;
 use TechDivision\ServletContainer\Interfaces\ServletRequest;
 use TechDivision\ServletContainer\Interfaces\Servlet;
+use Symfony\Component\Routing\Matcher\UrlMatcher;
+use Symfony\Component\Routing\RequestContext;
+use Symfony\Component\Routing\RouteCollection;
+use Symfony\Component\Routing\Route;
 
 /**
  * The servlet resource locator implementation.
@@ -45,7 +49,35 @@ class ServletLocator implements ResourceLocatorInterface {
     }
 
     /**
-     * Tries to locate the servlet that handles the request and returns the instance.
+     * Prepares a collection with routes generated from the available servlets
+     * ans their servlet mappings.
+     *
+     * @return \Symfony\Component\Routing\RouteCollection The collection with the available routes
+     */
+    public function getRouteCollection() {
+
+        // retrieve the registered servlets
+        $servlets = $this->servletManager->getServlets();
+
+        // prepare the collection with the available routes and initialize the route counter
+        $routes = new RouteCollection();
+        $counter = 0;
+
+        // iterate over the available servlets and prepare the routes
+        foreach ($servlets as $urlPattern => $servlet) {
+
+            $pattern = str_replace('*', "{placeholder_$counter}", $urlPattern);
+
+            $route = new Route($pattern, array($servlet));
+            $routes->add($counter++, $route);
+        }
+
+        // return the collection with the routes
+        return $routes;
+    }
+
+    /**
+     * Tries to locate the servlet that handles the request and returns the instance if one can be found.
      *
      * @param \TechDivision\ServletContainer\Interfaces\ServletRequest $request
      * @return \TechDivision\ServletContainer\Interfaces\Servlet
@@ -53,26 +85,19 @@ class ServletLocator implements ResourceLocatorInterface {
      */
     public function locate(ServletRequest $request) {
 
-        /** @var $request HttpServletRequest */
         // build the file-path of the request
-        $path    = $request->getRequestUrl();
-        $servlet = FALSE;
+        $path = $request->getRequestUrl();
 
-        // retrieve the registered servlets
-        $servlets = $this->servletManager->getServlets();
+        // load the route collection
+        $routes = $this->getRouteCollection();
 
-        // traverse the path to find matching segment
-        do {
+        // initialize the URL matcher
+        $matcher = new UrlMatcher($routes, new RequestContext($path));
 
-            if (array_key_exists($path, $servlets)) {
-                $servlet = $servlets[$path];
-                break;
-            }
+        // check if the URL matches one of the servlets
+        $servlet = $matcher->match($path);
 
-            $path = substr($path, 0, strrpos($path, '/'));
-
-        } while (strpos($path, '/') !== FALSE);
-
-        return $servlet;
+        // return the servlet instance
+        return current($servlet);
     }
 }
