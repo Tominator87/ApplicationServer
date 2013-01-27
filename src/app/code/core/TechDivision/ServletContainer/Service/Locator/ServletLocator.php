@@ -91,6 +91,8 @@ class ServletLocator implements ResourceLocatorInterface {
         // load the route collection
         $routes = $this->getRouteCollection();
 
+        error_log(var_export($routes, true));
+
         // initialize the URL matcher
         $matcher = new UrlMatcher($routes, new RequestContext($path));
 

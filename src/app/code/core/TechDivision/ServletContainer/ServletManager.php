@@ -124,13 +124,11 @@ class ServletManager {
                 // load the url pattern
                 $urlPattern = (string) $mapping->{'url-pattern'};
 
-                // check if the url pattern starts with a leading slash and prepend it if necessary
-                if (strpos('/', $urlPattern) !== 0) {
-                    $urlPattern = '/' . $urlPattern;
-                }
+                // make sure that the URL pattern always starts with a leading slash
+                $urlPattern = ltrim($urlPattern, '/');
 
                 // the servlet is added to the dictionary using the complete request path as the key
-                $this->addServlet('/' . basename($folder) . $urlPattern,  $servlet);
+                $this->addServlet('/' . basename($folder) . '/' . $urlPattern,  $servlet);
             }
         }
     }
