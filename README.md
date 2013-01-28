@@ -237,6 +237,17 @@ http://<appserver-ip>:8586/example/hello-world.do
 
 Ein rudimentäres Servlet ansprechbar. Allerdings wird im aktuellen Stand hier lediglich statischer Content ausgegeben.
 
+Über die URL:
+
+```
+http://<appserver-ip>:8586/example/index.php
+```
+
+kann ein PHP Skript, analog zur Ausführung über den Apache, aufgerufen werden. Hierbei wird im Hintergrund ein
+Servlet (PhpServlet) aufgerufen, das eine PHP Runtime Umgebung bereitstellt. Allerdings handelt es sich hierbei
+lediglich um eine sehr rudimentäre Implementierung, so werden z. B. globale Variablen wie $_REQUEST noch nicht
+bereitgestellt.
+
 ## Usage
 
 ### Connect to the PersistenceContainer
