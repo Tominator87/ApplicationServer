@@ -22,13 +22,6 @@ namespace TechDivision\ApplicationServer\Interfaces;
 interface ContainerConfiguration {
     
     /**
-     * Returns the object type the configuration is related with.
-     * 
-     * @return string The object type
-     */
-    public function getType();
-    
-    /**
      * Checks if the passed configuration is equal. If yes, the method
      * returns TRUE, if not FALSE.
      * 

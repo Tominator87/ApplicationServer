@@ -20,6 +20,13 @@ namespace TechDivision\ApplicationServer\Interfaces;
  * @author      Tim Wagner <tw@techdivision.com>
  */
 interface ContainerInterface {
+    
+    /**
+     * Starts thei containers deployment process.
+     * 
+     * @return \TechDivision\ApplicationServer\Interfaces\ContainerInterface The instance itself
+     */
+    public function deploy();
 
     /**
      * Main method that starts the server.
@@ -34,11 +41,4 @@ interface ContainerInterface {
      * @return \TechDivision\ApplicationServer\Interfaces\ReceiverInterface The receiver instance
      */
     public function getReceiver();
-    
-    /**
-     * Returns the sender instance ready to be prepared.
-     * 
-     * @return TechDivision\ApplicationServer\Interfaces\ReceiverInterface The receiver instance
-     */
-    public function getSender();
 }

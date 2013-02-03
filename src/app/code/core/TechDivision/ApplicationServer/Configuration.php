@@ -24,16 +24,10 @@ use TechDivision\ApplicationServer\Interfaces\ContainerConfiguration;
 class Configuration implements ContainerConfiguration {
 
     /**
-     * The object type the configuration is related with.
+     * the node name to use.
      * @var string
      */
-    protected $type;
-    
-    /**
-     * The array with the child configurations.
-     * @var array
-     */
-    protected $children = array();
+    protected $nodeName;
     
     /**
      * The array with configuration parameters.
@@ -42,13 +36,39 @@ class Configuration implements ContainerConfiguration {
     protected $data = array();
     
     /**
-     * Initializes the configuration with the object type the
-     * configuration is related with.
-     * 
-     * @param string $type The object type
+     * The array with the child configurations.
+     * @var array
      */
-    public function __construct($type = 'root') {
-        $this->type = $type;
+    protected $children = array();
+    
+    /**
+     * Initializes the configuration with the node name of the
+     * node in the XML structure.
+     * 
+     * @param string $nodeName The configuration element's node name
+     * @return void
+     */
+    public function __construct($nodeName = null) {
+        $this->setNodeName($nodeName);
+    }
+    
+    /**
+     * Set's the configuration element's node name.
+     * 
+     * @param string $nodeName The node name
+     * @return \TechDivision\ApplicationServer\Configuration The instance itself
+     */
+    public function setNodeName($nodeName) {
+        $this->nodeName = $nodeName;
+    }
+    
+    /**
+     * Return's the configuration element's node name.
+     * 
+     * @return string The node name
+     */
+    public function getNodeName() {
+        return $this->nodeName;
     }
     
     /**
@@ -56,13 +76,6 @@ class Configuration implements ContainerConfiguration {
      */
     public function equals($configuration) {
          return $this === $configuration;
-    }
-    
-    /**
-     * @see \TechDivision\ApplicationServer\Interfaces\ContainerConfiguration::getType()
-     */
-    public function getType() {
-        return $this->type;
     }
     
     /**
@@ -76,17 +89,97 @@ class Configuration implements ContainerConfiguration {
     }
     
     /**
+     * 
+     * @param unknown $file
+     * @return \TechDivision\ApplicationServer\Configuration
+     */
+    public static function loadFromFile($file) {
+
+        // initialize the SimpleXMLElement with the content XML configuration file
+        $root = simplexml_load_file($file);
+        
+        // initialize and return the root node
+        $cnt = new Configuration();
+        return $cnt->init($root);
+    }
+    
+    /**
+     * Recursively initializes the configuration instance with the data from the
+     * passed SimpleXMLElement.
+     * 
+     * @param \SimpleXMLElement $node The node to load the data from
+     * @param string $xpath The XPath expression of the XML node to load the data from
+     * @return \TechDivision\ApplicationServer\Configuration The node instance itself
+     */
+    public function init($node, $xpath = '/') {
+        
+        // set the node name
+        $this->setNodeName($node->getName());
+            
+        // load the attributes
+        foreach ($node->attributes() as $key => $value) {
+            $this->setData($key, (string) $value);
+        }
+        
+        // append childs
+        foreach ($node->children() as $name => $child) {
+            
+            // create a new configuration node
+            $cnt = new Configuration();
+            
+            // parse the configuration recursive
+            $cnt->init($child, $name);
+        
+            // append the configuration node to the parent
+            $this->addChild($cnt);
+        }
+        
+        // return the instance node itself
+        return $this;
+    }
+    
+    /**
      * Returns the child configuration with the passed type.
      * 
      * @param string $name The name of the configuration to return
      * @return Configuration The requested configuration
      */
-    public function getChild($type) {
-        foreach ($this->getChildren() as $child) {
-            $reflectionClass = new \ReflectionClass($child->getType());
-            if ($reflectionClass->implementsInterface($type)) {
-                return $child;
+    public function getChilds($path) {
+        
+        $token = strtok($path, '/');
+        
+        $next = str_replace('/' . $token, '', $path);
+        
+        if ($this->getNodeName() == $token && empty($next)) {
+        
+            return $this;
+            
+        } elseif ($this->getNodeName() == $token && !empty($next)) {
+
+            $matches = array();
+            
+            foreach ($this->getChildren() as $child) {
+                
+                $result = $child->getChilds($next);
+                
+                if (is_array($result)) {
+                    $matches = $result;
+                } elseif ($result instanceof Configuration) {
+                    $matches[] = $result;
+                } else {
+                    // do nothing
+                }
             }
+        
+            if (sizeof($matches) == 1) {
+                return array_pop($matches);
+            }
+            
+            return $matches;
+            
+        } else {
+            
+            return;
         }
     }
     
@@ -97,6 +190,20 @@ class Configuration implements ContainerConfiguration {
      */
     public function getChildren() {
         return $this->children;
+    }
+    
+    /**
+     * Check's if the node has children, if yes the method
+     * returns TRUE, else the method returns FALSE.
+     * 
+     * @return boolean TRUE if the node has children, else FALSE
+     */
+    public function hasChildren() {
+        // check the children size
+        if (sizeof($this->children) == 0) {
+            return false;
+        }
+        return true;
     }
     
     /**
@@ -145,60 +252,5 @@ class Configuration implements ContainerConfiguration {
             default:
                 throw new \Exception("Invalid method " . get_class($this) . "::" . $method . "(" . print_r($args, 1) . ")");
         }
-    }
-    
-    /**
-     * Wrapper method for the sender configuration.
-     * 
-     * @return \TechDivision\ApplicationServer\Interfaces\ContainerConfiguration The sender configuration
-     */
-    public function getSender() {
-        return $this->getChild('\TechDivision\ApplicationServer\Interfaces\SenderInterface');
-    }
-    
-    /**
-     * Wrapper method for the receiver configuration.
-     * 
-     * @return \TechDivision\ApplicationServer\Interfaces\ContainerConfiguration The sender configuration
-     */
-    public function getReceiver() {
-        return $this->getChild('\TechDivision\ApplicationServer\Interfaces\ReceiverInterface');
-    }
-    
-    /**
-     * Wrapper method for the receiver's IP address.
-     * 
-     * @return string The receiver's IP address
-     */
-    public function getAddress() {
-        return $this->getData('address');
-    }
-    
-    /**
-     * Wrapper method for the receiver's port.
-     * 
-     * @return string The receiver's port
-     */
-    public function getPort() {
-        return $this->getData('port');
-    }
-    
-    /**
-     * Wrapper method to set the container's maximum worker number to start.
-     * 
-     * @param integer $workerNumber The maximum worker number
-     * @return void
-     */
-    public function setWorkerNumber($workerNumber) {
-        $this->setData('workerNumber', $workerNumber);
-    }
-    
-    /**
-     * Wrapper method for the container's maximum worker number to start.
-     * 
-     * @return integer The maximum worker number
-     */
-    public function getWorkerNumber() {
-        return $this->getData('workerNumber');
     }
 }

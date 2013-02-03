@@ -62,7 +62,7 @@ abstract class AbstractReceiver implements ReceiverInterface {
         $this->container = $container;
         
         // load the receiver configuration
-        $configuration = $this->getContainer()->getConfiguration()->getReceiver();
+        $configuration = $this->getContainer()->getReceiverConfiguration();
 
         // set the receiver configuration
         $this->setConfiguration($configuration);
@@ -77,21 +77,12 @@ abstract class AbstractReceiver implements ReceiverInterface {
     /**
      * @see \TechDivision\ApplicationServer\Interfaces\ReceiverInterface::stack()
      */
-    public function stack($line) {
+    public function stack(\Stackable $request) {
         
-        // unserialize the passed remote method
-        $remoteMethod = unserialize($line);
+        // start a new worker and stack the request
+        $this->getRandomWorker()->stack($this->work[] = $request);
 
-        error_log("Now stacking remote method call for class {$remoteMethod->getClassName()}->{$remoteMethod->getMethodName()}");
-        
-        // check if a remote method has been passed
-        if ($remoteMethod instanceof RemoteMethod) {
-            // pass the line to the worker instance and process it
-            $this->getRandomWorker()->stack($this->work[] = new Request($remoteMethod));
-        } else {
-            error_log('Invalid remote method call');           
-        }
-
+        /*
         // if garbage collection is enabled, force collection of cycles immediately
         if ($this->gcEnabled()) {
             error_log("Collected {$this->gc()} cycles");
@@ -99,24 +90,28 @@ abstract class AbstractReceiver implements ReceiverInterface {
 
         // check of container configuration has to be reloaded
         $this->checkConfiguration();
+        */
     }
 
     /**
      * Returns a random worker.
-     * 
+     *
      * @return \Worker The random worker instance
      */
     public function getRandomWorker() {
-        
+
         // get a random worker number
         $randomWorker = rand(0, $this->getWorkerNumber() - 1);
         
+        // load the worker type
+        $workerType = $this->getContainer()->getWorkerType();
+
         // check if the worker is already initialized
         if (!array_key_exists($randomWorker, $this->workers)) {
-            $this->workers[$randomWorker] = new RequestHandler($this->getContainer());
-            $this->workers[$randomWorker]->start();            
+            $this->workers[$randomWorker] = $this->newInstance($workerType, array($this->getContainer()));
+            $this->workers[$randomWorker]->start();
         }
-        
+
         // return the random worker
         return $this->workers[$randomWorker];
     }
@@ -235,5 +230,17 @@ abstract class AbstractReceiver implements ReceiverInterface {
     public function gcDisable() {
         gc_disable();
         return $this;
+    }
+    
+    /**
+     * Creates a new instance of the passed class name and passes the
+     * args to the instance constructor.
+     * 
+     * @param string $className The class name to create the instance of
+     * @param array $args The parameters to pass to the constructor
+     * @return object The created instance
+     */
+    public function newInstance($className, array $args = array()) { 
+        return InitialContext::get()->newInstance($className, $args);
     }
 }

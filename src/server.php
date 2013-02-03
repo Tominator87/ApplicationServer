@@ -5,6 +5,8 @@ namespace TechDivision\ApplicationServer;
 
 use TechDivision\SplClassLoader;
 
+declare (ticks = 1);
+
 error_reporting(~E_NOTICE);
 set_time_limit (0);
 

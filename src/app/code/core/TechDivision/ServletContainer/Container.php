@@ -12,8 +12,7 @@
 
 namespace TechDivision\ServletContainer;
 
-use TechDivision\ApplicationServer\InitialContext;
-use TechDivision\ApplicationServer\Interfaces\ContainerInterface;
+use TechDivision\ApplicationServer\AbstractContainer;
 
 /**
  * @package     TechDivision\ServletContainer
@@ -22,28 +21,7 @@ use TechDivision\ApplicationServer\Interfaces\ContainerInterface;
  *              Open Software License (OSL 3.0)
  * @author      Tim Wagner <tw@techdivision.com>
  */
-class Container implements ContainerInterface {
-
-    /**
-     * Array with deployed applications.
-     * @var array
-     */
-    protected $applications = array();
-
-    /**
-     * Initializes the server instance with the configuration.
-     *
-     * @param \TechDivision\ApplicationServer\Configuration $configuration The container configuration
-     * @return void
-     */
-    public function __construct($configuration) {
-
-        // set the configuration
-        $this->setConfiguration($configuration);
-
-        // deploy applications
-        $this->deploy();
-    }
+class Container extends AbstractContainer {
 
     /**
      * Returns an array with available applications.
@@ -73,79 +51,5 @@ class Container implements ContainerInterface {
 
         // return the server instance
         return $this;
-    }
-
-    /**
-     * @see \TechDivision\ApplicationServer\Interfaces\ContainerInterface::start()
-     */
-    public function start() {
-        $this->getReceiver()->start();
-    }
-    
-    /**
-     * @see \TechDivision\ApplicationServer\Interfaces\ContainerInterface::getReceiver()
-     */
-    public function getReceiver() {
-        
-        // load the receiver type from the configuration
-        $receiverType = $this->getConfiguration()->getReceiver()->getType();
-        
-        // create and return a new receiver instance
-        return $this->newInstance($receiverType, array($this));
-    }
-    
-    /**
-     * @see \TechDivision\ApplicationServer\Interfaces\ContainerInterface::getSender()
-     */
-    public function getSender() {
-
-        // load the sender type from the configuration
-        $senderType = $this->getConfiguration()->getSender()->getType();
-        
-        // create and return a new sender instance
-        return $this->newInstance($senderType, array($this));
-        
-    }
-    
-    /**
-     * Sets the passed container configuration.
-     * 
-     * @param \TechDivision\ApplicationServer\Interfaces\ContainerConfiguration $configuration The configuration for the container
-     * @return \TechDivision\ServletContainer\Container The container instance itself
-     * @todo Actually it's not possible to add interfaces as type hints for method parameters, this results in an infinite loop 
-     */
-    public function setConfiguration($configuration) {
-        $this->configuration = $configuration;
-        return $this;
-    }
-
-    /**
-     * Returns the actual container configuration.
-     * 
-     * @return \TechDivision\ApplicationServer\Interfaces\ContainerConfiguration The actual container configuration
-     */
-    public function getConfiguration() {
-        return $this->configuration;
-    }
-    
-    /**
-     * Returns an array with the deployed applications.
-     * 
-     * @return array The array with applications
-     */
-    public function getApplications() {
-        return $this->applications;
-    }
-    
-    /**
-     * Creates a new instance of the passed class name and passes the
-     * args to the instance constructor.
-     * 
-     * @param string $className The class name to create the instance of
-     * @param array $args The parameters to pass to the constructor
-     * @return object The created instance
-     */
-    public function newInstance($className, array $args = array()) { 
-        return InitialContext::get()->newInstance($className, $args);
     }
 }

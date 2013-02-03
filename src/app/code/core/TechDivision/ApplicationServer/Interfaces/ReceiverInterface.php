@@ -29,16 +29,16 @@ interface ReceiverInterface {
     public function start();
     
     /**
-     * Stacks the passed remote method call (serialized) to one of the
+     * Stacks the passed request to one of the
      * internal workers and returns.
      * 
      * If enabled the garbage collection will be run and the configuration
      * will be refreshed.
      * 
-     * @param string $line The serialized remote method call to stack
+     * @param \Stackable $request The request to be stacked
      * @return void
      */
-    public function stack($line);
+    public function stack(\Stackable $request);
     
     /**
      * Returns the maximum number of workers to start.

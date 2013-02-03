@@ -28,47 +28,76 @@ class Server {
      * XPath expression for the container configurations.
      * @var string
      */
-    const XPATH_CONTAINERS = '/appserver/containers/container';
+    const XPATH_CONTAINERS = '/appserver';
     
     /**
      * The container configurations.
      * @var array
      */
     protected $configurations = array();
-    
-    /**
-     * Initializes the containers found in the cfg/appserver.xml file.
-     * 
-     * @return array The array with the container configurations
-     */
-    public function loadConfigurations($parent, $sxe, $xpath) {
 
-        // iterate over the found nodes
-        foreach ($sxe->xpath($xpath) as $node) {
-            
-            // create a new configuration node
-            $cnt = new Configuration((string) $node['type']);
-            
-            // load the container initialization data
-            foreach ($node->children() as $name => $param) {
-                
-                // if params are specified, set the parameters
-                if ($name == 'params') {
-                    
-                    // parse the params and add them to the configuration
-                    foreach ($param as $key => $value) {
-                        $methodName = 'set' . ucfirst($key);
-                        $cnt->$methodName((string) $value);
-                    }
-                    
-                } else {
-                    // parse the configuration recursive
-                    $this->loadConfigurations($cnt, $node, $name);
-                }
-            }
-            
-            // append the configuration node to the parent
-            $parent->addChild($cnt);
+    /**
+     * Initialize the array for the running threads.
+     * @var array
+     */
+    protected $threads = array();
+
+    /**
+     * Constructor to initialize the signal handlers for
+     * a controlled shutdown of the server.
+     * 
+     * @return void
+     */
+    public function __construct() {
+        /*
+        // catch fatal error (rollback)
+        register_shutdown_function(array($this, 'fatalErrorShutdown'));
+
+        // catch Ctrl+C, kill and SIGTERM (rollback)
+        pcntl_signal(SIGTERM, array($this, 'sigintShutdown'));
+        pcntl_signal(SIGINT, array($this, 'sigintShutdown'));
+        */
+    }
+
+    /**
+     * Method to shutdown the threads wrapping each of the containers.
+     * 
+     * @return void
+     */
+    public function shutdown() {
+    	
+    	// iterate over all threads and stop each of them
+        for ($i = 0; $i < sizeof($this->threads); $i++) {
+            $this->threads[$i]->join();
+        }
+    	
+        // stop the server and render a message
+        die ("\nSuccessfully shutdown PHP Application Server");
+    }
+
+    /**
+     * Method that is executed, when a fatal error occurs.
+     *
+     * @return void
+     */
+    public function fatalErrorShutdown() {
+        $lastError = error_get_last();
+        if (!is_null($lastError) && $lastError['type'] === E_ERROR) {
+            $this->shutdown();
+        }
+    }
+
+    /**
+     * Method, that is executed, if script has been killed by:
+     *
+     * SIGINT: Ctrl+C
+     * SIGTERM: kill
+     *
+     * @param int $signal
+     */
+    public function sigintShutdown($signal) {
+        if ($signal === SIGINT || $signal === SIGTERM) {
+            $this->shutdown();
         }
     }
     
@@ -78,23 +107,22 @@ class Server {
      * @return void
      */
     public function start() {
-
-        // initialize the array for the running threads
-        $threads = array();
         
         // initialize the SimpleXMLElement with the content XML configuration file
         $sxe = simplexml_load_file('cfg/appserver.xml');
-            
-        // create a new root configuration node
-        $cnt = new Configuration();
         
         // load the container configurations
-        $this->loadConfigurations($cnt, $sxe, self::XPATH_CONTAINERS);
+        $config = Configuration::loadFromFile('cfg/appserver.xml');
         
         // start each container in his own thread
-        foreach ($cnt->getChildren() as $i => $configuration) {
-            $threads[$i] = new ContainerThread($configuration);
-            $threads[$i]->start();
+        foreach ($config->getChilds('/appserver/containers/container') as $i => $configuration) {
+            $this->threads[$i] = $this->newInstance('\TechDivision\ApplicationServer\ContainerThread', array($configuration));
+            $this->threads[$i]->start();
+        }
+
+        // necessary for a controlled thread shutdown
+        while (true) {
+            sleep(1);
         }
     }
     

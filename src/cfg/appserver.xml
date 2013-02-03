@@ -6,12 +6,10 @@
             for clients connecting over a network.
         -->
         <container type="TechDivision\PersistenceContainer\Container">
-            <receiver type="TechDivision\PersistenceContainer\Container\WorkerReceiver">
-                <params>
-                    <workerNumber>8</workerNumber>
-                    <address>0.0.0.0</address>
-                    <port>8585</port>
-                </params>
+            <receiver type="TechDivision\ApplicationServer\SocketReceiver">
+	           	<worker type="TechDivision\PersistenceContainer\RequestHandler"/>
+	           	<stackable type="TechDivision\PersistenceContainer\WorkerRequest"/>
+                <params workerNumber="8" address="0.0.0.0" port="8585"/>
             </receiver>
         </container>
         <!--
@@ -20,12 +18,10 @@
             clients connecting over a network.
         -->
         <container type="TechDivision\ServletContainer\Container">
-            <receiver type="TechDivision\ServletContainer\Container\WorkerReceiver">
-                <params>
-                    <workerNumber>8</workerNumber>
-                    <address>0.0.0.0</address>
-                    <port>8586</port>
-                </params>
+            <receiver type="TechDivision\ApplicationServer\SocketReceiver">
+	           	<worker type="TechDivision\ServletContainer\RequestHandler"/>
+	           	<stackable type="TechDivision\ServletContainer\WorkerRequest"/>
+                <params workerNumber="8" address="0.0.0.0" port="8586"/>
             </receiver>
         </container>
         <!--
