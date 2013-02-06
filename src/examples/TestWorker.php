@@ -3,9 +3,25 @@
 declare(ticks = 1);
 
 class TestWorker extends \Worker {
+    
+    public function __construct() {
+    }
 	
 	public function run() {
 		error_log(__METHOD__ . ':' . __LINE__);		
+	}
+	
+	public function stop() {
+
+
+	    error_log(__METHOD__ . ':' . __LINE__);
+
+	    /*
+	     * read from the socket, process the request and send data back to the client
+	    */
+	    socket_close($this->client);
+	    
+	    error_log(__METHOD__ . ':' . __LINE__);
 	}
 }
 
@@ -25,8 +41,15 @@ class TestRequest extends \Stackable {
 	
 	protected $client;
 	
-	public function __construct($client) {
+	protected $receiver;
+	
+	public function __construct($receiver, $client) {
+	    
+	    $this->receiver = $receiver;
 		$this->client = $client;
+
+        // catch fatal error (rollback)
+        register_shutdown_function(array($this, 'fatalErrorShutdown'));
 	}
 	
 	public function run() {
@@ -50,54 +73,109 @@ class TestRequest extends \Stackable {
 	            }
 	        }
 
-			error_log(__METHOD__ . ':' . __LINE__);
-			
-			$response = array();
-			
-			socket_write($client, serialize($response) . "\n");
+	        try {
+	            
+	            // throw new Exception('someException');
 	        
-			/* 
-			 * read from the socket, process the request and send data back to the client
-			 */
-			socket_close($client);
+    			error_log(__METHOD__ . ':' . __LINE__);
+    			
+    			$response = array();
+    			
+    			$this->doSomething();
+    			
+    			socket_write($client, serialize($response) . "\n");
+    	        
+    			/* 
+    			 * read from the socket, process the request and send data back to the client
+    			 */
+    			socket_close($client);
+	            
+	        } catch(\Exception $e) {
+	            
+	            error_log($e->__toString());
+    			
+    			$response = array();
+    			
+    			socket_write($client, serialize($e) . "\n");
+    	        
+    			/* 
+    			 * read from the socket, process the request and send data back to the client
+    			 */
+    			socket_close($client);
+	            
+	        }
 		}
 	}
+
+    /**
+     * Method, that is executed, if script has been killed by:
+     *
+     * SIGINT: Ctrl+C
+     * SIGTERM: kill
+     *
+     * @param int $signal
+     */
+    public function sigintShutdown($signal) {
+        
+        error_log(__METHOD__ . ':' . __LINE__);
+        
+        if ($signal === SIGINT || $signal === SIGTERM) {
+            $this->shutdown();
+        }
+    }
+
+    /**
+     * Method that is executed, when a fatal error occurs.
+     *
+     * @return void
+     */
+    public function fatalErrorShutdown() {
+        
+        error_log(__METHOD__ . ':' . __LINE__);
+        
+        $lastError = error_get_last();
+        if (!is_null($lastError) && $lastError['type'] === E_ERROR) {
+            $this->shutdown();
+        }
+    }
 }
 
-class TestReceiver {
+class TestReceiver extends \Thread {
 	
 	protected $work;
 	
 	protected $workers;
 	
-	public function __construct($container) {
-		$this->container = $container;
+	public function __construct() {
 		$this->work = array();
 		$this->workers = array();
 	}
 	
-	public function start() {
+	public function run() {
 
 		$socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
 		socket_bind($socket, '127.0.0.1', 8585);
 		socket_listen($socket);
 		socket_set_nonblock($socket);
 		
+		$workers = array();
+		
 		while (true) {
 			
 			try {
 				
-				if (apc_exists('system_shutdown') && apc_fetch('system_shutdown') === true) {
-					break;
-				}
-				
 				if ($client = @socket_accept($socket)) {
-				
-					$request = new TestRequest($client);
+		
+            		$i = rand(0, 3);
+            		
+            		if (array_key_exists($i, $workers) === false) {
+            			$workers[$i] = new TestWorker();
+            			$workers[$i]->start();
+            		}
+            		
+					$request = new TestRequest($this, $client);
 					
-					$worker = $this->getRandomWorker();
-					
-					$worker->stack($this->work[] = $request);
+					$workers[$i]->stack($this->work[] = $request);
 				}
 				
 			} catch(\Exception $e) {
@@ -113,132 +191,28 @@ class TestReceiver {
 
 		$this->shutdown();
 	}
-	
-	public function shutdown() {
-
-		error_log("Found " . ($work = sizeof($this->work))  . " work");
-		
-		$this->work = array();
-		
-		error_log("Found " . ($workers = sizeof($this->workers))  . " workers");
-		
-		foreach ($this->workers as $worker) {
-			$worker->shutdown();
-		}
-		
-		$this->workers = array();
-
-		error_log("Successfully shutdown $workers worker");
-	}
-	
-	public function getRandomWorker() {
-		
-		$i = rand(0, 3);
-		
-		if (array_key_exists($i, $this->workers) === false) {
-			$worker = new TestWorker();
-			$worker->start();
-			$this->workers[$i] = $worker;
-		}
-		
-		return $this->workers[$i];
-	}
 }
 
-class TestContainer {
-	
-	protected $receiver;
-	
-	public function start() {
-		$this->receiver = new TestReceiver($this);
-		$this->receiver->start();
-	}
-}
-
-class TestThread extends \Thread {
-	
-	protected $container;
+class TestContainer extends \Thread {
 	
 	public function run() {
-		
-		$this->container = new TestContainer();
-		$this->container->start();
-		
+		$receiver = new TestReceiver();
+		$receiver->start();
 		$this->notify();
 	}
 }
 
-class Server {
+class Server extends \Thread {
 	
-	protected $threads = array();
-	
-	public function start() {
-		
+	public function run() {
+	    
+	    $threads = array();
+	    
 		for ($i = 0; $i < 1; $i++) {
-			$this->threads[$i] = new TestThread();
-			$this->threads[$i]->start(); 
-		}
-		
-		while (true) {
-			sleep(1);
+			$threads[$i] = new TestContainer();
+		    $threads[$i]->start(); 
 		}
 	}
-
-    public function __construct() {
-
-        // catch fatal error (rollback)
-        register_shutdown_function(array($this, 'fatalErrorShutdown'));
-
-        // catch Ctrl+C, kill and SIGTERM (rollback)
-        pcntl_signal(SIGTERM, array($this, 'sigintShutdown'));
-        pcntl_signal(SIGINT, array($this, 'sigintShutdown'));
-    	
-    	apc_store('system_shutdown', false);
-    }
-
-    public function shutdown() {
-    	
-    	apc_store('system_shutdown', true);
-    	
-    	sleep(1);
-    	
-    	for ($i = 0; $i < 1; $i++) {
-    		
-    		error_log("Now try to shutdown thread " . $this->threads[$i]->getThreadId());
-    		
-    		$this->threads[$i]->join();
-    		
-    		error_log("Successfully shutdown thread " . $this->threads[$i]->getThreadId());
-    	}
-    	
-        die ("System shutdown complete\n");
-    }
-
-    /**
-     * Method that is executed, when a fatal error occurs.
-     *
-     * @return void
-     */
-    public function fatalErrorShutdown() {
-        $lastError = error_get_last();
-        if (!is_null($lastError) && $lastError['type'] === E_ERROR) {
-            $this->shutdown();
-        }
-    }
-
-    /**
-     * Method, that is executed, if script has been killed by:
-     *
-     * SIGINT: Ctrl+C
-     * SIGTERM: kill
-     *
-     * @param int $signal
-     */
-    public function sigintShutdown($signal) {
-        if ($signal === SIGINT || $signal === SIGTERM) {
-            $this->shutdown();
-        }
-    }
 }
 
 $server = new Server();
