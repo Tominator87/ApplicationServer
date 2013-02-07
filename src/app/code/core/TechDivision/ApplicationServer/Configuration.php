@@ -170,10 +170,6 @@ class Configuration implements ContainerConfiguration {
                     // do nothing
                 }
             }
-        
-            if (sizeof($matches) == 1) {
-                return array_pop($matches);
-            }
             
             return $matches;
             

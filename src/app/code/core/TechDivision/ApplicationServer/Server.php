@@ -12,6 +12,7 @@
 
 namespace TechDivision\ApplicationServer;
 
+use TechDivision\Socket\Client;
 use TechDivision\ApplicationServer\Configuration;
 use TechDivision\ApplicationServer\ContainerThread;
 
@@ -49,42 +50,9 @@ class Server {
      * @return void
      */
     public function __construct() {
-        /*
-        // catch fatal error (rollback)
-        register_shutdown_function(array($this, 'fatalErrorShutdown'));
-
         // catch Ctrl+C, kill and SIGTERM (rollback)
         pcntl_signal(SIGTERM, array($this, 'sigintShutdown'));
         pcntl_signal(SIGINT, array($this, 'sigintShutdown'));
-        */
-    }
-
-    /**
-     * Method to shutdown the threads wrapping each of the containers.
-     * 
-     * @return void
-     */
-    public function shutdown() {
-    	
-    	// iterate over all threads and stop each of them
-        for ($i = 0; $i < sizeof($this->threads); $i++) {
-            $this->threads[$i]->join();
-        }
-    	
-        // stop the server and render a message
-        die ("\nSuccessfully shutdown PHP Application Server");
-    }
-
-    /**
-     * Method that is executed, when a fatal error occurs.
-     *
-     * @return void
-     */
-    public function fatalErrorShutdown() {
-        $lastError = error_get_last();
-        if (!is_null($lastError) && $lastError['type'] === E_ERROR) {
-            $this->shutdown();
-        }
     }
 
     /**
@@ -108,21 +76,76 @@ class Server {
      */
     public function start() {
         
+        // initialize shutdown flag
+        InitialContext::get()->setAttribute('shutdown', false);
+        InitialContext::get()->setAttribute('shutdownComplete', false);
+        
         // initialize the SimpleXMLElement with the content XML configuration file
         $sxe = simplexml_load_file('cfg/appserver.xml');
         
         // load the container configurations
-        $config = Configuration::loadFromFile('cfg/appserver.xml');
+        $this->configurations = Configuration::loadFromFile('cfg/appserver.xml');
         
         // start each container in his own thread
-        foreach ($config->getChilds('/appserver/containers/container') as $i => $configuration) {
-            $this->threads[$i] = $this->newInstance('\TechDivision\ApplicationServer\ContainerThread', array($configuration));
+        foreach ($this->configurations->getChilds('/appserver/containers/container') as $i => $configuration) {
+            $this->threads[$i] = $this->newInstance($configuration->getType(), array($configuration));
             $this->threads[$i]->start();
         }
-
-        // necessary for a controlled thread shutdown
-        while (true) {
+        
+        // shutdown after flag is set
+        while (InitialContext::get()->getAttribute('shutdownComplete') === false) {
             sleep(1);
+        }
+    }
+
+    /**
+     * Method to shutdown the threads wrapping each of the containers.
+     * 
+     * @return void
+     */
+    public function shutdown() {
+        
+        // send signal to shutdown the server
+        InitialContext::get()->setAttribute('shutdown', true);
+        
+        // send the shutdown request
+        $this->sendShutdownRequest();
+        
+        // synchronize the threads
+        for ($i = 0; $i < sizeof($this->threads); $i++) {
+            $this->threads[$i]->join();
+        }
+        
+        // send signal to shutdown the server
+        InitialContext::get()->setAttribute('shutdownComplete', true);
+    }
+
+    /**
+     * This method sends a shutdown request necessary to stop the 
+     * inifinite loop in the receiver, because of a blocking socket.
+     * 
+     * @return void
+     */
+    public function sendShutdownRequest() {
+
+        try {
+            
+            // send a shutdown request to all containers
+            $containers = $this->configurations->getChilds('/appserver/containers/container');
+            foreach ($containers as $container) {
+                
+                // load the containers socket information
+                $params = current($container->getChilds('/container/receiver/params'));
+                
+                // send shutdown request
+                $client = new Client($params->getAddress(), $params->getPort());
+                $client->start()->setBlock();
+                $client->sendLine(null);
+                $client->readLine();        
+            }
+
+        } catch (\Exception $e) {
+            error_log($e->__toString());
         }
     }
     

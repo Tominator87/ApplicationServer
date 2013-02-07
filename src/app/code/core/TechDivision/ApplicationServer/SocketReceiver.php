@@ -27,68 +27,63 @@ use TechDivision\ServletContainer\RequestHandler;
 class SocketReceiver extends AbstractReceiver {
     
     /**
-     * The socket instance use to send the data back to the client.
-     * @var \TechDivision\Socket\Client 
-     */
-    protected $socket;
-    
-    /**
-     * Sets the reference to the container instance.
-     * 
-     * @param \TechDivision\ApplicationServer\Interfaces\ContainerInterface $container The container instance
-     */
-    public function __construct($container) {
-        
-        // pass the container instance to the superclass
-        parent::__construct($container);
-        
-        // initialize the socket
-        $this->socket = $this->newInstance('\TechDivision\Socket\Client');
-    }
-    
-    /**
-     * Returns the socket instance used to send the data back to the client.
-     * 
-     * @return \TechDivision\Socket\Client
-     */
-    public function getSocket() {
-        return $this->socket;
-    }
-    
-    /**
      * @see TechDivision\ApplicationServer\Interfaces\ReceiverInterface::start()
      */
     public function start() {
         
-        // load the receiver params
-        $parameters = $this->getContainer()->getParameters();
+        try {
         
-        // load the stackable type
-        $stackableType = $this->getContainer()->getStackableType();
-        
-        // load the socket instance
-        $socket = $this->getSocket();
-        
-        // prepare the main socket and listen
-        $socket->create()
-               ->setAddress($parameters->getAddress())
-               ->setPort($parameters->getPort())
-               ->setBlock()
-               ->setReuseAddr()
-               ->bind()
-               ->listen();
-
-        // start the infinite loop and listen to clients (in blocking mode)
-        while ($client = $socket->accept()) {
-
-            try {
-
-                // initialize a new worker request instance
-                $this->stack($this->newInstance($stackableType, array($client->getResource())));
-                
-            } catch (Exception $e) {
-                error_log($e->__toString());
+            // load the receiver params
+            $parameters = $this->getContainer()->getParameters();
+            
+            // load the stackable type
+            $stackableType = $this->getContainer()->getStackableType();
+            
+            // load the socket instance
+            $socket = $this->newInstance('\TechDivision\Socket\Client');
+            
+            // prepare the main socket and listen
+            $socket->create()
+                   ->setAddress($parameters->getAddress())
+                   ->setPort($parameters->getPort())
+                   ->setBlock()
+                   ->setReuseAddr()
+                   ->bind()
+                   ->listen();
+            
+            // start the infinite loop and listen to clients (in blocking mode)
+            while ($client = $socket->accept()) {
+    
+                try {
+                    
+                    // check if shutdown flag is set, if yes stop infinte loop
+                    if (InitialContext::get()->getAttribute('shutdown') === true) {
+                        $client->close();
+                        $socket->close();
+                        break;
+                    }
+                    
+                    // create a new request instance
+                    $request = $this->newInstance($stackableType, array($client->getResource()));
+                    
+                    // initialize a new worker request instance
+                    $this->stack($request);
+                    
+                } catch (\Exception $e) {
+                    error_log($e->__toString());
+                }
             }
+            
+        } catch (\Exception $ge) {
+            
+            error_log($ge->__toString());
+            
+            if (is_resource($socket->getResource())) {
+                $socket->close();
+            }           
         }
+            
+        // try to shutdown the workers
+        $this->shutdown(); 
     }
 }

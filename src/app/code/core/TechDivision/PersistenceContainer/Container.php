@@ -36,6 +36,8 @@ class Container extends AbstractContainer {
      * @todo Implement real deployment here
      */
     public function deploy() {
+        
+        $applications = array();
 
         // gather all the deployed web applications
         foreach (new \FilesystemIterator(getcwd() . '/webapps') as $folder) {
@@ -92,14 +94,12 @@ class Container extends AbstractContainer {
                 set_include_path($folder . DS . 'META-INF' . DS . 'classes' . PS . get_include_path());
                 set_include_path($folder . DS . 'META-INF' . DS . 'lib' . PS . get_include_path());
 
-                error_log("Now add application: " . $application->getDataSourceName());
-
                 // add the application to the available applications
-                $this->applications[$application->getDataSourceName()] = $application;
+                $applications[$application->getDataSourceName()] = $application;
             }
         }
 
         // return the server instance
-        return $this;
+        return $applications;
     }
 }

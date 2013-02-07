@@ -72,6 +72,12 @@ class Socket {
      * @var integer
      */
     protected $backlog = 100;
+    
+    /**
+     * 
+     * @var unknown
+     */
+    protected $blocking = false;
 
     /**
      * Initializes the socket instance with the socket resource.
@@ -180,6 +186,15 @@ class Socket {
         // return the instance itself
         return $this;
     }
+    
+    /**
+     * Returns TRUE if the socket is in blocking mode, else FALSE.
+     * 
+     * @return boolean TRUE if the socket is in blocking mode, else FALSE
+     */
+    public function isBlocking() {
+        return $this->blocking;
+    }
 
     /**
      * This method set's the socket in blocking mode by calling the socket function {@link http://de3.php.net/socket_set_block socket_set_block()}.
@@ -189,6 +204,9 @@ class Socket {
      * @link http://de3.php.net/socket_set_block
      */
     public function setBlock() {
+
+        // activate blocking mode
+        $this->blocking = true;
         
         if (@socket_set_block($this->resource) === false) {
             $this->newSocketException();
@@ -207,6 +225,9 @@ class Socket {
      */
     public function setNoBlock() {
 
+        // activate non blocking mode
+        $this->blocking = false;
+        
         // set the socket in non-blocking mode
         if (@socket_set_nonblock($this->resource) === false) {
             $this->newSocketException();
@@ -456,8 +477,10 @@ class Socket {
         $client = @socket_accept($this->resource);
 
         // check if a new incoming connection has been accepted
-        if ($client === false) {
+        if ($client === false && $this->isBlocking()) {
             throw $this->newSocketException();
+        } elseif ($client === false && $this->isBlocking() === false) {
+            return false;
         }
 
         // return a new client socket instance
@@ -603,7 +626,7 @@ class Socket {
 
         // initialize error code if no error code has been passed
         if ($errorCode == null) {
-            $errorCode = socket_last_error($this->resource);
+            $errorCode = socket_last_error();
         }
 
         // initialize the error message based on the code

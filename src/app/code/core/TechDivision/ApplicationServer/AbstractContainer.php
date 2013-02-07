@@ -12,6 +12,7 @@
 
 namespace TechDivision\ApplicationServer;
 
+use TechDivision\SplClassLoader;
 use TechDivision\ApplicationServer\InitialContext;
 use TechDivision\ApplicationServer\Interfaces\ContainerInterface;
 
@@ -22,14 +23,30 @@ use TechDivision\ApplicationServer\Interfaces\ContainerInterface;
  *              Open Software License (OSL 3.0)
  * @author      Tim Wagner <tw@techdivision.com>
  */
-abstract class AbstractContainer implements ContainerInterface {
+abstract class AbstractContainer extends \Thread implements ContainerInterface {
     
+    /**
+     * Path to the container's receiver configuration.
+     * @var string
+     */
     const CONFIGURATION_RECEIVER = '/container/receiver';
     
+    /**
+     * Path to the receiver's initialization parameters.
+     * @var string
+     */
     const CONFIGURATION_PARAMETERS = '/container/receiver/params';
     
+    /**
+     * Path to the receiver's stackable.
+     * @var string
+     */
     const CONFIGURATION_STACKABLE = '/container/receiver/stackable';
     
+    /**
+     * Path to the receiver's worker.
+     * @var string
+     */
     const CONFIGURATION_WORKER = '/container/receiver/worker';
 
     /**
@@ -37,11 +54,25 @@ abstract class AbstractContainer implements ContainerInterface {
      * @var array
      */
     protected $applications = array();
+    
+    /**
+     * The container configuration.
+     * @var \TechDivision\ApplicationServer\Interfaces\ContainerConfiguration
+     */
+    protected $configuration;
+    
+    /**
+     * The server instance.
+     * @var \TechDivision\ApplicationServer\Server
+     */
+    protected $server;
 
     /**
      * Initializes the server instance with the configuration.
      *
+     * @param \TechDivision\ApplicationServer\Server $server The server instance
      * @param \TechDivision\ApplicationServer\Configuration $configuration The container configuration
+     * @todo Application deployment only works this way because of Thread compatibilty 
      * @return void
      */
     public function __construct($configuration) {
@@ -50,23 +81,40 @@ abstract class AbstractContainer implements ContainerInterface {
         $this->setConfiguration($configuration);
 
         // deploy applications
-        $this->deploy();
+        $this->applications = $this->deploy();
     }
 
     /**
      * @see \TechDivision\ApplicationServer\Interfaces\ContainerInterface::start()
      */
-    public function start() {
+    public function run() {
+        
+        // register class loader again, because we are in a thread
+        $classLoader = new SplClassLoader();
+        $classLoader->register();
+        
+        // start the receiver
         $this->getReceiver()->start();
+        
+        // notfiy caller
+        $this->notify();
     }
     
     /**
      * @see \TechDivision\ApplicationServer\Interfaces\ContainerInterface::getReceiver()
      */
     public function getReceiver() {
-        
         // create and return a new receiver instance
         return $this->newInstance($this->getReceiverType(), array($this));
+    }
+    
+    /**
+     * Returns an array with the deployed applications.
+     * 
+     * @return array The array with applications
+     */
+    public function getApplications() {
+        return $this->applications;
     }
     
     /**
@@ -90,33 +138,49 @@ abstract class AbstractContainer implements ContainerInterface {
         return $this->configuration;
     }
     
+    /**
+     * Return's the path to the container's receiver configuration.
+     * 
+     * @return \TechDivision\ApplicationServer\Configuration The receiver configuration instance
+     */
     public function getReceiverConfiguration() {
-        return $this->getConfiguration()->getChilds(self::CONFIGURATION_RECEIVER);
+        return current($this->getConfiguration()->getChilds(self::CONFIGURATION_RECEIVER));
     }
     
+    /**
+     * Return's the class name of the container's receiver type.
+     * 
+     * @return string The class name of the container's receiver type
+     */
     public function getReceiverType() {
         return $this->getReceiverConfiguration()->getType();
     }
     
+    /**
+     * Return's the class name of the receiver's stackable type.
+     * 
+     * @return string The class name of the receiver's stackable type
+     */
     public function getStackableType() {
-        return $this->getConfiguration()->getChilds(self::CONFIGURATION_STACKABLE)->getType();
-    }
-    
-    public function getWorkerType() {
-        return $this->getConfiguration()->getChilds(self::CONFIGURATION_WORKER)->getType();
-    }
-    
-    public function getParameters() {
-        return $this->getConfiguration()->getChilds(self::CONFIGURATION_PARAMETERS);
+        return current($this->getConfiguration()->getChilds(self::CONFIGURATION_STACKABLE))->getType();
     }
     
     /**
-     * Returns an array with the deployed applications.
+     * Return's the class name of the receiver's worker type.
      * 
-     * @return array The array with applications
+     * @return string The class name of the receiver's worker type
      */
-    public function getApplications() {
-        return $this->applications;
+    public function getWorkerType() {
+        return current($this->getConfiguration()->getChilds(self::CONFIGURATION_WORKER))->getType();
+    }
+    
+    /**
+     * Return's the receiver's initialization parameters.
+     * 
+     * @return \TechDivision\ApplicationServer\Configuration  The receiver's initialization parameters.
+     */
+    public function getParameters() {
+        return current($this->getConfiguration()->getChilds(self::CONFIGURATION_PARAMETERS));
     }
     
     /**

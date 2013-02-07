@@ -46,4 +46,11 @@ interface ReceiverInterface {
      * @return integer The maximum worker number 
      */
     public function getWorkerNumber();
+    
+    /**
+     * Returns the worker class name to use.
+     * 
+     * @return string The worker class name 
+     */
+    public function getWorkerType();
 }

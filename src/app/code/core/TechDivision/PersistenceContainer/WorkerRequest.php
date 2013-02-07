@@ -16,6 +16,8 @@ use TechDivision\Socket\Client;
 use TechDivision\PersistenceContainerClient\Interfaces\RemoteMethod;
 
 /**
+ * The stackable implementation that handles the request.
+ * 
  * @package     TechDivision\PersistenceContainer
  * @copyright  	Copyright (c) 2010 <info@techdivision.com> - TechDivision GmbH
  * @license    	http://opensource.org/licenses/osl-3.0.php
@@ -34,15 +36,29 @@ class WorkerRequest extends \Stackable {
      * Initializes the request with the client socket.
      * 
      * @param resource $resource The client socket instance
+     * @return void
      */
     public function __construct($resource) {
         $this->resource = $resource;
     }
     
     /**
+     * Method that is executed, when a fatal error occurs.
+     *
+     * @return void
+     */
+    public function fatalErrorShutdown() {
+        if (is_resource($this->resource)) {
+            @socket_close($this->resource);
+        }
+    }
+    
+    /**
      * @see \Stackable::run()
      */
     public function run() {
+            
+        register_shutdown_function(array($this, 'fatalErrorShutdown'));
 
         // check if a worker is available
         if ($this->worker) {
@@ -105,9 +121,6 @@ class WorkerRequest extends \Stackable {
             } else {
                 error_log('Invalid remote method call');
             }
-
-            // notify the calling thread
-            $this->notify();
         }
     }
 }

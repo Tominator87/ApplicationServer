@@ -37,19 +37,19 @@ abstract class AbstractReceiver implements ReceiverInterface {
      * The number of parallel workers to handle client connections.
      * @var integer
      */
-    protected $workerNumber = 1;
+    protected $workerNumber = 4;
 
     /**
      * Array with the worker instances.
      * @var array
      */
     protected $workers = array();
-
+    
     /**
-     * Array for the incoming requests.
-     * @var array
+     * The worker type to use.
+     * @var string
      */
-    protected $work = array();
+    protected $workerType = '';
     
     /**
      * Sets the reference to the container instance.
@@ -70,8 +70,11 @@ abstract class AbstractReceiver implements ReceiverInterface {
         // set the configuration in the initial context
         InitialContext::get()->setAttribute(get_class($this), $configuration);
         
-        // enable garbage collector and check configuration
-        $this->gcEnable()->checkConfiguration();
+        // initialize configuration
+        $this->checkConfiguration();
+        
+        // load the worker type
+        $this->setWorkerType($this->getContainer()->getWorkerType());
     }
     
     /**
@@ -80,17 +83,10 @@ abstract class AbstractReceiver implements ReceiverInterface {
     public function stack(\Stackable $request) {
         
         // start a new worker and stack the request
-        $this->getRandomWorker()->stack($this->work[] = $request);
-
-        /*
-        // if garbage collection is enabled, force collection of cycles immediately
-        if ($this->gcEnabled()) {
-            error_log("Collected {$this->gc()} cycles");
-        }
+        $this->getRandomWorker()->stack($request);
 
         // check of container configuration has to be reloaded
         $this->checkConfiguration();
-        */
     }
 
     /**
@@ -98,22 +94,46 @@ abstract class AbstractReceiver implements ReceiverInterface {
      *
      * @return \Worker The random worker instance
      */
-    public function getRandomWorker() {
+    public function getRandomWorker($recursion = 0) {
+        
+        // get the maximum number of workers
+        $workerNumber = $this->getWorkerNumber();
 
         // get a random worker number
-        $randomWorker = rand(0, $this->getWorkerNumber() - 1);
+        $randomWorker = rand(0, $workerNumber - 1);
         
-        // load the worker type
-        $workerType = $this->getContainer()->getWorkerType();
-
         // check if the worker is already initialized
-        if (!array_key_exists($randomWorker, $this->workers)) {
-            $this->workers[$randomWorker] = $this->newInstance($workerType, array($this->getContainer()));
+        if (array_key_exists($randomWorker, $this->workers) === false) {
+            
+            // initialize a new worker
+            $this->workers[$randomWorker] = $this->newInstance($this->getWorkerType(), array($this->getContainer()));
             $this->workers[$randomWorker]->start();
+            
+        } else {
+            
+            if ($this->workers[$randomWorker]->isWorking() && $recursion < 10) {
+                
+                // raise number of allowed workers
+                $this->setWorkerNumber($workerNumber++);
+                
+                // try to load another worker
+                return $this->getRandomWorker(++$recursion);
+            }
         }
 
         // return the random worker
         return $this->workers[$randomWorker];
+    }
+    
+    /**
+     * Shutdown the receive by closing all workers.
+     * 
+     * @return void
+     */
+    public function shutdown() {
+        foreach ($this->workers as $worker) {
+            $worker->shutdown();
+        }
     }
     
     /**
@@ -141,6 +161,24 @@ abstract class AbstractReceiver implements ReceiverInterface {
      */
     public function getWorkerNumber() {
         return $this->workerNumber;
+    }
+
+    /**
+     * Set's the worker's class name to use.
+     * 
+     * @param string $workerType The worker's class name to use
+     * @return \TechDivision\ApplicationServer\Interfaces\ReceiverInterface The receiver instance
+     */
+    public function setWorkerType($workerType) {
+        $this->workerType = $workerType;
+        return $this;
+    }
+    
+    /**
+     * @see \TechDivision\ApplicationServer\Interfaces\ReceiverInterface::getWorkerType()
+     */
+    public function getWorkerType() {
+        return $this->workerType;
     }
     
     /**
@@ -170,13 +208,15 @@ abstract class AbstractReceiver implements ReceiverInterface {
      * @return void
      */
     public function reloadConfiguration() {
-        $this->setWorkerNumber($this->getConfiguration()->getWorkerNumber());
+        $parameters = $this->getContainer()->getParameters();
+        $this->setWorkerNumber((integer) $parameters->getWorkerNumber());
     }
     
     /**
      * Check's if container configuration as changed, if yes, the 
      * configuration will be reloaded.
      * 
+     * @todo Refactor configuration reinitialization
      * @return void
      */
     public function checkConfiguration() {
@@ -188,48 +228,6 @@ abstract class AbstractReceiver implements ReceiverInterface {
         if ($nc != null && !$this->getConfiguration()->equals($nc)) {
             $this->setConfiguration($nc)->reloadConfiguration();
         }
-    }
-    
-    /**
-     * Forces collection of any existing garbage cycles.
-     * 
-     * @return integer The number of collected cycles
-     * @link http://php.net/manual/en/features.gc.collecting-cycles.php
-     */
-    public function gc() {
-        return gc_collect_cycles();
-    }
-    
-    /**
-     * Returns TRUE if the PHP internal garbage collection is enabled.
-     * 
-     * @return boolean TRUE if the PHP internal garbage collection is enabled
-     * @link http://php.net/manual/en/function.gc-enabled.php
-     */
-    public function gcEnabled() {
-        return gc_enabled();
-    }
-    
-    /**
-     * Enables PHP internal garbage collection.
-     * 
-     * @return \TechDivision\PersistenceContainer\Container The container instance
-     * @link http://php.net/manual/en/function.gc-enable.php
-     */
-    public function gcEnable() {
-        gc_enable();
-        return $this;
-    }
-    
-    /**
-     * Disables PHP internal garbage collection.
-     * 
-     * @return \TechDivision\PersistenceContainer\Container The container instance
-     * @link http://php.net/manual/en/function.gc-disable.php
-     */
-    public function gcDisable() {
-        gc_disable();
-        return $this;
     }
     
     /**
