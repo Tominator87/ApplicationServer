@@ -52,6 +52,12 @@ abstract class AbstractReceiver implements ReceiverInterface {
     protected $workerType = '';
     
     /**
+     * 
+     * @var unknown
+     */
+    protected $stackableType = '';
+    
+    /**
      * Sets the reference to the container instance.
      * 
      * @param \TechDivision\ApplicationServer\Interfaces\ContainerInterface $container The container instance
@@ -75,6 +81,9 @@ abstract class AbstractReceiver implements ReceiverInterface {
         
         // load the worker type
         $this->setWorkerType($this->getContainer()->getWorkerType());
+            
+        // load the stackable type
+        $this->setStackableType($this->getContainer()->getStackableType());
     }
     
     /**
@@ -83,10 +92,36 @@ abstract class AbstractReceiver implements ReceiverInterface {
     public function stack(\Stackable $request) {
         
         // start a new worker and stack the request
-        $this->getRandomWorker()->stack($request);
+        $this->newWorker()->stack($request);
 
         // check of container configuration has to be reloaded
         $this->checkConfiguration();
+    }
+    
+    /**
+     * Process the request by creating a new request instance (stackable)
+     * and stack's it on one of the workers.
+     * 
+     * @return void
+     */
+    public function processRequest(\TechDivision\Socket $socket) {
+
+        // create a new request instance
+        $request = $this->newStackable(array($socket->getResource()));
+        
+        // initialize a new worker request instance
+        $this->stack($request);   
+    }
+    
+    /**
+     * Create's and return's a new request instance (stackable) and
+     * passes the the params to the constructor.
+     * 
+     * @param array $params Array with the params
+     * @return \Stackable The request instance
+     */
+    public function newStackable($params) {
+        return $this->newInstance($this->getStackableType(), $params);
     }
 
     /**
@@ -94,7 +129,7 @@ abstract class AbstractReceiver implements ReceiverInterface {
      *
      * @return \Worker The random worker instance
      */
-    public function getRandomWorker($recursion = 0) {
+    public function newWorker($recursion = 0) {
         
         // get the maximum number of workers
         $workerNumber = $this->getWorkerNumber();
@@ -117,7 +152,7 @@ abstract class AbstractReceiver implements ReceiverInterface {
                 $this->setWorkerNumber($workerNumber++);
                 
                 // try to load another worker
-                return $this->getRandomWorker(++$recursion);
+                return $this->newWorker(++$recursion);
             }
         }
 
@@ -179,6 +214,24 @@ abstract class AbstractReceiver implements ReceiverInterface {
      */
     public function getWorkerType() {
         return $this->workerType;
+    }
+
+    /**
+     * Set's the stackable's class name to use.
+     * 
+     * @param string $stackableType The stackable's class name to use
+     * @return \TechDivision\ApplicationServer\Interfaces\ReceiverInterface The receiver instance
+     */
+    public function setStackableType($stackableType) {
+        $this->stackableType = $stackableType;
+        return $this;
+    }
+    
+    /**
+     * @see \TechDivision\ApplicationServer\Interfaces\ReceiverInterface::getStackableType()
+     */
+    public function getStackableType() {
+        return $this->stackableType;
     }
     
     /**

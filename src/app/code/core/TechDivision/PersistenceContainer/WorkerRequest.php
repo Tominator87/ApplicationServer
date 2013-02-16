@@ -79,7 +79,7 @@ class WorkerRequest extends \Stackable {
             if ($remoteMethod instanceof RemoteMethod) {
 
                 try {
-
+                    
                     // load class name and session ID from remote method
                     $className = $remoteMethod->getClassName();
                     $sessionId = $remoteMethod->getSessionId();
@@ -93,7 +93,6 @@ class WorkerRequest extends \Stackable {
                     // prepare method name and parameters and invoke method
                     $methodName = $remoteMethod->getMethodName();
                     $parameters = $remoteMethod->getParameters();
-
                     // invoke the remote method call on the local instance
                     $response = call_user_func_array(array($instance, $methodName), $parameters);
 
@@ -102,7 +101,7 @@ class WorkerRequest extends \Stackable {
                 }
 
                 try {
-
+                    
                     // send the data back to the client
                     $client->sendLine(serialize($response));
 

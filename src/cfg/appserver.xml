@@ -9,7 +9,7 @@
             <receiver type="TechDivision\ApplicationServer\SocketReceiver">
 	           	<worker type="TechDivision\PersistenceContainer\RequestHandler"/>
 	           	<stackable type="TechDivision\PersistenceContainer\WorkerRequest"/>
-                <params workerNumber="8" address="0.0.0.0" port="8585"/>
+                <params workerNumber="4" address="0.0.0.0" port="8585"/>
             </receiver>
         </container>
         <!--
@@ -21,75 +21,20 @@
             <receiver type="TechDivision\ApplicationServer\SocketReceiver">
 	           	<worker type="TechDivision\ServletContainer\RequestHandler"/>
 	           	<stackable type="TechDivision\ServletContainer\WorkerRequest"/>
-                <params workerNumber="8" address="0.0.0.0" port="8586"/>
+                <params workerNumber="2" address="0.0.0.0" port="8586"/>
             </receiver>
         </container>
         <!--
-        <container type="TechDivision\PersistenceContainer\Container">
-            <description>
-                <![CDATA[
-                This is an example of a container that uses a socket for
-                sending and receiving messages. This solution can be used
-                for clients connecting over a network.
-            ]]>
-            </description>
-            <receiver type="TechDivision\PersistenceContainer\Container\SingleSocketReceiver">
-                <params>
-                    <workerNumber>4</workerNumber>
-                    <address>0.0.0.0</address>
-                    <port>8585</port>
-                </params>
+            This is an example of a message queue that uses a socket to
+            receive messages. This solution can be used for clients connecting 
+            over a network.
+        -->
+        <container type="TechDivision\MessageQueue\Container">
+            <receiver type="TechDivision\MessageQueue\SocketReceiver">
+	           	<worker type="TechDivision\MessageQueue\RequestHandler"/>
+	           	<stackable type="TechDivision\MessageQueue\WorkerRequest"/>
+                <params workerNumber="2" address="0.0.0.0" port="8587"/>
             </receiver>
         </container>
-        -->
-        <!--
-        <container type="TechDivision\PersistenceContainer\Container">
-            <description>
-            <![CDATA[
-                This is an example of a container that uses a message queue
-                for sending and receiving messages. The message queue uses
-                Unix System V IPC and can only be used for a client on the
-                same machine.
-            ]]>
-            </description>
-            <receiver type="TechDivision\PersistenceContainer\Container\QueueReceiver">
-                <params>
-                    <workerNumber>4</workerNumber>
-                    <address>0.0.0.0</address>
-                    <port>8585</port>
-                </params>
-            </receiver>
-            <sender type="TechDivision\PersistenceContainer\Container\QueueSender"/>
-        </container>
-        -->
-        <!--
-        <container type="TechDivision\PersistenceContainer\Container">
-            <description>
-            <![CDATA[
-                This is an example of a container that uses a bi-directional socket
-                for sending and receiving messages. This solution can be used for
-                clients connecting over a network.
-            ]]>
-            </description>
-            <receiver type="TechDivision\PersistenceContainer\Container\SocketReceiver">
-                <params>
-                    <workerNumber>4</workerNumber>
-                    <address>0.0.0.0</address>
-                    <port>8585</port>
-                </params>
-            </receiver>
-            <sender type="TechDivision\PersistenceContainer\Container\SocketSender"/>
-        </container>
-        -->
-        <!--
-        <container>
-            <type>TechDivision\MessageService\Container</type>
-            <params>
-                <host>0.0.0.0</host>
-                <port>8587</port>
-                <maxClients>20</maxClients>
-            </params>
-        </container>
-        -->
     </containers>
 </appserver>

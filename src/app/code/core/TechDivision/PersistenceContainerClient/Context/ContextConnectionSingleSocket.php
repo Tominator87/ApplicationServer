@@ -13,7 +13,6 @@
 namespace TechDivision\PersistenceContainerClient\Context;
 
 use TechDivision\Socket\Client;
-use TechDivision\Socket\Server;
 use TechDivision\PersistenceContainerClient\Context\ContextSession;
 use TechDivision\PersistenceContainerClient\Interfaces\Connection;
 use TechDivision\PersistenceContainerClient\Interfaces\RemoteMethod;

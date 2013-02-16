@@ -51,6 +51,9 @@ class SocketReceiver extends AbstractReceiver {
                    ->bind()
                    ->listen();
             
+            // enable garbage collector
+            gc_enable();
+            
             // start the infinite loop and listen to clients (in blocking mode)
             while ($client = $socket->accept()) {
     
@@ -63,11 +66,8 @@ class SocketReceiver extends AbstractReceiver {
                         break;
                     }
                     
-                    // create a new request instance
-                    $request = $this->newInstance($stackableType, array($client->getResource()));
-                    
-                    // initialize a new worker request instance
-                    $this->stack($request);
+                    // process the request asynchron
+                    $this->processRequest($client);
                     
                 } catch (\Exception $e) {
                     error_log($e->__toString());

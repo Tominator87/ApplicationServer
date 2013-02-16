@@ -53,4 +53,11 @@ interface ReceiverInterface {
      * @return string The worker class name 
      */
     public function getWorkerType();
+    
+    /**
+     * Returns the stackable class name to use.
+     * 
+     * @return string The stackable class name 
+     */
+    public function getStackableType();
 }

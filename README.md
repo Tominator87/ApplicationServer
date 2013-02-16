@@ -275,3 +275,16 @@ $allEntities = $processor->findAll();
 
 ?>
 ```
+
+Vagrant für die Steuerung der VirtualBox
+Chef für die Konfiguration der virtuellen Maschine
+gem install librarian
+gem install knife-solo
+librarian-chef install
+
+Hosting
+- Rackspace
+
+Monitoring
+- pingdom
+- newrelic

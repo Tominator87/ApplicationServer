@@ -21,25 +21,8 @@ declare(ticks = 1) {
             
             $this->client = $client;
         }
-    
-        /**
-         * Method that is executed, when a fatal error occurs.
-         *
-         * @return void
-         */
-        public function fatalErrorShutdown() {
-            
-            if (is_resource($this->client)) {
-                error_log("Now close socket");
-                socket_close($this->client);
-            }
-            
-            error_log(__METHOD__ . ':' . __LINE__);
-        }
         
         public function run() {
-            
-            register_shutdown_function(array($this, 'fatalErrorShutdown'));
             
     		$client = $this->client;
             
@@ -69,8 +52,6 @@ declare(ticks = 1) {
     				), 
     				"body" => array()
     			);
-    			
-    			$this->doSomeShit();
     
     			socket_getpeername($client, $address, $port);
     
@@ -116,6 +97,8 @@ declare(ticks = 1) {
         public function start() {
             
             try {
+                
+                gc_enable();
             
                 if (($socket = @socket_create_listen(8585)) === false) {
                     throw new \Exception(socket_last_error());
@@ -126,11 +109,6 @@ declare(ticks = 1) {
                 }
                 
                 while (true) {
-                    
-                    if ($this->server->shutdown) {
-                        
-                        break;
-                    }
                     
                     if ($client = @socket_accept($socket)) {
                         
@@ -145,8 +123,6 @@ declare(ticks = 1) {
                 if (is_resource($socket)) {
                     socket_close($socket);
                 }
-                
-                $this->shutdown();
                 
             } catch (\Exception $e) {
                 
@@ -182,72 +158,23 @@ declare(ticks = 1) {
             
             return $this->workers[$i];
         }
-        
-        public function shutdown() {
-
-            error_log("Found " . sizeof($this->workers) . " worker");
-            
-            // iterate over all threads and stop each of them
-            foreach ($this->workers as $worker) {
-            
-                if ($worker->isWorking() === false) {
-                    
-                    $worker->shutdown();
-            
-                    error_log("Successfully shutdown worker " . $worker->getThreadId());
-                }
-            }
-        }
     }
     
     class TestServer extends \Thread {
         
         protected $container;
         
-        protected $shutdown = false;
-        
         public function __construct() {
-            
-            // catch Ctrl+C, kill and SIGTERM (rollback)
-            pcntl_signal(SIGTERM, array($this, 'sigintShutdown'));
-            pcntl_signal(SIGINT, array($this, 'sigintShutdown'));
-            
             $this->container = new TestContainer($this);
         }
         
         public function run() {
             $this->container->start();
         }
-        
-        public function stop() {
-            
-            error_log(__METHOD__ . ':' . __LINE__);
-            
-            $this->shutdown = true;
-        }
-    
-        /**
-         * Method, that is executed, if script has been killed by:
-         *
-         * SIGINT: Ctrl+C
-         * SIGTERM: kill
-         *
-         * @param int $signal
-         */
-        public function sigintShutdown($signal) {
-            error_log(__METHOD__ . ':' . __LINE__);
-            $this->stop();
-        }
     }
     
     
     $server = new TestServer();
     $server->start();
-    
-    while ($server->isRunning()) {
-        sleep(1);
-    }
-    
-    error_log("Successfully shutdown server");
     
 }
