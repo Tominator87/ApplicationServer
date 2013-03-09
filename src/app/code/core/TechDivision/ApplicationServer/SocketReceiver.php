@@ -51,22 +51,13 @@ class SocketReceiver extends AbstractReceiver {
                    ->bind()
                    ->listen();
             
-            // enable garbage collector
-            gc_enable();
-            
             // start the infinite loop and listen to clients (in blocking mode)
-            while ($client = $socket->accept()) {
+            while (true) {
     
                 try {
                     
-                    // check if shutdown flag is set, if yes stop infinte loop
-                    if (InitialContext::get()->getAttribute('shutdown') === true) {
-                        $client->close();
-                        $socket->close();
-                        break;
-                    }
-                    
-                    // process the request asynchron
+                    // accept a new connection and process it asynchrously
+                    $client = $socket->accept();
                     $this->processRequest($client);
                     
                 } catch (\Exception $e) {
@@ -81,9 +72,6 @@ class SocketReceiver extends AbstractReceiver {
             if (is_resource($socket->getResource())) {
                 $socket->close();
             }           
-        }
-            
-        // try to shutdown the workers
-        $this->shutdown(); 
+        } 
     }
 }

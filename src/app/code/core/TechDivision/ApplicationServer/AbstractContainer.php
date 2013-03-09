@@ -23,7 +23,7 @@ use TechDivision\ApplicationServer\Interfaces\ContainerInterface;
  *              Open Software License (OSL 3.0)
  * @author      Tim Wagner <tw@techdivision.com>
  */
-abstract class AbstractContainer extends \Thread implements ContainerInterface {
+abstract class AbstractContainer implements ContainerInterface {
     
     /**
      * Path to the container's receiver configuration.
@@ -81,23 +81,14 @@ abstract class AbstractContainer extends \Thread implements ContainerInterface {
         $this->setConfiguration($configuration);
 
         // deploy applications
-        $this->applications = $this->deploy();
+        $this->deploy();
     }
 
     /**
      * @see \TechDivision\ApplicationServer\Interfaces\ContainerInterface::start()
      */
-    public function run() {
-        
-        // register class loader again, because we are in a thread
-        $classLoader = new SplClassLoader();
-        $classLoader->register();
-        
-        // start the receiver
+    public function start() {
         $this->getReceiver()->start();
-        
-        // notfiy caller
-        $this->notify();
     }
     
     /**

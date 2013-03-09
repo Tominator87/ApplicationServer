@@ -52,8 +52,8 @@ abstract class AbstractReceiver implements ReceiverInterface {
     protected $workerType = '';
     
     /**
-     * 
-     * @var unknown
+     * The stackable type to use.
+     * @var string
      */
     protected $stackableType = '';
     
@@ -75,9 +75,9 @@ abstract class AbstractReceiver implements ReceiverInterface {
         
         // set the configuration in the initial context
         InitialContext::get()->setAttribute(get_class($this), $configuration);
-        
-        // initialize configuration
-        $this->checkConfiguration();
+
+        // enable garbage collector and initialize configuration
+        $this->gcEnable()->checkConfiguration();
         
         // load the worker type
         $this->setWorkerType($this->getContainer()->getWorkerType());
@@ -105,7 +105,7 @@ abstract class AbstractReceiver implements ReceiverInterface {
      * @return void
      */
     public function processRequest(\TechDivision\Socket $socket) {
-
+        
         // create a new request instance
         $request = $this->newStackable(array($socket->getResource()));
         
@@ -144,31 +144,10 @@ abstract class AbstractReceiver implements ReceiverInterface {
             $this->workers[$randomWorker] = $this->newInstance($this->getWorkerType(), array($this->getContainer()));
             $this->workers[$randomWorker]->start();
             
-        } else {
-            
-            if ($this->workers[$randomWorker]->isWorking() && $recursion < 10) {
-                
-                // raise number of allowed workers
-                $this->setWorkerNumber($workerNumber++);
-                
-                // try to load another worker
-                return $this->newWorker(++$recursion);
-            }
         }
 
         // return the random worker
         return $this->workers[$randomWorker];
-    }
-    
-    /**
-     * Shutdown the receive by closing all workers.
-     * 
-     * @return void
-     */
-    public function shutdown() {
-        foreach ($this->workers as $worker) {
-            $worker->shutdown();
-        }
     }
     
     /**
@@ -281,6 +260,48 @@ abstract class AbstractReceiver implements ReceiverInterface {
         if ($nc != null && !$this->getConfiguration()->equals($nc)) {
             $this->setConfiguration($nc)->reloadConfiguration();
         }
+    }
+    
+    /**
+     * Forces collection of any existing garbage cycles.
+     * 
+     * @return integer The number of collected cycles
+     * @link http://php.net/manual/en/features.gc.collecting-cycles.php
+     */
+    public function gc() {
+        return gc_collect_cycles();
+    }
+    
+    /**
+     * Returns TRUE if the PHP internal garbage collection is enabled.
+     * 
+     * @return boolean TRUE if the PHP internal garbage collection is enabled
+     * @link http://php.net/manual/en/function.gc-enabled.php
+     */
+    public function gcEnabled() {
+        return gc_enabled();
+    }
+    
+    /**
+     * Enables PHP internal garbage collection.
+     * 
+     * @return \TechDivision\PersistenceContainer\Container The container instance
+     * @link http://php.net/manual/en/function.gc-enable.php
+     */
+    public function gcEnable() {
+        gc_enable();
+        return $this;
+    }
+    
+    /**
+     * Disables PHP internal garbage collection.
+     * 
+     * @return \TechDivision\PersistenceContainer\Container The container instance
+     * @link http://php.net/manual/en/function.gc-disable.php
+     */
+    public function gcDisable() {
+        gc_disable();
+        return $this;
     }
     
     /**

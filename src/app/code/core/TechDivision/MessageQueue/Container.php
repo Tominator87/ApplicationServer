@@ -31,6 +31,6 @@ class Container extends AbstractContainer {
     public function deploy() {
 
         // return the server instance
-        return array();
+        return $this;
     }
 }

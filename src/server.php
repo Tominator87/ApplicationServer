@@ -33,5 +33,3 @@ $classLoader->register();
 
 $server = new Server();
 $server->start();
-
-echo PHP_EOL . "Successfully shutdown PHP Application Server";

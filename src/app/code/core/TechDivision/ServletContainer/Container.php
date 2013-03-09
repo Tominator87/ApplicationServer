@@ -30,8 +30,6 @@ class Container extends AbstractContainer {
      * @todo Implement real deployment here
      */
     public function deploy() {
-        
-        $applications = array();
 
         // gather all the deployed web applications
         foreach (new \FilesystemIterator(getcwd() . '/webapps') as $folder) {
@@ -47,11 +45,11 @@ class Container extends AbstractContainer {
                 $application->setWebappPath($folder->getPathname());
 
                 // add the application to the available applications
-                $applications[$application->getName()] = $application;
+                $this->applications[$application->getName()] = $application;
             }
         }
 
         // return the server instance
-        return $applications;
+        return $this;
     }
 }

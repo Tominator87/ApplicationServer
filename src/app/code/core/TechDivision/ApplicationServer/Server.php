@@ -42,32 +42,6 @@ class Server {
      * @var array
      */
     protected $threads = array();
-
-    /**
-     * Constructor to initialize the signal handlers for
-     * a controlled shutdown of the server.
-     * 
-     * @return void
-     */
-    public function __construct() {
-        // catch Ctrl+C, kill and SIGTERM (rollback)
-        pcntl_signal(SIGTERM, array($this, 'sigintShutdown'));
-        pcntl_signal(SIGINT, array($this, 'sigintShutdown'));
-    }
-
-    /**
-     * Method, that is executed, if script has been killed by:
-     *
-     * SIGINT: Ctrl+C
-     * SIGTERM: kill
-     *
-     * @param int $signal
-     */
-    public function sigintShutdown($signal) {
-        if ($signal === SIGINT || $signal === SIGTERM) {
-            $this->shutdown();
-        }
-    }
     
     /**
      * Start's the server and initializes the containers.
@@ -75,10 +49,6 @@ class Server {
      * @return void
      */
     public function start() {
-        
-        // initialize shutdown flag
-        InitialContext::get()->setAttribute('shutdown', false);
-        InitialContext::get()->setAttribute('shutdownComplete', false);
         
         // initialize the SimpleXMLElement with the content XML configuration file
         $sxe = simplexml_load_file('cfg/appserver.xml');
@@ -88,64 +58,8 @@ class Server {
         
         // start each container in his own thread
         foreach ($this->configurations->getChilds('/appserver/containers/container') as $i => $configuration) {
-            $this->threads[$i] = $this->newInstance($configuration->getType(), array($configuration));
+            $this->threads[$i] = new ContainerThread($configuration);
             $this->threads[$i]->start();
-        }
-        
-        // shutdown after flag is set
-        while (InitialContext::get()->getAttribute('shutdownComplete') === false) {
-            sleep(1);
-        }
-    }
-
-    /**
-     * Method to shutdown the threads wrapping each of the containers.
-     * 
-     * @return void
-     */
-    public function shutdown() {
-        
-        // send signal to shutdown the server
-        InitialContext::get()->setAttribute('shutdown', true);
-        
-        // send the shutdown request
-        $this->sendShutdownRequest();
-        
-        // synchronize the threads
-        for ($i = 0; $i < sizeof($this->threads); $i++) {
-            $this->threads[$i]->join();
-        }
-        
-        // send signal to shutdown the server
-        InitialContext::get()->setAttribute('shutdownComplete', true);
-    }
-
-    /**
-     * This method sends a shutdown request necessary to stop the 
-     * inifinite loop in the receiver, because of a blocking socket.
-     * 
-     * @return void
-     */
-    public function sendShutdownRequest() {
-
-        try {
-            
-            // send a shutdown request to all containers
-            $containers = $this->configurations->getChilds('/appserver/containers/container');
-            foreach ($containers as $container) {
-                
-                // load the containers socket information
-                $params = current($container->getChilds('/container/receiver/params'));
-                
-                // send shutdown request
-                $client = new Client($params->getAddress(), $params->getPort());
-                $client->start()->setBlock();
-                $client->sendLine(null);
-                $client->readLine();        
-            }
-
-        } catch (\Exception $e) {
-            error_log($e->__toString());
         }
     }
     

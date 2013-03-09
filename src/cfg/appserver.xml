@@ -21,7 +21,7 @@
             <receiver type="TechDivision\ApplicationServer\SocketReceiver">
 	           	<worker type="TechDivision\ServletContainer\RequestHandler"/>
 	           	<stackable type="TechDivision\ServletContainer\WorkerRequest"/>
-                <params workerNumber="2" address="0.0.0.0" port="8586"/>
+                <params workerNumber="1" address="0.0.0.0" port="8586"/>
             </receiver>
         </container>
         <!--
@@ -33,7 +33,7 @@
             <receiver type="TechDivision\MessageQueue\SocketReceiver">
 	           	<worker type="TechDivision\MessageQueue\RequestHandler"/>
 	           	<stackable type="TechDivision\MessageQueue\WorkerRequest"/>
-                <params workerNumber="2" address="0.0.0.0" port="8587"/>
+                <params workerNumber="1" address="0.0.0.0" port="8587"/>
             </receiver>
         </container>
     </containers>
