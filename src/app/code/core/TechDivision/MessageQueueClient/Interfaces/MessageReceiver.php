@@ -1,7 +1,9 @@
 <?php
 
-namespace \TechDivision\MessageQueueClient\Interfaces;
-	 
+namespace TechDivision\MessageQueueClient\Interfaces;
+
+use TechDivision\MessageQueueClient\Interfaces\Message;
+
 /**
  * The interface for all message receivers.
  * 
@@ -18,6 +20,8 @@ interface MessageReceiver {
 	 * related to the receiver was received.
 	 * 
 	 * @param Message $message The message itself
+	 * @param string $sessionId The session ID
+	 * @return void
 	 */
-	function onMessage(Message $message);
+	function onMessage(Message $message, $sessionId);
 }

@@ -12,10 +12,7 @@
     
 namespace TechDivision\MessageQueue;
 
-use TechDivision\ApplicationServer\InitialContext;
-use Doctrine\Common\Persistence\ObjectManager;
-use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\Tools\Setup;
+use TechDivision\MessageQueue\Service\Locator\QueueLocator;
 
 /**
  * The application instance holds all information about the deployed application
@@ -34,7 +31,7 @@ class Application {
      * @var string
      */
     protected $name;
-
+    
     /**
      * The path to the web application.
      * @var string
@@ -42,28 +39,10 @@ class Application {
     protected $webappPath;
 
     /**
-     * The data source name to use.
-     * @var string
+     * The queue manager.
+     * @var \TechDivision\MessageQueue\QueueManager
      */
-    protected $dataSourceName;
-    
-    /**
-     * The path to the doctrine entities.
-     * @var string
-     */
-    protected $pathToEntities;
-    
-    /**
-     * The doctrine entity manager.
-     * @var \Doctrine\Common\Persistence\ObjectManager 
-     */
-    protected $entityManager;
-    
-    /**
-     * Array with the connection parameters.
-     * @var array
-     */
-    protected $connectionParameters;
+    protected $queueManager;
     
     /**
      * Passes the application name That has to be the class namespace.
@@ -78,23 +57,17 @@ class Application {
      * Has been automatically invoked by the container after the application
      * instance has been created.
      * 
-     * @return \TechDivision\PersistenceContainer\Application The connected application
+     * @return \TechDivision\MessageQueue\Application The connected application
      */
     public function connect() {
-
-        $pathToEntities = array($this->getPathToEntities());
         
-        // load the doctrine metadata information
-        $metadataConfiguration = Setup::createAnnotationMetadataConfiguration($pathToEntities, true);
+        // initialize the queue manager instance
+        $queueManager = new QueueManager();
+        $queueManager->setWebappPath($this->getWebappPath());
+        $queueManager->initialize();
         
-        // load the connection parameters
-        $connectionParameters = $this->getConnectionParameters();
-        
-        // initialize the entity manager
-        $entityManager = EntityManager::create($connectionParameters, $metadataConfiguration);
-        
-        // set the entity manager
-        $this->setEntityManager($entityManager);
+        // set the queue manager
+        $this->setQueueManager($queueManager);
         
         // return the instance itself
         return $this;
@@ -109,89 +82,10 @@ class Application {
     public function getName() {
         return $this->name;
     }
-
-    /**
-     * Sets the data source name.
-     *
-     * @param string $dataSourceName The data source name
-     * @return string
-     */
-    public function setDataSourceName($dataSourceName) {
-        $this->dataSourceName = $dataSourceName;
-    }
-
-    /**
-     * Returns the data source name.
-     *
-     * @return string The data source name
-     */
-    public function getDataSourceName() {
-        return $this->dataSourceName;
-    }
     
-    /**
-     * Set's the path to the doctrine entities.
-     * 
-     * @param string $pathToEntities The path to the doctrine entities
-     * @return \TechDivision\PersistenceContainer\Application The application instance
-     */
-    public function setPathToEntities($pathToEntities) {
-        $this->pathToEntities = $pathToEntities;
-        return $this;
-    }
-    
-    /**
-     * Return's the path to the doctrine entities.
-     * 
-     * @return string The path to the doctrine entities
-     */
-    public function getPathToEntities() {
-        return $this->pathToEntities;
-    }
-    
-    /**
-     * Set's the database connection parameters.
-     * 
-     * @param array $connectionParameters The database connection parameters
-     * @return \TechDivision\PersistenceContainer\Application The application instance
-     */
-    public function setConnectionParameters(array $connectionParameters) {
-        $this->connectionParameters = $connectionParameters;
-        return $this;
-    }
-    
-    /**
-     * Return's the database connection parameters.
-     * 
-     * @return array The database connection parameters
-     */
-    public function getConnectionParameters() {
-        return $this->connectionParameters;
-    }
-    
-    /**
-     * Sets the applications entity manager instance.
-     * 
-     * @param \Doctrine\Common\Persistence\ObjectManager $entityManager The entity manager instance
-     * @return \TechDivision\PersistenceContainer\Application The application instance
-     */
-    public function setEntityManager(ObjectManager $entityManager) {
-        $this->entityManager = $entityManager;
-        return $this;
-    }
-    
-    /**
-     * Return the entity manager instance.
-     * 
-     * @return \Doctrine\Common\Persistence\ObjectManager The entity manager instance
-     */
-    public function getEntityManager() {
-        return $this->entityManager;
-    }
-
     /**
      * Set's the path to the web application.
-     *
+     * 
      * @param string $webappPath The path to the web application
      * @return \TechDivision\ServletContainer\Application The application instance
      */
@@ -199,10 +93,10 @@ class Application {
         $this->webappPath = $webappPath;
         return $this;
     }
-
+    
     /**
      * Return's the path to the web application.
-     *
+     * 
      * @return string The path to the web application
      */
     public function getWebappPath() {
@@ -210,13 +104,37 @@ class Application {
     }
     
     /**
+     * Sets the applications queue manager instance.
      * 
-     * @param type $className
-     * @param type $sessionId
-     * @param type $args
-     * @return type
+     * @param \TechDivision\MessageQueue\QueueManager $queueManager The queue manager instance
+     * @return \TechDivision\MessageQueue\Application The application instance
      */
-    public function lookup($className, $sessionId) {
-        return InitialContext::get()->lookup($className, $sessionId, array($this));
+    public function setQueueManager(QueueManager $queueManager) {
+        $this->queueManager = $queueManager;
+        return $this;
+    }
+    
+    /**
+     * Return the queue manager instance.
+     * 
+     * @return \TechDivision\MessageQueue\QueueManager The queue manager instance
+     */
+    public function getQueueManager() {
+        return $this->queueManager;
+    }
+    
+    public function hasQueue($queue) {
+        return array_key_exists($queue->getName(), $this->getQueueManager()->getQueues());
+    }
+    
+    /**
+     * Returns the receiver for the passed queue.
+     * 
+     * @param \TechDivision\MessageQueueClient\Queue $queue
+     * @return \TechDivision\MessageQueueClient\Interfaces\MessageReceiver The receiver for the passed queue
+     */
+    public function locate($queue) {
+        $queueLocator = new QueueLocator($this->getQueueManager());
+        return $queueLocator->locate($queue);
     }
 }

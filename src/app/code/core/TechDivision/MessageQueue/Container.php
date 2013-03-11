@@ -13,6 +13,7 @@
 namespace TechDivision\MessageQueue;
 
 use TechDivision\ApplicationServer\AbstractContainer;
+use TechDivision\MessageQueue\MessageBeanAttributeImpl;
 
 /**
  * @package     TechDivision\MessageQueue
@@ -24,11 +25,30 @@ use TechDivision\ApplicationServer\AbstractContainer;
 class Container extends AbstractContainer {
 
     /**
-     * Returns an array with available message queues.
-     *
-     * @return array The available message queues
+     * Returns an array with available applications.
+     * 
+     * @return \TechDivision\Server The server instance
+     * @todo Implement real deployment here
      */
     public function deploy() {
+
+        // gather all the deployed web applications
+        foreach (new \FilesystemIterator(getcwd() . '/webapps') as $folder) {
+
+            // check if file or subdirectory has been found
+            if (is_dir($folder)) {
+
+                // initialize the application name
+                $name = basename($folder);
+
+                // initialize the application instance
+                $application = $this->newInstance('\TechDivision\MessageQueue\Application', array($name));
+                $application->setWebappPath($folder->getPathname());
+
+                // add the application to the available applications
+                $this->applications[$application->getName()] = $application;
+            }
+        }
 
         // return the server instance
         return $this;

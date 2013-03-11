@@ -1,15 +1,24 @@
 <?php
 
-namespace \TechDivision\MessageQueueClient\Messages;
+namespace TechDivision\MessageQueueClient\Messages;
  
+use TechDivision\MessageQueueClient\Queue;
+use TechDivision\MessageQueueClient\Interfaces\Message;
+use TechDivision\MessageQueueClient\Messages\MessageMonitor;
+use TechDivision\MessageQueueClient\Utils\PriorityKey;
+use TechDivision\MessageQueueClient\Utils\PriorityLow;
+use TechDivision\MessageQueueClient\Utils\MQStateKey;
+use TechDivision\MessageQueueClient\Utils\MQStateActive;
+
 /**
  * The abstract superclass for all messages.
- * 
- * @package	mqclient
- * @author	wagnert <tw@struts4php.org>
- * @version $Revision: 1.4 $ $Date: 2009-01-03 13:11:54 $
- * @copyright struts4php.org
- * @link www.struts4php.org
+ *
+ * @package     TechDivision\MessageQueueClient
+ * @copyright  	Copyright (c) 2010 <info@techdivision.com> - TechDivision GmbH
+ * @license    	http://opensource.org/licenses/osl-3.0.php
+ *              Open Software License (OSL 3.0)
+ * @author      Markus Stockbauer <ms@techdivision.com>
+ * @author      Tim Wagner <tw@techdivision.com>
  */
 abstract class AbstractMessage implements Message {
 	
@@ -27,13 +36,13 @@ abstract class AbstractMessage implements Message {
 	
 	/**
 	 * The parent message.
-	 * @var Message
+	 * @var \TechDivision\MessageQueueClient\Interfaces\Message
 	 */
 	protected $parentMessage = null;
 	
 	/**
 	 * The monitor for monitoring the message.
-	 * @var MessageMonitor
+	 * @var \TechDivision\MessageQueueClient\Messages\MessageMonitor
 	 */
 	protected $messageMonitor = null;
 

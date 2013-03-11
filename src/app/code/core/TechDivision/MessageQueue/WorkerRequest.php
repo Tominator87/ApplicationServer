@@ -42,42 +42,30 @@ class WorkerRequest extends \Stackable {
     }
     
     /**
-     * Method that is executed, when a fatal error occurs.
-     *
-     * @return void
-     */
-    public function fatalErrorShutdown() {
-        // nothing to do
-    }
-    
-    /**
      * @see \Stackable::run()
      */
     public function run() {
-            
-        register_shutdown_function(array($this, 'fatalErrorShutdown'));
 
         // check if a worker is available
         if ($this->worker) {
 
             try {
+                
+                // make message and worker available in local scope
+                $message = $this->message;
+                $worker = $this->worker;
 
                 // load class name and session ID from remote method
-                $className = $remoteMethod->getClassName();
-                $sessionId = $remoteMethod->getSessionId();
+                $queue = $message->getDestination();
+                $sessionId = $message->getSessionId();
 
                 // load the referenced application from the server
-                $application = $this->worker->findApplication($className);
+                $application = $this->worker->findApplication($queue);
 
-                // create initial context and lookup session bean
-                $instance = $application->lookup($className, $sessionId);
-
-                // prepare method name and parameters and invoke method
-                $methodName = $remoteMethod->getMethodName();
-                $parameters = $remoteMethod->getParameters();
-
-                // invoke the remote method call on the local instance
-                call_user_func_array(array($instance, $methodName), $parameters);
+                // lookup the message receiver and process the message
+                $receiver = $application->locate($queue);
+                $receiver->setWorker($worker);
+                $receiver->onMessage($message, $sessionId);
 
             } catch (\Exception $e) {
                 error_log($e->__toString());

@@ -43,24 +43,11 @@ class WorkerRequest extends \Stackable {
     public function __construct($resource) {
         $this->resource = $resource;
     }
-    
-    /**
-     * Method that is executed, when a fatal error occurs.
-     *
-     * @return void
-     */
-    public function fatalErrorShutdown() {
-        if (is_resource($this->resource)) {
-            @socket_close($this->resource);
-        }
-    }
 
     /**
      * @see \Stackable::run()
      */
     public function run() {
-            
-        register_shutdown_function(array($this, 'fatalErrorShutdown'));
 
         // check if a worker is available
         if ($this->worker) {

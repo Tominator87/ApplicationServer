@@ -1,16 +1,19 @@
 <?php
 
-namespace \TechDivision\MessageQueueClient\Messages;
+namespace TechDivision\MessageQueueClient\Messages;
+
+use TechDivision\MessageQueueClient\Messages\AbstractMessage;
 
 /**
  * The implementation for sending a message containing
  * data encapsulated in a String.
- * 
- * @package	mqclient
- * @author	wagnert <tw@struts4php.org>
- * @version $Revision: 1.2 $ $Date: 2008-10-17 09:44:23 $
- * @copyright struts4php.org
- * @link www.struts4php.org
+ *
+ * @package     TechDivision\MessageQueueClient
+ * @copyright  	Copyright (c) 2010 <info@techdivision.com> - TechDivision GmbH
+ * @license    	http://opensource.org/licenses/osl-3.0.php
+ *              Open Software License (OSL 3.0)
+ * @author      Markus Stockbauer <ms@techdivision.com>
+ * @author      Tim Wagner <tw@techdivision.com>
  */
 class StringMessage extends AbstractMessage {
 

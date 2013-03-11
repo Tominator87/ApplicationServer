@@ -1,6 +1,6 @@
 <?php
 
-namespace \TechDivision\MessageQueueClient\Interfaces;
+namespace TechDivision\MessageQueueClient\Interfaces;
 	 
 /**
  * The interface for all messages.

@@ -10,7 +10,7 @@
         StartAtStartup: When TRUE the MessageBean's start() method will be invoked when the MessageQueue starts
     -->
     
-    <message-bean name="LogTest" directory="dummy-services" include="logtestmessagebean.php">
+    <message-bean name="LogTest" directory="classes">
         <attribute name="SchedulableClass">LogTestMessageBean</attribute>
         <!-- attribute name="SchedulableArguments">Schedulabe Test,12345</attribute -->
         <!-- attribute name="SchedulableArgumentTypes">string,integer</attribute -->

@@ -13,6 +13,7 @@
 namespace TechDivision\MessageQueue;
 
 use TechDivision\SplClassLoader;
+use TechDivision\MessageQueueClient\Interfaces\Message;
 
 /**
  * @package     TechDivision\MessageQueue
@@ -71,18 +72,17 @@ class RequestHandler extends \Worker {
      * @return \TechDivision\PersistenceContainer\Application The application instance
      * @throws \Exception Is thrown if no application can be found for the passed class name
      */
-    public function findApplication($className) {
+    public function findApplication($queue) {
         
         // iterate over all classes and check if the application name contains the class name
         foreach ($this->getApplications() as $name => $application) {
-            if (strpos($className, $name) !== false) {
-                // if yes, return the application instance
+            if ($application->hasQueue($queue)) {
                 return $application;
             }
         }
         
         // if not throw an exception
-        throw new \Exception("Can\'t find application for '$className'");
+        throw new \Exception("Can\'t find application for '" . $queue->getName() . "'");
     }
     
     /**
@@ -105,5 +105,15 @@ class RequestHandler extends \Worker {
         
         // set the applications in the worker instance
         $this->applications = $applications;
+    }
+    
+    /**
+     * Updates the message monitor.
+     * 
+     * @param Message $message The message to update the monitor for
+     * @return void
+     */
+    public function updateMonitor(Message $message) {
+        error_log("Update message monitor with message: $message");
     }
 }

@@ -27,12 +27,13 @@ class SocketReceiver extends \TechDivision\ApplicationServer\SocketReceiver {
      * @see \TechDivision\ApplicationServer\AbstractReceiver::processRequest()
      */
     public function processRequest(\TechDivision\Socket $socket) {
+        
+        // create a new client and read one line
+        $client = new Client();
+        $client->setResource($socket->getResource());
 
-        // read a line from the client
-        $line = $socket->readLine();
-
-        // unserialize the passed message
-        $message = unserialize($line);
+        // read one line and unserialize the passed message
+        $message = unserialize($client->readLine());
 
         // create a new request instance and stack it
         $this->stack($this->newStackable(array($message)));

@@ -77,7 +77,7 @@ class QueueConnection {
 	 * @return void
 	 */
 	public function __construct() {
-		$this->sessions = new ArrayObject();
+		$this->sessions = new \ArrayObject();
 	}
 
 	/**
@@ -96,12 +96,12 @@ class QueueConnection {
             $socket = new Client($this->getAddress(), $this->getPort());
             
             $this->setSocket($socket->start()->setBlock());
-            
-			// read the response from the Socket
-			$response = $this->getSocket()->readLine()
 			
 			// check if the connection should be validated
 			if ($this->validate === true) {
+            
+    			// read the response from the Socket
+    			$response = $this->getSocket()->readLine();
 			    
 				// check the QueueResponse
 				$queueResponse = QueueResponse::parse($response);
@@ -239,7 +239,7 @@ class QueueConnection {
 		}
 		
 		// write the Message to the MessageQueue
-		$this->getSocket()->writeLine(serialize($message));
+		$this->getSocket()->sendLine(serialize($message));
 		
 		// check if the QueueResponse has to be validated
 		if ($validateResponse === true) {
