@@ -23,6 +23,24 @@ use TechDivision\MessageQueue\MessageBeanAttributeImpl;
  * @author      Tim Wagner <tw@techdivision.com>
  */
 class Container extends AbstractContainer {
+		
+	/**
+	 * The array with the MessageBeans last invokation time.
+	 * @var array
+	 */			
+	protected $lastInvocation = array();
+	
+	/**
+	 * The array with the MessageBeans initial repetitions.
+	 * @var array
+	 */			
+	protected $initialRepetitions = array();
+	
+	/**
+	 * The array with the MessageBeans repetitions already done.
+	 * @var array
+	 */			
+	protected $repetitions = array();
 
     /**
      * Returns an array with available applications.
@@ -45,8 +63,8 @@ class Container extends AbstractContainer {
                 $application = $this->newInstance('\TechDivision\MessageQueue\Application', array($name));
                 $application->setWebappPath($folder->getPathname());
 
-                // add the application to the available applications
-                $this->applications[$application->getName()] = $application;
+                // connect and add the application to the available applications
+                $this->applications[$application->getName()] = $application->connect();
             }
         }
 

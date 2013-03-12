@@ -123,6 +123,13 @@ class Application {
         return $this->queueManager;
     }
     
+    /**
+     * Returns TRUE if the application is related with the 
+     * passed queue instance.
+     * 
+     * @param \TechDivision\MessageQueueClient\Queue $queue The queue the application has to be related to
+     * @return boolean TRUE if the application is related, else FALSE
+     */
     public function hasQueue($queue) {
         return array_key_exists($queue->getName(), $this->getQueueManager()->getQueues());
     }

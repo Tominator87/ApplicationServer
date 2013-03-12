@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <message-queues>
-    <message-queue type="\TechDivision\Example\Receivers\CacheCounterReceiver" directory="classes">
+    <message-queue type="\TechDivision\Example\MessageBeans\CacheCounterReceiver" directory="classes">
         <destination>queue/cache-counter</destination>
     </message-queue>
 </message-queues>

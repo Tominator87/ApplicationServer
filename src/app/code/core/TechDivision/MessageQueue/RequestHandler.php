@@ -66,6 +66,16 @@ class RequestHandler extends \Worker {
     }
     
     /**
+     * Pass the array with the available applications
+     * to the worker instance.
+     * 
+     * @param array $applications The available applications
+     */
+    public function setApplications($applications) {
+        $this->applications = $applications;
+    }
+    
+    /**
      * Tries to find and return the application for the passed class name.
      * 
      * @param string $className The name of the class to find and return the application instance
@@ -94,17 +104,8 @@ class RequestHandler extends \Worker {
         $classLoader = new SplClassLoader();
         $classLoader->register();
         
-        // initialize the array for the applications
-        $applications = array();
-        
-        // load the available applications from the container
-        foreach ($this->getContainer()->getApplications() as $name => $application) {
-            // set the applications and connect the entity manager
-            $applications[$name] = $application->connect();
-        }
-        
         // set the applications in the worker instance
-        $this->applications = $applications;
+        $this->setApplications($this->getContainer()->getApplications());
     }
     
     /**
