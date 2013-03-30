@@ -21,11 +21,6 @@
     <!-- ==================================================================== -->
     <target name="prepare" depends="clean" description="Prepares all the required directories.">
         <mkdir dir="${php-target.dir}" />
-        <mkdir dir="${php-target.dir}/reports" />
-        <mkdir dir="${php-target.dir}/reports/coverage" />
-        <condition property="init.pear">
-            <available file="${pear.lib.dir}" type="dir"/>
-        </condition>
     </target>
     <!-- ==================================================================== -->
     <!-- Copies the sources to the target directory							  -->
@@ -113,7 +108,7 @@
     <!-- ==================================================================== -->
     <target name="run-tests" depends="copy-tests" description="Runs the PHPUnit tests and generates a report.">
         <exec executable="${pear.bin.dir}/phpunit" dir="${php-target.dir}">
-            <arg line="--log-junit ${php-target.dir}/reports/phpunit.xml --coverage-clover ${php-target.dir}/reports/coverage/clover.xml --coverage-html ${php-target.dir}/reports/coverage/ app/code/${codepool}/${namespace}/AllTests" />
+            <arg line="--bootstrap bootstrap.php --configuration phpunit.xml.dist" />
         </exec>
     </target>
     <!-- ==================================================================== -->

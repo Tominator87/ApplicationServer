@@ -130,20 +130,32 @@ class SplClassLoader
      *
      * @param string $className The name of the class to load.
      * @return void
+     * @todo Has to be refactored to improve performance
      */
     public function loadClass($className)
     {
+    
         if (null === $this->_namespace || $this->_namespace.$this->_namespaceSeparator === substr($className, 0, strlen($this->_namespace.$this->_namespaceSeparator))) {
+            
             $fileName = '';
             $namespace = '';
+            
             if (false !== ($lastNsPos = strripos($className, $this->_namespaceSeparator))) {
                 $namespace = substr($className, 0, $lastNsPos);
                 $className = substr($className, $lastNsPos + 1);
                 $fileName = str_replace($this->_namespaceSeparator, DIRECTORY_SEPARATOR, $namespace) . DIRECTORY_SEPARATOR;
             }
+            
             $fileName .= str_replace('_', DIRECTORY_SEPARATOR, $className) . $this->_fileExtension;
 
-            require ($this->_includePath !== null ? $this->_includePath . DIRECTORY_SEPARATOR : '') . $fileName;
+			foreach (explode(PATH_SEPARATOR, get_include_path()) as $path) {
+				$toRequire = $path . DIRECTORY_SEPARATOR . $fileName;
+				if (file_exists($toRequire)) {
+					require_once $toRequire;
+				}
+			}
+
+			// require ($this->_includePath !== null ? $this->_includePath . DIRECTORY_SEPARATOR : '') . $fileName;
         }
     }
 }

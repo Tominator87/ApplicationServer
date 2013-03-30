@@ -5,7 +5,7 @@
         <database>
             <driver>pdo_mysql</driver>
             <user>appserver</user>
-            <password>eraZor</password>
+            <password>appserver</password>
             <databaseName>appserver_ApplicationServer</databaseName>
         </database>
     </datasource>
