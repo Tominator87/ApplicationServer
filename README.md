@@ -199,14 +199,14 @@ Server ausgeliefert werden erfolgt die Installation im integrierten PEAR Reposit
 
 ```
 bin/webapp channel-discover pear.doctrine-project.org
-bin/webapp install pear install doctrine/DoctrineORM
+bin/webapp install doctrine/DoctrineORM
 ```
 
 Anlegen der Datenbank über die MySQL Konsole mit:
 
 ```
 create database appserver_ApplicationServer;
-grant all on appserver_ApplicationServer.* to "appserver"@"localhost" identified by "eraZor";
+grant all on appserver_ApplicationServer.* to "appserver"@"localhost" identified by "appserver";
 flush privileges;
 ```
 
@@ -275,16 +275,3 @@ $allEntities = $processor->findAll();
 
 ?>
 ```
-
-Vagrant für die Steuerung der VirtualBox
-Chef für die Konfiguration der virtuellen Maschine
-gem install librarian
-gem install knife-solo
-librarian-chef install
-
-Hosting
-- Rackspace
-
-Monitoring
-- pingdom
-- newrelic

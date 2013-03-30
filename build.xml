@@ -41,45 +41,11 @@
     <!-- Copies the sources to the deploy directory     					  -->
     <!-- ==================================================================== -->
     <target name="deploy" depends="copy" description="Copies the sources to the deploy directory.">
-        <copy todir="${dir.www}/${instance.dir}" preservelastmodified="true" overwrite="true">
-            <fileset dir="${php-target.dir}">
-                <include name="**"/>
-            </fileset>
-        </copy>
         <copy todir="${dir.www}/${deploy.dir}" preservelastmodified="true" overwrite="true">
             <fileset dir="${php-target.dir}">
                 <include name="**/*"/>
             </fileset>
         </copy>
-    </target>
-    <!-- ==================================================================== -->
-    <!-- Generates the PEAR package                                           -->
-    <!-- ==================================================================== -->
-    <target name="create-package" depends="copy" description="Generates the PEAR package.">
-        <tstamp>
-            <format property="actual.date" pattern="yyyy-MM-dd" locale="en" />
-        </tstamp>
-        <tstamp>
-            <format property="actual.time" pattern="hh:mm:ss" locale="en" />
-        </tstamp>
-        <copy tofile="${php-target.dir}/package2.xml" file="${basedir}/pear/package2.xml">
-            <filterchain>
-                <expandproperties/>
-            </filterchain>
-        </copy>
-        <exec dir="${php-target.dir}" executable="${pear.bin}">
-            <arg value="contents"/>
-            <arg value="-T"/>
-            <arg value="${php-target.dir}/package2.xml"/>
-            <arg value="-S"/>
-            <arg value="${php-target.dir}"/>
-            <arg value="-D"/>
-            <arg value="${php-target.dir}"/>
-        </exec>
-        <exec dir="${php-target.dir}" executable="${pear.bin}">
-            <arg value="package"/>
-            <arg value="package.xml"/>
-        </exec>
     </target>
     <!-- ==================================================================== -->
     <!-- Generates the API documentation                                      -->
@@ -132,26 +98,7 @@
     <!-- ==================================================================== -->
     <!-- Copies the test sources to the target directory					  -->
     <!-- ==================================================================== -->
-    <target name="copy-tests" depends="prepare" description="Copies the test sources to the target directory.">
-        <echo message="Preparing TDProject source..."/>
-        <antcall target="get-appserver-src" />
-        <exec dir="${dir.www}/${instance.base.dir.tmp}" executable="${bin.extract}">
-            <arg line="${bin.extract.args}"/>
-            <arg line="${dir.www}/${instance.base.dir.tmp}/${instance.download.file}"/>
-        </exec>
-        <move todir="${php-target.dir}">
-            <fileset dir="${dir.www}/${instance.base.dir.tmp}/appserver-${appserver.version}"/>
-        </move>
-        <echo message="Installing instance ${php-target.dir}..." />
-        <chmod perm="+x" file="${php-target.dir}/bin/webapp"/>
-        <exec dir="${php-target.dir}" executable="bin/webapp">
-            <arg value="setup"/>
-        </exec>
-        <copy todir="${php-target.dir}" overwrite="true">
-            <fileset dir="${php-src.dir}">
-                <include name="**/*" />
-            </fileset>
-        </copy>
+    <target name="copy-tests" depends="copy" description="Copies the test sources to the target directory.">
         <copy todir="${php-target.dir}">
             <fileset dir="${php-test.dir}">
                 <include name="**/*" />
@@ -175,136 +122,6 @@
     <target name="build" description="Runs the PHPUnit tests and generates a report.">
         <antcall target="phpmd"/>
         <antcall target="run-tests"/>
-    </target>
-    <!-- ==================================================================== -->
-    <!-- Upload current release version to PEAR Channel                       -->
-    <!-- ==================================================================== -->
-    <target name="upload-release" >
-        <echo message="Releasing ${namespace}-${release.version}.tgz on ${pear.channel}..."/>
-        <exec executable="${curl.bin}"  outputproperty="exec.response">
-            <arg line='-F hash="${pear.api.hash}" -F qqfile=@"${php-target.dir}/${namespace}-${release.version}.tgz" -s http://${pear.channel}/upload'>
-            </arg>
-        </exec>
-        <echo>${exec.response}</echo>
-    </target>
-    <!-- ==================================================================== -->
-    <!-- Release new patch version                                            -->
-    <!-- ==================================================================== -->
-    <target name="version-release" >
-        <taskdef resource="net/sf/antcontrib/antlib.xml"/>
-        <taskdef name="xmltask" classname="com.oopsconsultancy.xmltask.ant.XmlTask"/>
-        <echo message="Preparing new version release" />
-        <exec executable="awk" output="${basedir}/build.default.properties">
-            <arg line="'BEGIN{FS=&quot;.&quot;} {if ($1 ~ /release/ &amp;&amp; $2 ~ /version/) print $1 &quot;.&quot; $2 &quot;.&quot; $3 &quot;.&quot; ++$4;else print}' ${basedir}/build.default.properties" />
-        </exec>
-        <property file="${basedir}/build.default.properties" prefix="new"/>
-        <var name="release.version" unset="true"/>
-        <propertycopy name="release.version" from="new.release.version" />
-        <input message="Please enter changelog for release version ${release.version}:" addproperty="release.changelog" defaultvalue="- New release version"/>
-        <tstamp>
-            <format property="actual.date" pattern="yyyy-MM-dd" locale="en" />
-            <format property="actual.time" pattern="hh:mm:ss" locale="en" />
-        </tstamp>
-        <xmltask source="${basedir}/pear/package2.xml" dest="${basedir}/pear/package2.xml">
-            <replace path="/:package/:notes/text()" withXml="${release.changelog}"/>
-            <insert path="/*[local-name()='package']/*[local-name()='changelog']/*[local-name()='release'][1]" position="before">
-				<![CDATA[<release>
-				<version>
-					<release>${release.version}</release>
-					<api>${api.version}</api>
-				</version>
-				<stability>
-					<release>${release.stability}</release>
-					<api>${api.stability}</api>
-				</stability>
-				<date>${actual.date}</date>
-				<license uri="http://www.gnu.org/licenses/gpl-2.0.html">GPL, version 2.0</license>
-				<notes>
-                        ${release.changelog}
-                    </notes>
-			</release>]]>
-            </insert>
-        </xmltask>
-        <propertyregex property="tag.release.version" input="${release.version}" regexp="\." replace="-" casesensitive="true"/>
-        <exec executable="${git.bin}" dir="${basedir}">
-            <arg line="commit -a -m '${release.changelog}'" />
-        </exec>
-        <exec executable="${git.bin}" dir="${basedir}">
-            <arg line="tag -a -m '${release.changelog}' release-${tag.release.version}" />
-        </exec>
-        <exec executable="${git.bin}" dir="${basedir}">
-            <arg line="push ssh://${user.name}@${gerrit.host}:${gerrit.port}/${gerrit.namespace}/${ant.project.name} tag release-${tag.release.version}" />
-        </exec>
-        <antcall target="create-package"/>
-        <antcall target="upload-release"/>
-        <echo message="${namespace} Version ${release.version} released." />
-    </target>
-    <!-- ==================================================================== -->
-    <!-- Enables repository export for GIT daemon                             -->
-    <!-- ==================================================================== -->
-    <target name="git-daemon-export-ok" description="Enables GIT repository export">
-        <touch file="${basedir}/.git/git-daemon-export-ok"/>
-    </target>
-    <!-- ==================================================================== -->
-    <!-- Disables repository export for GIT daemon                            -->
-    <!-- ==================================================================== -->
-    <target name="git-daemon-export-remove" description="Disables GIT repository export">
-        <delete file="${basedir}/.git/git-daemon-export-ok"/>
-    </target>	
-    <!-- ==================================================================== -->
-    <!-- Initializing a TDProject instance for testing purpose   			  -->
-    <!-- ==================================================================== -->
-    <target name="init-instance" description="Creates a TDProject instance for testing purpose">
-        <echo message="Preparing TDProject source..."/>
-        <antcall target="get-appserver-src" />
-        <delete dir="${basedir}/instance-src" includeemptydirs="true" quiet="false" verbose="false" failonerror="true"/>
-        <delete dir="${dir.www}/${instance.dir}" includeemptydirs="true" quiet="false" verbose="false" failonerror="true"/>
-        <exec dir="${dir.www}/${instance.base.dir.tmp}" executable="${bin.extract}">
-            <arg line="${bin.extract.args}"/>
-            <arg line="${dir.www}/${instance.base.dir.tmp}/${instance.download.file}"/>
-        </exec>
-        <move todir="${dir.www}/${instance.dir}">
-            <fileset dir="${dir.www}/${instance.base.dir.tmp}/appserver-${appserver.version}"/>
-        </move>
-        <antcall target="finalize-instance-installation"/>
-    </target>	
-    <!-- ==================================================================== -->
-    <!-- Finalize installation of TDProject instance			   			  -->
-    <!-- ==================================================================== -->
-    <target name="finalize-instance-installation">
-        <echo message="Installing instance ${instance.url}..." />
-        <chmod perm="+x" file="${dir.www}/${instance.dir}/bin/webapp"/>
-        <exec dir="${dir.www}/${instance.dir}" executable="bin/webapp">
-            <arg value="setup"/>
-        </exec>		
-        <exec dir="${dir.www}/${instance.dir}" executable="${php.bin}">
-            <arg line="-f install.php --
-            	--method install
-                --db_host ${mysql.host}
-                --db_name ${mysql.database}
-                --db_user ${mysql.username}
-                --db_pass ${mysql.password}
-            "/>
-        </exec>
-        <exec executable="/bin/ln" >
-            <arg value="-s"/>
-            <arg value="${dir.www}/${instance.dir}"/>
-            <arg value="${basedir}/instance-src"/>
-        </exec>
-    </target>	
-    <!-- ==================================================================== -->
-    <!-- Check if TDProject Source Package has been downloaded yet  		  -->
-    <!-- ==================================================================== -->
-    <target name="check-appserver-exists">
-        <available file="${dir.www}/${instance.base.dir.tmp}/${instance.download.file}" property="appserver-src.present"/>
-    </target>	
-    <!-- ==================================================================== -->
-    <!-- Get TDProject Source Package by given version number		  		  -->
-    <!-- ==================================================================== -->
-    <target name="get-appserver-src" depends="check-appserver-exists" unless="appserver-src.present">
-        <echo message="Downloading TDProject v${appserver.version}..."/>
-        <mkdir dir="${dir.www}/${instance.base.dir.tmp}" />
-        <get src="${instance.download.url}/${instance.download.file}" dest="${dir.www}/${instance.base.dir.tmp}/${instance.download.file}"/>
     </target>
     <!-- ==================================================================== -->
     <!-- Prepares all the required directories								  -->
@@ -402,18 +219,6 @@
             <arg value="channel-update" />
             <arg value="pear.php.net" />
         </exec>
-        <exec dir="${php-target.dir}" executable="${pear.bin}">
-            <arg value="-c" />
-            <arg value="${php-target.dir}/pear/cfg/.pearrc" />
-            <arg value="channel-discover" />
-            <arg value="connect.techdivision.com" />
-        </exec>
-        <exec dir="${php-target.dir}" executable="${pear.bin}">
-            <arg value="-c" />
-            <arg value="${php-target.dir}/pear/cfg/.pearrc" />
-            <arg value="install" />
-            <arg value="techdivision/PEAR_Command_Application" />
-        </exec>
     </target>
     <!-- ==================================================================== -->
     <!-- Initializes the PEAR channel in the target directory, necessary for  -->
@@ -424,21 +229,6 @@
             <arg value="setup" />
         </exec>
     </target>
-    <!-- ==================================================================== -->
-    <!-- Initializes the PEAR channel in the target directory, necessary for  -->
-    <!-- the packages this project is related                                 -->
-    <!-- ==================================================================== -->
-    <!-- target name="UPDATE-create" depends="UPDATE-setup">
-        <exec dir="${php-target.dir}/pear" executable="${php-target.dir}/pear/bin/webapp">
-            <arg value="channel-discover" />
-            <arg value="project.tdintern.de/appserver" />
-        </exec>
-        <exec dir="${php-target.dir}/pear" executable="${php-target.dir}/pear/bin/webapp">
-            <arg value="config-set" />
-            <arg value="preferred_state" />
-            <arg value="alpha" />
-        </exec>
-    </target -->
     <!-- ==================================================================== -->
     <!-- Merges the PEAR files with the TDProject sources                     -->
     <!-- ==================================================================== -->
