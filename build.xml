@@ -4,7 +4,7 @@
     <property file="${basedir}/build.default.properties"/>
     <property file="${basedir}/build.${os.family}.properties"/>
     <property environment="env" />
-    <property name="namespace" value="TDProject" />
+    <property name="namespace" value="ApplicationServer" />
     <property name="codepool" value="core"/>
     <property name="unique.name" value="${codepool}/${namespace}" />
     <property name="php-src.dir" value="${basedir}/src" />

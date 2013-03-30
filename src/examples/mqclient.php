@@ -33,7 +33,7 @@ $classLoader->register();
 session_start();
 
 // initialize the connection and the session
-$queue = Queue::createQueue("queue/cache-counter");
+$queue = Queue::createQueue("queue/import");
 $connection = QueueConnectionFactory::createQueueConnection();
 $session = $connection->createQueueSession();
 $sender = $session->createSender($queue);

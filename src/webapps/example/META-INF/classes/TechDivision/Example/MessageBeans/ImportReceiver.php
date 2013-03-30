@@ -19,7 +19,7 @@ use TechDivision\Example\Entities\Sample;
 use TechDivision\PersistenceContainerClient\Context\Connection\Factory;
 
 /**
- * This is the dummy implementation of a message receiver.
+ * This is the implementation of a import message receiver.
  *
  * @package     TechDivision\Example
  * @copyright  	Copyright (c) 2010 <info@techdivision.com> - TechDivision GmbH
@@ -27,7 +27,7 @@ use TechDivision\PersistenceContainerClient\Context\Connection\Factory;
  *              Open Software License (OSL 3.0)
  * @author      Tim Wagner <tw@techdivision.com>
  */
-class CacheCounterReceiver extends AbstractReceiver {
+class ImportReceiver extends AbstractReceiver {
 	
 	/**
 	 * @see \TechDivision\MessageQueueClient\Interfaces\MessageReceiver::onMessage()
@@ -36,7 +36,6 @@ class CacheCounterReceiver extends AbstractReceiver {
 		
 	    // log that a Message was received
 		error_log($logMessage = "Successfully received / finished message");
-
 		$connection = Factory::createContextConnection();
 		$session = $connection->createContextSession();
 		$initialContext = $session->createInitialContext();

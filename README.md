@@ -10,7 +10,7 @@ Application im PHP Umfeld zu etablieren.
 * Doctrine als Standard Persistence Provider
 * Session Beans (Stateful, Stateless + Singleton)
 * Message Beans
-* Timer Service
+* Timer Service (tbd)
 * Servlet Engine
 * Integrierte Message Queue
 * Einfache Skalierung

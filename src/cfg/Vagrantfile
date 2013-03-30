@@ -1,0 +1,26 @@
+Vagrant::Config.run do |config|
+
+	config.vm.define :appserver do |config_appserver|
+	
+	    config_appserver.vm.box = "quantal64"
+	    config_appserver.vm.box_url = "https://github.com/downloads/roderik/VagrantQuantal64Box/quantal64.box"
+	    
+	    config_appserver.vm.host_name = "appserver"
+	
+	    config_appserver.vm.boot_mode = :gui
+	
+	    config_appserver.vm.network :hostonly, "192.168.50.4"
+	    
+	    config_appserver.vm.provision :chef_solo do |chef|
+	        
+	        chef.cookbooks_path = "../chef/my-recipes/cookbooks"
+	        chef.roles_path = "../chef/my-recipes/roles"
+	        chef.data_bags_path = "../chef/my-recipes/data_bags"
+	        chef.add_recipe "mysql"
+	        chef.add_role "web"
+	    
+	        # You may also specify custom JSON attributes:
+	        chef.json = { :mysql_password => "foo" }
+	    end
+	end
+end
