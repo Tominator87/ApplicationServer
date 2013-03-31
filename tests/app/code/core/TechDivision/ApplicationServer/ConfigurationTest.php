@@ -35,15 +35,67 @@ class ConfigurationTest extends \PHPUnit_Framework_TestCase {
 	public function setUp() {
 		$this->configuration = new Configuration();
 	}
-
+	
 	/**
-	 * Tests the add child method.
+	 * Test if a manually added configuration instance
+	 * will has been added correctly.
 	 *
 	 * @return void
 	 */
-	public function testAddChild() {
+	public function testHasChildrenByAddingOneManually() {
 		$child = new Configuration('foo');
 		$this->configuration->addChild($child);
 		$this->assertTrue($this->configuration->hasChildren());
+	}
+	
+	/**
+	 * Test if a manually added configuration instance
+	 * will has been added correctly.
+	 *
+	 * @return void
+	 */
+	public function testGetChildrenByAddingOneManually() {
+		$child = new Configuration('foo');
+		$this->configuration->addChild($child);
+		$this->assertSame(array($child), $this->configuration->getChildren());
+	}
+	
+	/**
+	 * Test if a configuration init with a SimpleXMLElement
+	 * has been added correctly.
+	 *
+	 * @return void
+	 */
+	public function testHasChildrenByInitWithSimpleXmlElement() {
+		$this->configuration->init($this->getTestNode());
+		$this->assertTrue($this->configuration->hasChildren());
+	}
+	
+	/**
+	 * Test if a configuration init with a SimpleXMLElement
+	 * has been added correctly.
+	 *
+	 * @return void
+	 */
+	public function testGetChildrenByInitWithSimpleXmlElement() {
+		$this->configuration->init($this->getTestNode());
+		$toBeTested = new Configuration('testnode');
+		$toBeTested->setValue('test');
+		$this->assertEquals(array($toBeTested), $this->configuration->getChildren());
+	}
+	
+	/**
+	 * Creates a SimpleXMLElement representing a test
+	 * configuration element.
+	 *
+	 * @return SimpleXMLElement The test configuration element
+	 */
+	protected function getTestNode() {
+		return new \SimpleXMLElement(
+			'<?xml version="1.0" encoding="UTF-8"?>
+			 <test>
+			   <testnode value="test"/>
+			 </test>'
+		);
 	}
 }
