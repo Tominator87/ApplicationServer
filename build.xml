@@ -46,7 +46,7 @@
     <!-- Generates the API documentation                                      -->
     <!-- ==================================================================== -->
     <target name="apidoc" description="Generates the API documentation.">
-        <exec executable="${pear.bin.dir}/phpdoc">
+        <exec executable="phpdoc">
             <arg line="-ct type -ue on -s on -t ${php-target.dir}/docs -o HTML:frames:earthli -d ${php-src.dir}/app/code/core"/>
         </exec>
     </target>
@@ -54,7 +54,7 @@
     <!-- Runs the code sniffer and generates a report                         -->
     <!-- ==================================================================== -->
     <target name="phpcs" depends="apidoc" description="Runs the code sniffer and generates a report.">
-        <exec executable="${pear.bin.dir}/phpcs" output="${php-target.dir}/reports/checkstyle.xml">
+        <exec executable="phpcs" output="${php-target.dir}/reports/checkstyle.xml">
             <arg line="--standard=ZEND --report=checkstyle ${php-src.dir}"/>
         </exec>
     </target>
@@ -62,7 +62,7 @@
     <!-- Runs the copy and paste detection                                    -->
     <!-- ==================================================================== -->
     <target name="phpcpd" depends="phpcs" description="Runs the copy and paste detection.">
-        <exec executable="${pear.bin.dir}/phpcpd">
+        <exec executable="phpcpd">
             <arg line="--log-pmd ${php-target.dir}/reports/pmd-cpd.xml ${php-src.dir}"/>
         </exec>
     </target>
@@ -70,7 +70,7 @@
     <!-- Generate phploc.csv                                                  -->
     <!-- ==================================================================== -->
     <target name="phploc" depends="phpcpd" description="Generate phploc.csv">
-        <exec executable="${pear.bin.dir}/phploc">
+        <exec executable="phploc">
             <arg line="--log-xml ${php-target.dir}/reports/phploc.xml ${php-src.dir}"/>
         </exec>
     </target>
@@ -78,7 +78,7 @@
     <!-- Runs the PHPDepend tool and generats a graphs                        -->
     <!-- ==================================================================== -->
     <target name="pdepend" depends="phploc" description="Runs the PHPDepend tool and generats a graphs.">
-        <exec executable="${pear.bin.dir}/pdepend">
+        <exec executable="pdepend">
             <arg line="--summary-xml=${php-target.dir}/reports/pdepend.xml --jdepend-xml=${php-target.dir}/reports/jdepend.xml --jdepend-chart=${php-target.dir}/reports/jdepend.svg --overview-pyramid=${php-target.dir}/reports/pdepend-pyramid.svg ${php-src.dir}" />
         </exec>
     </target>
@@ -86,7 +86,7 @@
     <!-- Runs the PHP mess detector tool                                      -->
     <!-- ==================================================================== -->
     <target name="phpmd" depends="pdepend" description="Runs the PHP Mess detector tool.">
-        <exec executable="${pear.bin.dir}/phpmd">
+        <exec executable="phpmd">
             <arg line="${php-src.dir} xml codesize,unusedcode --reportfile ${php-target.dir}/reports/pmd.xml" />
         </exec>
     </target>
@@ -107,7 +107,7 @@
     <!-- Runs the PHPUnit tests and generates a report                        -->
     <!-- ==================================================================== -->
     <target name="run-tests" depends="copy-tests" description="Runs the PHPUnit tests and generates a report.">
-        <exec executable="${pear.bin.dir}/phpunit" dir="${php-target.dir}">
+        <exec executable="phpunit" dir="${php-target.dir}">
             <arg line="--bootstrap bootstrap.php --configuration phpunit.xml.dist" />
         </exec>
     </target>
