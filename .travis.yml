@@ -13,7 +13,7 @@ before_install:
  - pear install pear.php.net/phpdocumentor
  - pear install pear.phpunit.de/phpcpd
  - pear install pear.phpunit.de/phploc
- - pear install pear.pdepend.org/pdepend
+ - pear install pear.pdepend.org/php_depend
  - pear install pear.phpmd.org/php_pmd
  - phpenv rehash
  
