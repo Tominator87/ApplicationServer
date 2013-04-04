@@ -9,8 +9,8 @@ matrix:
     - php: 5.5
 
 before_install:
- - pear install pear.php.net/PHP_CodeSniffer
- - pear install pear.phpdoc.org/phpdocumentor
+ - pear install pear.php.net/php_codesniffer
+ - pear install pear.php.net/phpdocumentor
  - pear install pear.phpunit.de/phpcpd
  - pear install pear.phpunit.de/phploc
  - pear install pear.pdepend.org/pdepend
