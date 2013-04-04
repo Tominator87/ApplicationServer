@@ -98,4 +98,23 @@ class ConfigurationTest extends \PHPUnit_Framework_TestCase {
 			 </test>'
 		);
 	}
+	
+	/**
+	 * Tests the getData() method with an existing key.
+	 *
+	 * @return void
+	 */
+	public function testGetDataAvailable() {
+		$this->configuration->setData('foo', 'bar');
+		$this->assertEquals('bar', $this->configuration->getData('foo'));
+	}
+	
+	/**
+	 * Tests the getData() method with a not existing key.
+	 *
+	 * @return void
+	 */
+	public function testGetDataNotAvailable() {
+		$this->assertNull($this->configuration->getData('foo'));
+	}
 }
