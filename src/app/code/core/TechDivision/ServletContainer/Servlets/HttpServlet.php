@@ -39,7 +39,7 @@ abstract class HttpServlet extends GenericServlet implements Servlet {
      * @return void
      */
     public function doGet(ServletRequest $req, ServletResponse $res) {
-        throw new MethodNotImplementedException(sprintf('Method %s is not implemented in this servlet.', __METHOD__));
+        #throw new MethodNotImplementedException(sprintf('Method %s is not implemented in this servlet.', __METHOD__));
     }
 
     /**
@@ -49,7 +49,7 @@ abstract class HttpServlet extends GenericServlet implements Servlet {
      * @return void
      */
     public function doPost(ServletRequest $req, ServletResponse $res) {
-        throw new MethodNotImplementedException(sprintf('Method %s is not implemented in this servlet.', __METHOD__));
+        #throw new MethodNotImplementedException(sprintf('Method %s is not implemented in this servlet.', __METHOD__));
     }
 
     /**
@@ -60,6 +60,9 @@ abstract class HttpServlet extends GenericServlet implements Servlet {
      * @return mixed
      */
     public function service(ServletRequest $req, ServletResponse $res) {
-        $this->doGet($req, $res);
+
+
+                $this->doGet($req, $res);
+
     }
 }

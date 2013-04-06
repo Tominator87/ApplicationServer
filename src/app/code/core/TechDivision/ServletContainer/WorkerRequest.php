@@ -12,7 +12,7 @@
 
 namespace TechDivision\ServletContainer;
 
-use TechDivision\Socket\Client;
+use TechDivision\Socket\HttpClient;
 use TechDivision\ServletContainer\Servlets\StaticResourceServlet;
 use TechDivision\ServletContainer\Http\HttpServletResponse;
 use TechDivision\ServletContainer\Http\HttpServletRequest;
@@ -43,29 +43,45 @@ class WorkerRequest extends \Stackable {
     public function __construct($resource) {
         $this->resource = $resource;
     }
+    
+    /**
+     * Method that is executed, when a fatal error occurs.
+     *
+     * @return void
+     */
+    public function fatalErrorShutdown() {
+        if (is_resource($this->resource)) {
+            @socket_close($this->resource);
+        }
+    }
 
     /**
      * @see \Stackable::run()
      */
     public function run() {
 
+        register_shutdown_function(array($this, 'fatalErrorShutdown'));
         // check if a worker is available
+
         if ($this->worker) {
 
             // initialize a new client socket
-            $client = new Client();
-
+            $client = new HttpClient();
+            #echo "Worker::new client\n";
             // set the client socket resource
             $client->setResource($this->resource);
-
+            #echo "Worker::getresource\n";
             // read a line from the client
-            $line = $client->readLine();
 
+            $line = $client->receive();
+
+            #print_r ( $line );
+            #echo "Worker::readline\n";
+            #echo "Worker::run before try\n";
             try {
-
                 // initialize response container
                 $response = new HttpServletResponse();
-
+                #echo "Worker::run before http servlet\n";
                 // instanciate request and response containers
                 $request = HttpServletRequest::factory($line);
 
@@ -78,15 +94,12 @@ class WorkerRequest extends \Stackable {
                     // if no servlet could be located for the request, use fallback
                     $servlet = new StaticResourceServlet();
                 }
-
                 // let the servlet process the request and store the result in the response
                 $servlet->service($request, $response);
 
             } catch (\Exception $e) {
 
                 ob_start();
-
-                debug_print_backtrace();
 
                 $response->setContent(get_class($e) . "\n\n" . $e . "\n\n" . ob_get_clean());
             }
