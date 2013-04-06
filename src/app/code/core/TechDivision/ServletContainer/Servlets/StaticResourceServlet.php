@@ -53,6 +53,6 @@ class StaticResourceServlet extends HttpServlet implements Servlet {
         }
 
         // store the file's contents in the response
-        $res->setContent(file_get_contents($file));
+        $res->setContent(file_get_contents($file->getRealPath()));
     }
 }

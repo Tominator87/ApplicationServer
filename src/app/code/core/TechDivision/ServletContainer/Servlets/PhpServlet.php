@@ -60,7 +60,7 @@ class PhpServlet extends HttpServlet implements Servlet {
         ob_start();
 
         // load the file
-        require_once $file;
+        require_once $file->getFilename();
 
         // store the file's contents in the response
         $res->setContent(ob_get_clean());

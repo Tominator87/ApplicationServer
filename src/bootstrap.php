@@ -4,6 +4,7 @@ namespace TechDivision;
 
 define('DS', DIRECTORY_SEPARATOR);
 define('PS', PATH_SEPARATOR);
+define('BP', __DIR__);
 
 $paths[] = __DIR__ . DS . 'app' . DS . 'code' . DS . 'local';
 $paths[] = __DIR__ . DS . 'app' . DS . 'code' . DS . 'community';
