@@ -75,9 +75,6 @@ class RequestHandler extends \Worker {
         
         // iterate over all classes and check if the application name contains the class name
         foreach ($this->getApplications() as $name => $application) {
-
-            error_log($name . ' vs ' . $className);
-
             if (strpos($className, $name) !== false) {
                 // if yes, return the application instance
                 return $application;
