@@ -18,9 +18,21 @@
         <servlet-class>\TechDivision\Example\Servlets\HelloWorldServlet</servlet-class>
     </servlet>
 
+    <servlet>
+        <description/>
+        <display-name>SessionExampleServlet</display-name>
+        <servlet-name>SessionExampleServlet</servlet-name>
+        <servlet-class>\TechDivision\Example\Servlets\SessionExampleServlet</servlet-class>
+    </servlet>
+
     <servlet-mapping>
         <servlet-name>HelloWorldServlet</servlet-name>
         <url-pattern>/hello-world.do</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>SessionExampleServlet</servlet-name>
+        <url-pattern>/session-example.do</url-pattern>
     </servlet-mapping>
 
     <servlet-mapping>

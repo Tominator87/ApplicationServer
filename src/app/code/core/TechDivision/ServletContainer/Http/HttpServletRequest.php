@@ -14,6 +14,9 @@ namespace TechDivision\ServletContainer\Http;
 
 use TechDivision\ServletContainer\Http\Request;
 use TechDivision\ServletContainer\Interfaces\ServletRequest;
+use TechDivision\PersistenceContainerClient\Interfaces\Session;
+use TechDivision\ServletContainer\Session\PersistentSessionManager;
+use TechDivision\ServletContainer\Session\SessionManager;
 
 /**
  * The Http servlet request implementation.
@@ -37,11 +40,22 @@ class HttpServletRequest implements ServletRequest {
     protected $request;
 
     /**
+     * @var Session
+     */
+    protected $session;
+
+    /**
+     * @var SessionManager
+     */
+    protected $sessionManager;
+
+    /**
      * @param string $inputStream
      */
     private function __construct($inputStream) {
         $this->setInputStream($inputStream);
         $this->setRequest(Request::parse((string) $inputStream));
+        $this->sessionManager = new PersistentSessionManager();
     }
 
     /**
@@ -84,5 +98,21 @@ class HttpServletRequest implements ServletRequest {
     public function getRequestUrl() {
         return $this->getRequest()->getPathInfo();
     }
+
+    /**
+     * Returns the session for this request.
+     *
+     * @return Session
+     */
+    public function getSession() {
+
+        if(is_null($this->session)) {
+            $this->session = $this->sessionManager->getSessionForRequest($this);
+        }
+
+        return $this->session;
+    }
+
+
 
 }
