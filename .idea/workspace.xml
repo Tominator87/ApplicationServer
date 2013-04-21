@@ -2,18 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="8549bf15-aeed-4f28-be99-965ab8e491a7" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/ApplicationServer.iml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/app/code/core/TechDivision/ServletContainer/Http/GetRequest.php" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/app/code/core/TechDivision/Socket/HttpClient.php" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/app/code/core/TechDivision/ServletContainer/Http/PostRequest.php" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/encodings.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/misc.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/modules.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/scopes/scope_settings.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/vcs.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/src/app/code/core/TechDivision/ServletContainer/Http/Request.php" afterPath="$PROJECT_DIR$/src/app/code/core/TechDivision/ServletContainer/Http/Request_orig.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/app/code/core/TechDivision/ServletContainer/Http/Request.php" afterPath="$PROJECT_DIR$/src/app/code/core/TechDivision/ServletContainer/Http/Request.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/app/code/core/TechDivision/ServletContainer/WorkerRequest.php" afterPath="$PROJECT_DIR$/src/app/code/core/TechDivision/ServletContainer/WorkerRequest.php" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/src/app/code/core/TechDivision/ServletContainer/Http/Request_orig.php" afterPath="" />
     </list>
     <ignored path="ApplicationServer.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -70,15 +59,6 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Request_orig.php" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/app/code/core/TechDivision/ServletContainer/Http/Request_orig.php">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="14" column="0" selection-start="313" selection-end="644" vertical-scroll-proportion="-3.75">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
       <file leaf-file-name="Request.php" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/app/code/core/TechDivision/ServletContainer/Http/Request.php">
           <provider selected="true" editor-type-id="text-editor">
@@ -104,8 +84,10 @@
       <file leaf-file-name="WorkerRequest.php" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/app/code/core/TechDivision/ServletContainer/WorkerRequest.php">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="48" column="7" selection-start="1304" selection-end="1304" vertical-scroll-proportion="1.6133721">
-              <folding />
+            <state line="48" column="7" selection-start="1304" selection-end="1304" vertical-scroll-proportion="1.744186">
+              <folding>
+                <element signature="e#309#340#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -393,14 +375,14 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="1920" y="0" width="1920" height="540" extended-state="2" />
-    <editor active="true" />
+    <editor active="false" />
     <layout>
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Remote Host" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.2502674" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.2502674" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
@@ -504,13 +486,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/app/code/core/TechDivision/ServletContainer/Http/Request_orig.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="14" column="0" selection-start="313" selection-end="644" vertical-scroll-proportion="-3.75">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/app/code/core/TechDivision/ServletContainer/Http/Request.php">
       <provider selected="true" editor-type-id="text-editor">
         <state line="14" column="0" selection-start="313" selection-end="642" vertical-scroll-proportion="-6.2083335">
@@ -538,8 +513,10 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/app/code/core/TechDivision/ServletContainer/WorkerRequest.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="48" column="7" selection-start="1304" selection-end="1304" vertical-scroll-proportion="1.6133721">
-          <folding />
+        <state line="48" column="7" selection-start="1304" selection-end="1304" vertical-scroll-proportion="1.744186">
+          <folding>
+            <element signature="e#309#340#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
