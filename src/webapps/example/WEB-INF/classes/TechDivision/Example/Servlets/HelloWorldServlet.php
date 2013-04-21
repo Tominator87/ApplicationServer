@@ -36,11 +36,10 @@ class HelloWorldServlet extends HttpServlet implements Servlet {
         return;
     }
 
-    /**
-     * @param ServletRequest $req
-     * @param ServletResponse $res
-     */
-    public function doGet(ServletRequest $req, ServletResponse $res) {
+    public function doPost(ServletRequest $req, ServletResponse $res) {
+
+        /** @var $req \TechDivision\ServletContainer\Http\HttpServletRequest */
+        $args = $req->getRequestParameterMap();
 
         $connection = Factory::createContextConnection();
         $session = $connection->createContextSession();
@@ -48,7 +47,72 @@ class HelloWorldServlet extends HttpServlet implements Servlet {
 
         // lookup the remote processor implementation
         $processor = $initialContext->lookup('TechDivision\Example\Services\SampleProcessor');
-        $entities = $processor->findAll();
+
+        if (array_key_exists('action', $args)) {
+            $action = $args['action'];
+        } else {
+            $action = 'findAll';
+        }
+
+        $sampleId = '';
+        $name = '';
+
+        switch ($action) {
+            case 'persist':
+                $entity = new Sample();
+                $entity->setSampleId((integer) $args['sampleId']);
+                $entity->setName($args['name']);
+                $processor->persist($entity);
+                $entities = $processor->findAll();
+                break;
+            case 'changeWorker':
+                $processor->changeWorker($args['workers']);
+                $entities = $processor->findAll();
+                break;
+            default:
+                $entities = $processor->findAll();
+                error_log("Found " . sizeof($entities) . " entities");
+                break;
+        }
+
+        $res->setContent('<meta http-equiv="refresh" content="0;URL=\'?action=findAll\'">');
+    }
+
+    /**
+     * @param ServletRequest $req
+     * @param ServletResponse $res
+     */
+    public function doGet(ServletRequest $req, ServletResponse $res) {
+
+        /** @var $req \TechDivision\ServletContainer\Http\HttpServletRequest */
+        $args = $req->getRequestParameterMap();
+
+        $connection = Factory::createContextConnection();
+        $session = $connection->createContextSession();
+        $initialContext = $session->createInitialContext();
+
+        // lookup the remote processor implementation
+        $processor = $initialContext->lookup('TechDivision\Example\Services\SampleProcessor');
+
+        switch ($args['action']) {
+            case 'createSchema':
+                $processor->createSchema();
+                $entities = $processor->findAll();
+                break;
+            case 'load':
+                $entity = $processor->load($args['sampleId']);
+                $name = $entity->getName();
+                $sampleId = $entity->getSampleId();
+                $entities = $processor->findAll();
+                break;
+            case 'delete':
+                $entities = $processor->delete($args['sampleId']);
+                break;
+            default:
+                $entities = $processor->findAll();
+                error_log("Found " . sizeof($entities) . " entities");
+                break;
+        }
 
         $content = array();
 
@@ -68,7 +132,7 @@ class HelloWorldServlet extends HttpServlet implements Servlet {
                         </ul>
                     </div>
                     <div>
-                        <form action="index.php" method="post">
+                        <form action="/example/hello-world.do" method="post">
                             <input type="hidden" name="action" value="persist" />
                             <fieldset>
                                 <legend>Sample</legend>

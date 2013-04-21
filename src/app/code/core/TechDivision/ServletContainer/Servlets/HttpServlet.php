@@ -39,7 +39,7 @@ abstract class HttpServlet extends GenericServlet implements Servlet {
      * @return void
      */
     public function doGet(ServletRequest $req, ServletResponse $res) {
-        #throw new MethodNotImplementedException(sprintf('Method %s is not implemented in this servlet.', __METHOD__));
+        throw new MethodNotImplementedException(sprintf('Method %s is not implemented in this servlet.', __METHOD__));
     }
 
     /**
@@ -49,7 +49,7 @@ abstract class HttpServlet extends GenericServlet implements Servlet {
      * @return void
      */
     public function doPost(ServletRequest $req, ServletResponse $res) {
-        #throw new MethodNotImplementedException(sprintf('Method %s is not implemented in this servlet.', __METHOD__));
+        throw new MethodNotImplementedException(sprintf('Method %s is not implemented in this servlet.', __METHOD__));
     }
 
     /**
@@ -57,12 +57,22 @@ abstract class HttpServlet extends GenericServlet implements Servlet {
      * @param Response $res
      * @throws ServletException
      * @throws IOException
+     * @throws MethodNotImplementedException
      * @return mixed
      */
     public function service(ServletRequest $req, ServletResponse $res) {
 
-
+        /** @var $req \TechDivision\ServletContainer\Http\HttpServletRequest */
+        switch($req->getRequestMethod()) {
+            case 'POST':
+                $this->doPost($req, $res);
+                break;
+            case 'GET':
                 $this->doGet($req, $res);
+                break;
+            default:
+                throw new MethodNotImplementedException(sprintf('%s is not implemented yet.', $req->getRequestMethod()));
+        }
 
     }
 }

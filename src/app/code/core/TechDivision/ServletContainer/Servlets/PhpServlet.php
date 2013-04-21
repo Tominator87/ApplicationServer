@@ -50,17 +50,16 @@ class PhpServlet extends HttpServlet implements Servlet {
         // let the locator retrieve the file
         $file = $locator->locate($req);
 
-        // do not directly serve php files
-        if (strpos($file->getFilename(), '.php') === false) {
-            throw new PermissionDeniedException(sprintf(
-                '403 - You do not have permission to access %s', $file->getFilename()));
-        }
-
         // start output buffering
         ob_start();
 
-        // load the file
-        require_once $file->getFilename();
+        /**
+         * IMPORTANT: can not use "require_once" here, otherwise the worker will never
+         * run the same php file twice.
+         *
+         * @thanks Prof. Dr. Dr. ing. Spexx
+         */
+        require $file->getRealPath();
 
         // store the file's contents in the response
         $res->setContent(ob_get_clean());
