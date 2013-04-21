@@ -49,18 +49,19 @@ class WorkerRequest extends \Stackable {
      */
     public function run() {
 
-        // check if a worker is available
         if ($this->worker) {
-
             // initialize a new client socket
-            $client = new Client();
+            $client = new HttpClient();
 
             // set the client socket resource
             $client->setResource($this->resource);
 
             // read a line from the client
-            $line = $client->readLine();
+            $line = $client->receive();
 
+            #print_r ( $line );
+            #echo "Worker::readline\n";
+            #echo "Worker::run before try\n";
             try {
 
                 // initialize response container
