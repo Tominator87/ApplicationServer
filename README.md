@@ -275,3 +275,44 @@ $allEntities = $processor->findAll();
 
 ?>
 ```
+
+## Vagrant Box
+
+Um sich das Kompilieren und Zusammenstellen der einzelnen Abhänigkeiten einfacher
+zu gestalten, gibt es eine Vagrant Konfiguration mit der man sehr einfach eine
+virtuelle Maschine mit der für den App-Server notwendigen Konfiguration aufsetzen
+kann.
+
+### Voraussetzungen
+
+Um die Vagrant Box zu nutzen benötigt man Vagrant, VirtualBox und Librarian Chef.
+
+Zunächst muss VirtualBox wie auf der Projektwebsite beschrieben heruntergeladen
+und installiert werden:
+
+https://www.virtualbox.org/wiki/Downloads
+
+Anschließend verfährt man ebenso mit Vagrant, dessen Download-Seite sich hier
+findet:
+
+http://downloads.vagrantup.com/
+
+Schließlich muss noch Librarian Chef installiert werden. Die Projektseite dazu
+findet sich auf Github: https://github.com/applicationsonline/librarian
+Da es sich um ein Ruby Paket handelt, ist die Installiation - bei vorhandem Ruby -
+recht einfach:
+
+```
+sudo gem install librarian --no-rdoc --no-ri --verbose
+```
+
+Zu guter Letzt fehlt noch ein hilfreiches Plugin für Vagrant das die VirtualBox
+Guest Additions auf dem Laufenden hält:
+
+http://blog.csanchez.org/2012/05/03/automatically-download-and-install-virtualbox-guest-additions-in-vagrant/
+
+### Starten der Vagrant Box
+
+Im Hauptverzeichnis des Application Servers ```vagrant up``` eingeben. Nach einigen
+Minuten sollte eine virtuelle Maschine mit einem angepassten und neu kompilierten
+PHP laufen. Mit ```vagrant up``` kann man sich in die neue Maschine einloggen.
