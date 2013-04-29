@@ -27,6 +27,10 @@ class GetRequest extends Request {
         parent::__construct();
     }
 
+    /**
+     * splice uri into PathInfo and QueryString
+     * @return $this
+     */
     public function ParseUriInformation(){
         $uriMod = explode( "?", $this->getUri() );
 
