@@ -37,11 +37,10 @@ class HttpServletRequest implements ServletRequest {
     protected $request;
 
     /**
-     * @param string $inputStream
+     * @param \TechDivision\ServletContainer\Http\Request $request
      */
-    private function __construct($inputStream) {
-        $this->setInputStream($inputStream);
-        $this->setRequest(Request::parse((string) $inputStream));
+    private function __construct(Request $request) {
+        $this->setRequest($request);
     }
 
     /**
@@ -52,19 +51,13 @@ class HttpServletRequest implements ServletRequest {
         $this->inputStream = $inputStream;
     }
 
-    /**
-     * @return String
-     */
-    public function getInputStream() {
-        return $this->inputStream;
-    }
 
     /**
-     * @param \TechDivision_Lang_String $inputStream
+     * @param \TechDivision_Lang_String $request
      * @return HttpServletRequest
      */
-    public static function factory($inputStream) {
-        return new HttpServletRequest($inputStream);
+    public static function factory($request) {
+        return new HttpServletRequest($request);
     }
 
     /**
@@ -74,19 +67,36 @@ class HttpServletRequest implements ServletRequest {
         $this->request = $request;
     }
 
-    /**
-     * @return \TechDivision\ServletContainer\Http\Request
-     */
     public function getRequest() {
         return $this->request;
     }
 
-    /**
-     * @deprec is not used anymore
-     * @return string
-     */
+    public function getInputStream() {
+        return $this->inputStream;
+    }
+
     public function getRequestUrl() {
         return $this->getRequest()->getPathInfo();
+    }
+
+    public function getRequestQueryString() {
+        return $this->getRequest()->getQueryString();
+    }
+
+    public function getRequestParameter(){
+        return $this->getRequest()->getParameter();
+    }
+
+    public function getRequestParameterMap(){
+        return $this->getRequest()->getParameterMap();
+    }
+
+    public function getRequestHeaders(){
+        return $this->getRequest()->getHeaders();
+    }
+
+    public function getRequestContent(){
+        return $this->getRequest()->getContent();
     }
 
 }
