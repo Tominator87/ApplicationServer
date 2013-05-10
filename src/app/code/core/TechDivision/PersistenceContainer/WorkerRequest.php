@@ -80,6 +80,7 @@ class WorkerRequest extends \Stackable {
                     // prepare method name and parameters and invoke method
                     $methodName = $remoteMethod->getMethodName();
                     $parameters = $remoteMethod->getParameters();
+
                     // invoke the remote method call on the local instance
                     $response = call_user_func_array(array($instance, $methodName), $parameters);
 

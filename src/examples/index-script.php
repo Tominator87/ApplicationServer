@@ -36,7 +36,7 @@ session_start();
 $connectionParameters = array(
     'driver' => 'pdo_mysql',
     'user' => 'appserver',
-    'password' => 'eraZor',
+    'password' => 'appserver',
     'dbname' => 'appserver_ApplicationServer',
 );
 
