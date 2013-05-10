@@ -13,6 +13,7 @@
 namespace TechDivision\PersistenceContainer;
 
 use TechDivision\ApplicationServer\AbstractContainer;
+use TechDivision\ApplicationServer\Configuration;
 
 /**
  * @package     TechDivision\PersistenceContainer
@@ -42,6 +43,13 @@ class Container extends AbstractContainer {
 
             // check if file or subdirectory has been found
             if (is_dir($folder)) {
+    
+				// add the servlet-specific include path
+				set_include_path($folder . PS . get_include_path());
+
+				// set the additional servlet include paths
+				set_include_path($folder . DS . 'META-INF' . DS . 'classes' . PS . get_include_path());
+				set_include_path($folder . DS . 'META-INF' . DS . 'lib' . PS . get_include_path());
 
                 // initialize the application name
                 $name = basename($folder);
@@ -50,50 +58,19 @@ class Container extends AbstractContainer {
                 if (!file_exists($ds = $folder . DS . 'META-INF' . DS . 'appserver-ds.xml')) {
                     throw new InvalidApplicationArchiveException(sprintf('Folder %s contains no valid webapp.'));
                 }
-
-                // add the servlet-specific include path
-                set_include_path($folder . PS . get_include_path());
-
-                // load the data source config
-                $config = new \SimpleXMLElement(file_get_contents($ds));
-
-                /** @var $mapping \SimpleXMLElement */
-                // iterate over the found application nodes
-                foreach ($config->xpath(self::XPATH_APPLICATIONS) as $dataSource) {
-
-                    $attributes = $dataSource->attributes();
-
-                    $type = (string) $attributes['type'];
-
-                    if (empty($type)) {
-                        $type = 'TechDivision\PersistenceContainer\Application';
-                    }
-
-                    // initialize the application instance
-                    $application = $this->newInstance($type, array($name));
-                    $application->setWebappPath($folder->getPathname());
-                    $application->setDataSourceName((string) $dataSource->name);
-                    $application->setPathToEntities((string) $dataSource->pathToEntities);
-
-                    // load the database connection information
-                    foreach ($dataSource->children() as $database) {
-                        $application->setConnectionParameters(
-                            array(
-                                'driver' => (string) $database->driver,
-                                'user' => (string) $database->user,
-                                'password' => (string) $database->password,
-                                'dbname' => (string) $database->databaseName,
-                            )
-                        );
-                    }
+                
+                $configuration = Configuration::loadFromFile($ds);
+                
+                foreach ($configuration->getChilds('/datasources/datasource') as $datasource) {
+                
+					// initialize the application instance
+					$application = $this->newInstance($datasource->getType(), array($name));
+					$application->setWebappPath($folder->getPathname());
+					$application->init($datasource);
+					
+                	$this->applications[$application->getDataSourceName()] = $application;
+                
                 }
-
-                // set the additional servlet include paths
-                set_include_path($folder . DS . 'META-INF' . DS . 'classes' . PS . get_include_path());
-                set_include_path($folder . DS . 'META-INF' . DS . 'lib' . PS . get_include_path());
-
-                // add the application to the available applications
-                $this->applications[$application->getDataSourceName()] = $application;
             }
         }
 

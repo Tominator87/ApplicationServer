@@ -12,7 +12,7 @@
 
 namespace TechDivision\ServletContainer;
 
-use TechDivision\Socket\Client;
+use TechDivision\Socket\HttpClient;
 use TechDivision\ServletContainer\Servlets\StaticResourceServlet;
 use TechDivision\ServletContainer\Http\HttpServletResponse;
 use TechDivision\ServletContainer\Http\HttpServletRequest;
@@ -57,18 +57,15 @@ class WorkerRequest extends \Stackable {
             $client->setResource($this->resource);
 
             // read a line from the client
-            $line = $client->receive();
+            $request = $client->receive();
 
-            #print_r ( $line );
-            #echo "Worker::readline\n";
-            #echo "Worker::run before try\n";
             try {
+
+                // instanciate request and response containers
+                // $request = HttpServletRequest::factory($line);
 
                 // initialize response container
                 $response = new HttpServletResponse();
-
-                // instanciate request and response containers
-                $request = HttpServletRequest::factory($line);
 
                 // load the application to handle the request
                 $application = $this->worker->findApplication($request);
@@ -110,24 +107,15 @@ class WorkerRequest extends \Stackable {
      * @return string The headers
      * @todo This is a dummy implementation, headers has to be handled in request/response
      */
-    public function prepareHeader($response) {
-
+    public function prepareHeader(HttpServletResponse $response)
+    {
         // prepare the content length
         $contentLength = strlen($response->getContent());
 
-        // prepare the headers
-        $headers = '';
-        $headers .= "HTTP/1.1 200 OK\r\n";
-        $headers .= "Date: " . gmdate('D, d M Y H:i:s \G\M\T', time()) . "\r\n";
-        $headers .= "Last-Modified: " . gmdate('D, d M Y H:i:s \G\M\T', time()) . "\r\n";
-        $headers .= "Expires: " . gmdate('D, d M Y H:i:s \G\M\T', time() + 3600) . "\r\n";
-        $headers .= "Server: Apache/1.3.29 (Unix) PHP/5.4.10\r\n";
-        $headers .= "Content-Length: $contentLength\r\n";
-        $headers .= "Content-Language: de\r\n";
-        $headers .= "Connection: close\r\n";
-        $headers .= "Content-Type: text/html";
+        // prepare the dynamic headers
+        $response->addHeader("Content-Length", $contentLength);
 
         // return the headers
-        return $headers;
+        return $response->getHeadersAsString();
     }
 }

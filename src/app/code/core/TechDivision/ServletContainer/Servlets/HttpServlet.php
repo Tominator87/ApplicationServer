@@ -57,9 +57,22 @@ abstract class HttpServlet extends GenericServlet implements Servlet {
      * @param Response $res
      * @throws ServletException
      * @throws IOException
+     * @throws MethodNotImplementedException
      * @return mixed
      */
     public function service(ServletRequest $req, ServletResponse $res) {
-        $this->doGet($req, $res);
+
+        /** @var $req \TechDivision\ServletContainer\Http\HttpServletRequest */
+        switch($req->getRequestMethod()) {
+            case 'POST':
+                $this->doPost($req, $res);
+                break;
+            case 'GET':
+                $this->doGet($req, $res);
+                break;
+            default:
+                throw new MethodNotImplementedException(sprintf('%s is not implemented yet.', $req->getRequestMethod()));
+        }
+
     }
 }

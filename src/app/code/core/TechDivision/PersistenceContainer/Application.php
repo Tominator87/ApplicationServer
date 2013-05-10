@@ -74,6 +74,32 @@ class Application {
         $this->name = $name;
     }
     
+    public function init($configuration) {
+    
+    	// error_log(var_export($configuration->getChilds('/datasource/name'), true));
+
+		// initialize the application instance
+		$this->setDataSourceName($configuration->getChild('/datasource/name')->getValue());
+		$this->setPathToEntities($configuration->getChild('/datasource/pathToEntities')->getValue());
+
+		// load the database connection information
+		foreach ($configuration->getChilds('/datasource/database') as $database) {
+		
+			// error_log(var_export($database->getChilds('/database'), true));
+		
+			$this->setConnectionParameters(
+				array(
+					'driver' => $database->getChild('/database/driver')->getValue(),
+					'user' => $database->getChild('/database/user')->getValue(),
+					'password' => $database->getChild('/database/password')->getValue(),
+					'dbname' => $database->getChild('/database/databaseName')->getValue(),
+				)
+			);
+		}
+    	
+    	return $this;
+    }
+    
     /**
      * Has been automatically invoked by the container after the application
      * instance has been created.

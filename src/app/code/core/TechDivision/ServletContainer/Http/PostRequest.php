@@ -27,6 +27,10 @@ class PostRequest extends Request {
         parent::__construct();
     }
 
+    /**
+     * @TODO: possible useless or a bug
+     * @return $this
+     */
     public function ParseUriInformation(){
         $uriMod = explode( "?", $this->getUri() );
 
@@ -35,6 +39,10 @@ class PostRequest extends Request {
         return $this;
     }
 
+    /**
+     * setting post-vars as string and as array
+     * @return $this
+     */
     public function setParameter(){
         $content = $this->getContent();
         $this->_parameter = $content;
@@ -43,4 +51,15 @@ class PostRequest extends Request {
         return $this;
     }
 
+    /**
+     * @deprec is not used anymore
+     * @return string
+     */
+    public function getRequestUrl() {
+        return $this->getPathInfo();
+    }
+
+    public function getRequestMethod() {
+        return $this->getMethod();
+    }
 }

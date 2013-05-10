@@ -75,7 +75,8 @@ class RequestHandler extends \Worker {
     public function findApplication($request) {
 
         // load the servlet request
-        if ($servletRequest = $request->getRequest()) {
+        // if ($servletRequest = $request->getRequest()) {
+        if ($servletRequest = $request) {
 
             // load the path info
             $pathInfo = $servletRequest->getPathInfo();

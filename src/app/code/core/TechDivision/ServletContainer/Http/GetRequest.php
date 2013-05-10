@@ -23,12 +23,12 @@ namespace TechDivision\ServletContainer\Http;
  */
 class GetRequest extends Request {
 
-    public function __construct(){
-        parent::__construct();
-    }
-
+    /**
+     * splice uri into PathInfo and QueryString
+     * @return $this
+     */
     public function ParseUriInformation(){
-        $uriMod = explode( "?", $this->getUri() );
+        $uriMod = explode("?", $this->getUri() );
 
         $this->setPathInfo( $uriMod[0] );
         $this->setQueryString( $uriMod[1] );
@@ -43,4 +43,15 @@ class GetRequest extends Request {
         return $this;
     }
 
+    /**
+     * @deprec is not used anymore
+     * @return string
+     */
+    public function getRequestUrl() {
+        return $this->getPathInfo();
+    }
+
+    public function getRequestMethod() {
+        return $this->getMethod();
+    }
 }

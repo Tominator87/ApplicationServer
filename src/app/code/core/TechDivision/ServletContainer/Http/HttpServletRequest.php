@@ -81,6 +81,10 @@ class HttpServletRequest implements ServletRequest {
         return $this->request;
     }
 
+    /**
+     * @deprec is not used anymore
+     * @return string
+     */
     public function getRequestUrl() {
         return $this->getRequest()->getPathInfo();
     }

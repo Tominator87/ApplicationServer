@@ -30,6 +30,12 @@ class Configuration implements ContainerConfiguration {
     protected $nodeName;
     
     /**
+     * The node value.
+     * @var string
+     */
+    protected $value;
+    
+    /**
      * The array with configuration parameters.
      * @var array
      */
@@ -113,8 +119,14 @@ class Configuration implements ContainerConfiguration {
      */
     public function init($node, $xpath = '/') {
         
-        // set the node name
+        // set the node name + value
         $this->setNodeName($node->getName());
+        
+        $nodeValue = (string) $node;
+        
+        if (empty($nodeValue) === false) {
+        	$this->setValue(trim($nodeValue));
+        }
             
         // load the attributes
         foreach ($node->attributes() as $key => $value) {
@@ -145,10 +157,10 @@ class Configuration implements ContainerConfiguration {
      * @return Configuration The requested configuration
      */
     public function getChilds($path) {
-        
+
         $token = strtok($path, '/');
-        
-        $next = str_replace('/' . $token, '', $path);
+
+        $next = substr($path, strlen('/' . $token));
         
         if ($this->getNodeName() == $token && empty($next)) {
         
@@ -157,7 +169,7 @@ class Configuration implements ContainerConfiguration {
         } elseif ($this->getNodeName() == $token && !empty($next)) {
 
             $matches = array();
-            
+
             foreach ($this->getChildren() as $child) {
                 
                 $result = $child->getChilds($next);
@@ -177,6 +189,15 @@ class Configuration implements ContainerConfiguration {
             
             return;
         }
+    }
+    
+    public function getChild($path) {
+    	
+    	$childs = $this->getChilds($path);
+    	
+    	if (is_array($childs)) {
+    		return current($childs);
+    	}
     }
     
     /**
@@ -248,5 +269,17 @@ class Configuration implements ContainerConfiguration {
             default:
                 throw new \Exception("Invalid method " . get_class($this) . "::" . $method . "(" . print_r($args, 1) . ")");
         }
+    }
+    
+    public function setValue($value) {
+    	$this->value = $value;
+    }
+    
+    public function getValue() {
+    	return $this->value;
+    }	
+    
+    public function __toString() {
+    	return $this->getValue();
     }
 }

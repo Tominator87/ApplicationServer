@@ -114,7 +114,7 @@ class SplClassLoader
      */
     public function register()
     {
-        spl_autoload_register(array($this, 'loadClass'));
+        spl_autoload_register(array($this, 'loadClass'), true, true);
     }
 
     /**
@@ -154,8 +154,6 @@ class SplClassLoader
 					require_once $toRequire;
 				}
 			}
-
-			// require ($this->_includePath !== null ? $this->_includePath . DIRECTORY_SEPARATOR : '') . $fileName;
         }
     }
 }

@@ -28,11 +28,21 @@ use TechDivision\ServletContainer\Http\Request;
  */
 class HttpClient extends Client {
 
-    protected $_httpServerRequest;
-
+    /**
+     *
+     * @param string $address
+     * @param int $port
+     * @see Client
+     */
     public function __construct($address = '0.0.0.0', $port = 0){
         parent::__construct($address,$port);
     }
+
+    /**
+     * Receive a Stream from Socket an check it is valid
+     * @todo implement a isComplete Method to evaluate if a HTTP-Stream is Bigger than LineLenght (eg. file-upload)
+     * @return mixed
+     */
 
     public function receive(){
         $buffer = '';
@@ -44,6 +54,10 @@ class HttpClient extends Client {
         }
     }
 
+    /**
+     * @deprec receive method will do all logic
+     * @return mixed|string
+     */
     public function readLine() {
         return $this->receive();
     }

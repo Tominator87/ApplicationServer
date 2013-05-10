@@ -78,11 +78,27 @@ class ConfigurationTest extends \PHPUnit_Framework_TestCase {
 	 * @return void
 	 */
 	public function testGetChildrenByInitWithSimpleXmlElement() {
-		$this->configuration->init($this->getTestNode());
-		$toBeTested = new Configuration('testnode');
-		$toBeTested->setValue('test');
+		$this->configuration->init($this->getTestNode('test', 'testValue'));
+		$toBeTested = new Configuration('testNode');
+		$toBeTested->setAttr('test');
+		$toBeTested->setValue('testValue');
 		$this->assertEquals(array($toBeTested), $this->configuration->getChildren());
 	}
+
+    public function testLoadFromFile() {
+
+        $configuration = Configuration::loadFromFile(__DIR__ . '/_files/appserver-ds.xml');
+
+        $driver = $configuration->getChild('/datasources/datasource/database/driver');
+        $user = $configuration->getChild('/datasources/datasource/database/user');
+        $password = $configuration->getChild('/datasources/datasource/database/password');
+        $databaseName = $configuration->getChild('/datasources/datasource/database/databaseName');
+
+        $this->assertEquals('pdo_mysql', $driver);
+        $this->assertEquals('appserver', $user);
+        $this->assertEquals('appserver', $password);
+        $this->assertEquals('appserver_ApplicationServer', $databaseName);
+    }
 	
 	/**
 	 * Creates a SimpleXMLElement representing a test
@@ -90,11 +106,11 @@ class ConfigurationTest extends \PHPUnit_Framework_TestCase {
 	 *
 	 * @return SimpleXMLElement The test configuration element
 	 */
-	protected function getTestNode() {
+	protected function getTestNode($attr = NULL, $value = NULL) {
 		return new \SimpleXMLElement(
 			'<?xml version="1.0" encoding="UTF-8"?>
 			 <test>
-			   <testnode value="test"/>
+			   <testNode attr="' . $attr . '">' . $value . '</testNode>
 			 </test>'
 		);
 	}
