@@ -309,7 +309,7 @@ sudo gem install librarian --no-rdoc --no-ri --verbose
 Zu guter Letzt fehlt noch ein hilfreiches Plugin für Vagrant das die VirtualBox
 Guest Additions auf dem Laufenden hält:
 
-http://blog.csanchez.org/2012/05/03/automatically-download-and-install-virtualbox-guest-additions-in-vagrant/
+https://github.com/dotless-de/vagrant-vbguest
 
 ### Starten der Vagrant Box
 
