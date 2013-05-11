@@ -51,12 +51,12 @@ Der PHP Application Server sollte auf jeder PHP Version ab 5.3.0 laufen, allerdi
 PHP 5.3.x immer wieder Segmentation Faults auf die sich allerdings auf das frühe Entwicklungsstadium der pthreads
 Library zurückführen lassen. Aktuell wird für die Entwicklung PHP 5.4.10 verwendet.
 
-## Installation
+## PHP mit pthreads bauen
 
 Je nach Debian Version & PHP Konfiguration müssen vorab folgende Libraries müssen installiert werden:
 
 ```
-apt-get install \
+$ apt-get install \
     apache2-prefork-dev \
     php5-dev \
     libxml2 \
@@ -85,7 +85,7 @@ unter http://www.robo47.net/text/6-PHP-Configure-und-Compile-Fehler.
 PHP 5.4.x für Debian 6.0.x mit folgender Konfiguration kompilieren:
 
 ```
-./configure \
+$ ./configure \
     --with-apxs2=/usr/bin/apxs2 \
     --prefix=/usr \
     --with-libdir=lib64 \
@@ -143,11 +143,11 @@ PHP 5.4.x für Debian 6.0.x mit folgender Konfiguration kompilieren:
 Anschließend muss die pthreads Extension aus dem Github Repository ausgecheckt, compiliert und installiert werden:
 
 ```
-git clone https://github.com/krakjoe/pthreads.git
-cd pthreads
-phpize
-./configure --enable-shared --enable-static
-make && make install
+$ git clone https://github.com/krakjoe/pthreads.git
+$ cd pthreads
+$ phpize
+$ ./configure --enable-shared --enable-static
+$ make && make install
 ```
 
 Nicht vergessen die Extension in der php.ini mit:
@@ -162,82 +162,110 @@ Der PHP Application Server benötigt in der aktuellen Version Memcached. Um die 
 Extension installieren zu können benötigen wir libmemcache. libmemcache herunterladen, kompilieren + installeren:
 
 ```
-wget https://launchpad.net/libmemcached/1.0/1.0.15/+download/libmemcached-1.0.15.tar.gz
-tar xvfz libmemcached-1.0.15.tar.gz
-cd libmemcache-1.0.15
-./configure
-make
-make install
+$ wget https://launchpad.net/libmemcached/1.0/1.0.15/+download/libmemcached-1.0.15.tar.gz
+$ tar xvfz libmemcached-1.0.15.tar.gz
+$ cd libmemcache-1.0.15
+$ ./configure
+$ make
+$ make install
 ```
 
 Anschließend kann mit:
 
-
 ```
-pecl install memcached
+$ pecl install memcached
 ```
 
 die PECL Extension installieret werden. Auch diese muss in der php.ini aktiviert werden.
 
-Die Sourcen werden als tar.gz Archiv ausgeliefert. Basis des PHP Application Servers ist ein internes PEAR
-Repository über das zusätzliche Pakete wie z. B. Doctrine installiert werden können. Im nächsten Schritt
-werden die Application Server Sourcen im Apache Root Verzeichnis entpack, installiert und das PEAR Repository
-initialisiert:
+## Installation Application Server
 
+### Build
 
-```
-cd /var/www
-tar xvfz appserver-0.4.0beta.tar.gz
-ln -s appserver-0.4.0beta appserver
-cd appserver
-chmod +x bin/webapp
-bin/webapp setup
-```
-
-Da als Standard Persistence Provider Doctrine zum Einsatz kommt, die Sourcen jedoch nicht mit dem PHP Application
-Server ausgeliefert werden erfolgt die Installation im integrierten PEAR Repository mit:
+Für den Build Prozess wir aktuell ANT verwendet. Um eine neue Version des Application Servers zu erzeugen kannst du
+auf der Konsole über das ANT-Target
 
 ```
-bin/webapp channel-discover pear.doctrine-project.org
-bin/webapp install doctrine/DoctrineORM
+$ ant UPDATE-pack
 ```
 
-Anlegen der Datenbank über die MySQL Konsole mit:
+ein neues tar.gz erzeugen, das die Ausgangsbasis für deine lokale Installation darstellt.
+
+### Installation
+
+Mit diesem Paket, das du nach Aufruf des ANT Targets im target Verzeichnis findest, kannst du die Installation
+über die Kommandozeile schnell und einfach durchführen. Hierzu kopierst du das Archiv auf der Kommandozeile mit
 
 ```
-create database appserver_ApplicationServer;
-grant all on appserver_ApplicationServer.* to "appserver"@"localhost" identified by "appserver";
-flush privileges;
+$ cp target/appserver-0.4.6beta.tar.gz /var/www
 ```
 
-Abschließend kann der PHP Application Server mit:
+in das Basisverzeichnis deines Webservers, in unserem Fall /var/www. Anschließend wechsels du mit
 
 ```
-php -f server.php
+$ cd /var/www
 ```
 
-gestartet und die notwendigen Tabellen können durch Aufruf der URL im Browser:
+in das Basisverzeichnis und entpackst die Sourcen mit
+
+```
+$ tar xvfz appserver-0.4.0beta.tar.gz
+$ ln -s appserver-0.4.0beta appserver
+```
+
+Zusätzlich erzeugst du gleich noch einen symbolischen Link. Wenn du später ein Update machen möchtest kannst du diesen
+dann einfach auf das neue Verzeichnis umbiegen. Der PHP Application Server verwendet ein internes PEAR Repository für
+die Installation von zusätzlich Pakete wie z. B. Doctrine. Dieses kannst du mit
+
+```
+$ cd appserver
+$ chmod +x bin/webapp
+$ bin/webapp setup
+```
+
+initialisieren. Da als Standard Persistence Provider Doctrine zum Einsatz kommt, die Sourcen jedoch nicht mit
+dem PHP Application Server ausgeliefert werden erfolgt die Installation im integrierten PEAR Repository mit
+
+```
+$ bin/webapp channel-discover pear.doctrine-project.org
+$ bin/webapp install doctrine/DoctrineORM
+```
+
+Anschließend legst du über die MySQL Kommandozeile die Datenbank mit
+
+```
+mysql$ create database appserver_ApplicationServer;
+mysql$ grant all on appserver_ApplicationServer.* to "appserver"@"localhost" identified by "appserver";
+mysql$ flush privileges;
+```
+
+an. Abschließend kannst du den PHP Application Server mit
+
+```
+$ php -f server.php
+```
+
+starten und die notwendigen Tabellen durch Aufruf der URL im Browser
 
 ```
 http://<appserver-ip>/appserver/examples/index.php?action=createSchema
 ```
 
-erzeugt werden. Über die URL:
+erzeugen lassen. Über die URL
 
 ```
 http://<appserver-ip>/appserver/examples/
 ```
 
 ist eine kleine Beispiel Anwendung erreichbar die die Funktionalität des PHP Application Servers anhand eines CRUD
-Beispiels demonstriert. Zusätzlich ist über die URL:
+Beispiels demonstriert. Zusätzlich ist über die URL
 
 ```
 http://<appserver-ip>:8586/example/hello-world.do
 ```
 
-Ein rudimentäres Servlet ansprechbar. Allerdings wird im aktuellen Stand hier lediglich statischer Content ausgegeben.
-
-Über die URL:
+ein rudimentäres Servlet ansprechbar. Allerdings wird im aktuellen Stand hier lediglich statischer Content
+ausgegeben. Über die URL
 
 ```
 http://<appserver-ip>:8586/example/index.php
@@ -248,9 +276,23 @@ Servlet (PhpServlet) aufgerufen, das eine PHP Runtime Umgebung bereitstellt. All
 lediglich um eine sehr rudimentäre Implementierung, so werden z. B. globale Variablen wie $_REQUEST noch nicht
 bereitgestellt.
 
-## Usage
+### Weiterentwicklung
 
-### Connect to the PersistenceContainer
+Um dich auch während der Weiterentwicklung zu unterstützen kannst du die Änderungen an deinen Sourcen, ebenfalls
+über ein ANT Target jederzeit in deine Entwicklungsinstanz kopieren. Möchtest du die aktuellen Sourcen aus deinem
+Projekt in die Entwicklungsinstanz zu kopieren startest du über die Kommandozeile das ANT-Target
+
+```
+$ ant deploy
+```
+
+Wenn du dich an diese Vorgehensweise hältst, dann kommst du nicht in das Problem, dass du ständig aufpassen musst,
+nicht erwünschte Dateien wie die Symfony oder Doctrine Klassen oder irgendwelche Cache-Dateien die PEAR erzeugt, zu
+committen.
+
+## Verwendung
+
+### Mit dem PersistenceContainer verbinden
 
 Der Verbindungsaufbau zum PersistenceContainer erfolgt über eine Client Library. Hierbei ist in der aktuellen
 Version wichtig, dass bereits eine Session existiert. Nach dem Verbindungsaufbau kann über die lookup() Methode
@@ -278,41 +320,36 @@ $allEntities = $processor->findAll();
 
 ## Vagrant Box
 
-Um sich das Kompilieren und Zusammenstellen der einzelnen Abhänigkeiten einfacher
-zu gestalten, gibt es eine Vagrant Konfiguration mit der man sehr einfach eine
-virtuelle Maschine mit der für den App-Server notwendigen Konfiguration aufsetzen
-kann.
+Um sich das Kompilieren und Zusammenstellen der einzelnen Abhänigkeiten einfacher zu gestalten, gibt es eine Vagrant
+Konfiguration mit der man sehr einfach eine virtuelle Maschine mit der für den App-Server notwendigen Konfiguration
+aufsetzen kann.
 
 ### Voraussetzungen
 
 Um die Vagrant Box zu nutzen benötigt man Vagrant, VirtualBox und Librarian Chef.
 
-Zunächst muss VirtualBox wie auf der Projektwebsite beschrieben heruntergeladen
-und installiert werden:
+Zunächst muss VirtualBox wie auf der Projektwebsite beschrieben heruntergeladen und installiert werden:
 
 https://www.virtualbox.org/wiki/Downloads
 
-Anschließend verfährt man ebenso mit Vagrant, dessen Download-Seite sich hier
-findet:
+Anschließend verfährt man ebenso mit Vagrant, dessen Download-Seite sich hier findet:
 
 http://downloads.vagrantup.com/
 
-Schließlich muss noch Librarian Chef installiert werden. Die Projektseite dazu
-findet sich auf Github: https://github.com/applicationsonline/librarian
-Da es sich um ein Ruby Paket handelt, ist die Installiation - bei vorhandem Ruby -
-recht einfach:
+Schließlich muss noch Librarian Chef installiert werden. Die Projektseite dazu findet sich auf Github
+https://github.com/applicationsonline/librarian Da es sich um ein Ruby Paket handelt, ist die Installiation - bei
+vorhandem Ruby - recht einfach
 
 ```
 sudo gem install librarian --no-rdoc --no-ri --verbose
 ```
 
-Zu guter Letzt fehlt noch ein hilfreiches Plugin für Vagrant das die VirtualBox
-Guest Additions auf dem Laufenden hält:
+Zu guter Letzt fehlt noch ein hilfreiches Plugin für Vagrant das die VirtualBox Guest Additions auf dem Laufenden hält:
 
 https://github.com/dotless-de/vagrant-vbguest
 
 ### Starten der Vagrant Box
 
-Im Hauptverzeichnis des Application Servers ```vagrant up``` eingeben. Nach einigen
-Minuten sollte eine virtuelle Maschine mit einem angepassten und neu kompilierten
-PHP laufen. Mit ```vagrant up``` kann man sich in die neue Maschine einloggen.
+Im Hauptverzeichnis des Application Servers ```vagrant up``` eingeben. Nach einigen Minuten sollte eine virtuelle
+Maschine mit einem angepassten und neu kompilierten PHP laufen. Mit ```vagrant up``` kann man sich in die neue Maschine
+einloggen.
