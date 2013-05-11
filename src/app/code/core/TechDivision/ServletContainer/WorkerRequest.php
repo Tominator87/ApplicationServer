@@ -58,7 +58,6 @@ class WorkerRequest extends \Stackable {
 
             // read a line from the client
             $line = $client->receive();
-
             try {
 
                 // instanciate request and response containers

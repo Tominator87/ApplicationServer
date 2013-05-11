@@ -1,0 +1,1 @@
+s:372:"a:1:{s:8:"required";a:3:{s:3:"php";a:1:{s:3:"min";s:5:"5.3.2";}s:13:"pearinstaller";a:2:{s:3:"min";s:5:"1.6.0";s:11:"recommended";s:5:"1.6.1";}s:7:"package";a:2:{i:0;a:3:{s:4:"name";s:14:"DoctrineCommon";s:7:"channel";s:25:"pear.doctrine-project.org";s:3:"min";s:5:"2.0.1";}i:1;a:3:{s:4:"name";s:7:"Console";s:7:"channel";s:16:"pear.symfony.com";s:3:"min";s:5:"2.0.0";}}}}";

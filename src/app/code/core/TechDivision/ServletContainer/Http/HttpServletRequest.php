@@ -39,7 +39,7 @@ class HttpServletRequest implements ServletRequest {
     /**
      * @param \TechDivision\ServletContainer\Http\Request $request
      */
-    private function __construct(Request $request) {
+    private function __construct( $request ) {
         $this->setRequest($request);
     }
 
@@ -97,6 +97,10 @@ class HttpServletRequest implements ServletRequest {
 
     public function getRequestContent(){
         return $this->getRequest()->getContent();
+    }
+
+    public function getRequestMethod(){
+        return $this->getRequest()->getMethod();
     }
 
 }

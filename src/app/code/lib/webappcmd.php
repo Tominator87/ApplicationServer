@@ -16,6 +16,11 @@
  * @link       http://pear.php.net/package/PEAR
  */
 
+$path = '/usr/lib/php';
+set_include_path(get_include_path() . PATH_SEPARATOR . $path);
+@ini_set('date.timezone','Europe/Berlin');
+
+
 ob_end_clean();
 if (!defined('PEAR_RUNTYPE')) {
     // this is defined in peclcmd.php as 'pecl'
