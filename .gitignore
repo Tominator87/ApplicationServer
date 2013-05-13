@@ -1,2 +1,7 @@
 /target
+/cookbooks
+/tmp
+/instance-src
+/.vagrant
+Cheffile.lock
 build.properties

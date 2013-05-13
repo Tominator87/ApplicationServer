@@ -336,15 +336,27 @@ Anschließend verfährt man ebenso mit Vagrant, dessen Download-Seite sich hier 
 
 http://downloads.vagrantup.com/
 
-Schließlich muss noch Librarian Chef installiert werden. Die Projektseite dazu findet sich auf Github
-https://github.com/applicationsonline/librarian Da es sich um ein Ruby Paket handelt, ist die Installiation - bei
-vorhandem Ruby - recht einfach
+Schließlich muss noch Chef, Librarian & Librarian-Chef installiert werden. Die Projektseite dazu findet sich auf
+Github https://github.com/applicationsonline/librarian Da es sich um ein Ruby Paket handelt, ist die Installation
+- bei vorhandem Ruby - recht einfach
 
 ```
-sudo gem install librarian --no-rdoc --no-ri --verbose
+$ sudo gem install chef librarian librarian-chef --no-rdoc --no-ri --verbose
 ```
 
-Zu guter Letzt fehlt noch ein hilfreiches Plugin für Vagrant das die VirtualBox Guest Additions auf dem Laufenden hält:
+**Wichtig!**: Wenn du Mac OS X verwendest muss, damit die Kompilierung der Ruby Pakete erfolgreich durchläuft,
+zwingend XCode installiert sein.
+
+Nach Installation von Chef, Librarian und Librarian-Chef kannst du die benötigten Cookbooks von Github
+automatisch herunterladen. Nachdem du in dein Projektverzeichnis gewechselt bist kannst du den Download
+über die Konsole mit
+
+```
+$ librarian-chef install
+```
+
+starten. Die heruntergeladenen Cookbooks solltest du anschließend im Verzeichnis coobooks finden. Zu guter Letzt fehlt
+noch ein hilfreiches Plugin für Vagrant das die VirtualBox Guest Additions auf dem Laufenden hält
 
 https://github.com/dotless-de/vagrant-vbguest
 

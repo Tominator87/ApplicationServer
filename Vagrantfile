@@ -3,13 +3,13 @@ Vagrant::Config.run do |config|
 	config.vm.box_url = "http://dl.dropbox.com/u/1418806/vagrant-ubuntu-quantal64-rl.box"
 
 	config.vm.network :hostonly, "33.33.33.10"
-	config.vm.share_folder("application", "/var/www/applicationserver", ".", :nfs => true)
+	config.vm.share_folder("application", "/var/www/appserver", "/var/www/appserver")
 
 	config.vm.customize [
 		"modifyvm", :id,
 		"--name", "Techdivision Application Server",
-		"--cpus", "4",
-		"--memory", "2048"
+		"--cpus", "2",
+		"--memory", "1024"
 	]
 	config.vm.customize ["setextradata", :id, "VBoxInternal2/SharedFoldersEnableSymlinksCreate/web", "1"]
 	config.ssh.forward_agent = true

@@ -219,6 +219,6 @@ web_app "applicationserver" do
   server_name "applicationserver.devbox"
   server_aliases ["applicationserver.prodbox"]
 
-  docroot "/var/www/applicationserver/src"
+  docroot "/var/www/appserver"
 
 end

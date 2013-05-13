@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<web-app version="2.4">
+
+    <display-name>Symfony Servlet Example</display-name>
+    <description>Simple Web Servlet Example based on Symfony 2</description>
+
+    <servlet>
+        <description><![CDATA[A simple Symfony 2 servlet.]]></description>
+        <display-name>SymfonyServlet</display-name>
+        <servlet-name>SymfonyServlet</servlet-name>
+        <servlet-class>\TechDivision\Symfony\Servlets\SymfonyServlet</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>SymfonyServlet</servlet-name>
+        <url-pattern>*.do</url-pattern>
+    </servlet-mapping>
+
+</web-app>
