@@ -27,11 +27,17 @@ class GetRequest extends Request {
      * splice uri into PathInfo and QueryString
      * @return $this
      */
-    public function ParseUriInformation(){
+    public function ParseUriInformation() {
+
         $uriMod = explode("?", $this->getUri() );
 
-        $this->setPathInfo( $uriMod[0] );
-        $this->setQueryString( $uriMod[1] );
+        if (array_key_exists(0, $uriMod)) {
+            $this->setPathInfo($uriMod[0]);
+        }
+
+        if (array_key_exists(1, $uriMod)) {
+            $this->setQueryString($uriMod[1]);
+        }
 
         return $this;
     }

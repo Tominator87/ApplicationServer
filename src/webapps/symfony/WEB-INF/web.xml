@@ -13,7 +13,7 @@
 
     <servlet-mapping>
         <servlet-name>SymfonyServlet</servlet-name>
-        <url-pattern>*.do</url-pattern>
+        <url-pattern>*.sym</url-pattern>
     </servlet-mapping>
 
 </web-app>
