@@ -42,7 +42,7 @@ class Container extends AbstractContainer {
         foreach (new \FilesystemIterator(getcwd() . '/webapps') as $folder) {
 
             // check if file or subdirectory has been found
-            if (is_dir($folder)) {
+            if (is_dir($folder . DS . 'META-INF')) {
     
 				// add the servlet-specific include path
 				set_include_path($folder . PS . get_include_path());
