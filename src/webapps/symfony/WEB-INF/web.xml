@@ -8,7 +8,7 @@
         <description><![CDATA[A simple Symfony 2 servlet.]]></description>
         <display-name>SymfonyServlet</display-name>
         <servlet-name>SymfonyServlet</servlet-name>
-        <servlet-class>\TechDivision\Symfony\Servlets\SymfonyServlet</servlet-class>
+        <servlet-class>\Acme\DemoBundle\Servlets\SymfonyServlet</servlet-class>
     </servlet>
 
     <servlet-mapping>

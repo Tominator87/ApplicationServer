@@ -14,5 +14,12 @@
             <tag name="kernel.event_listener" event="kernel.controller" method="onKernelController" />
             <argument type="service" id="twig.extension.acme.demo" />
         </service>
+
+        <service id="mock.array.session.storage" class="Symfony\Component\HttpFoundation\Session\Storage\MockArraySessionStorage"/>
+
+        <service id="session" class="Symfony\Component\HttpFoundation\Session\Session">
+            <argument type="service" id="mock.array.session.storage" />
+        </service>
+
     </services>
 </container>
