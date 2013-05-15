@@ -33,6 +33,7 @@
   libfreetype6-dev
   g++
   re2c
+  memcached
 }.each do |package_name|
   package "#{package_name}" do
     action :install

@@ -10,6 +10,7 @@ cookbook 'application_php', :git => 'https://github.com/opscode-cookbooks/applic
 cookbook 'database', :git => 'https://github.com/opscode-cookbooks/database.git'
 cookbook 'hostsfile', :git => 'https://github.com/customink-webops/hostsfile.git'
 cookbook 'ssh-known-hosts', :git => 'https://github.com/opscode-cookbooks/ssh_known_hosts.git'
+cookbook 'memcached', :git => 'https://github.com/opscode-cookbooks/memcached.git'
 
 cookbook 'composer', :git => 'https://github.com/robertlemke/cookbook-composer.git'
 cookbook 'hostname', :git => 'https://github.com/robertlemke/cookbook-hostname.git', :ref => 'rl'
