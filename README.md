@@ -344,8 +344,27 @@ Github https://github.com/applicationsonline/librarian Da es sich um ein Ruby Pa
 $ sudo gem install chef librarian librarian-chef --no-rdoc --no-ri --verbose
 ```
 
-**Wichtig!**: Wenn du Mac OS X verwendest muss, damit die Kompilierung der Ruby Pakete erfolgreich durchläuft,
-zwingend XCode installiert sein.
+**Wichtig!**: Wenn du Mac OS X verwendest müssen, damit die Kompilierung der Ruby Pakete erfolgreich durchläuft,
+zwingend die aktuellsten CommandLineTools via http://connect.apple.com installiert und die ruby version wie folgt
+aktualisiert werden. Terminal öffnen und die Ruby Installation als normaler Nutzer durchführen (kein root erforderlich).
+Vorest noch homebrew installieren (“The missing package manager for OS X”) um das fehlende automake zu installieren.
+
+```
+$ ruby -e "$(curl -fsSkL raw.github.com/mxcl/homebrew/go)"
+$ brew install automake
+$ brew doctor
+```
+
+Wenn brew doctor keine Fehlermeldung ausgibt, mit dem nächsten Schritt fortfahren. Ansonsten Fehler bereinigen.
+
+```
+$ \curl -L https://get.rvm.io | bash -s stable --ruby source ~/.rvm/scripts/rvm
+$ \curl -L https://get.rvm.io | bash -s stable --rails --autolibs=enabled
+```
+
+Wenn alles fertig ist einfach kurz im Terminal aus -/ einloggen. Nun sollte der Installation von
+Chef, Librarian & Librarian-Chef nichts mehr im wege stehen.
+
 
 Nach Installation von Chef, Librarian und Librarian-Chef kannst du die benötigten Cookbooks von Github
 automatisch herunterladen. Nachdem du in dein Projektverzeichnis gewechselt bist kannst du den Download
