@@ -68,6 +68,9 @@ class HelloWorldServlet extends HttpServlet implements Servlet {
                         </ul>
                     </div>
                     <div>
+                        <img src="/example/WEB-INF/images/logo.jpg"/>
+                    </div>
+                    <div>
                         <form action="index.php" method="post">
                             <input type="hidden" name="action" value="persist" />
                             <fieldset>

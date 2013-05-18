@@ -93,7 +93,7 @@ class WorkerRequest extends \Stackable {
             $headers = $this->prepareHeader($response);
 
             // return the string representation of the response content to the client
-            $client->send($headers . "\r\n\r\n" . $response->getContent());
+            $client->send($headers . "\r\n" . $response->getContent());
 
             // close the socket connection to the client
             $client->close();

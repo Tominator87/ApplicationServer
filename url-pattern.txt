@@ -1,0 +1,11 @@
+Url-Pattern
+
+/					=> /test, /test.jpg, /test/test
+/*
+/*.xyz
+/xyz/*
+/xyz/*.xyz
+/xyz/zyx/*
+/xyz/zyx/*.xyz
+/xyz/*/*
+/xyz/*/*.xyz

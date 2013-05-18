@@ -46,6 +46,8 @@ class StaticResourceServlet extends HttpServlet implements Servlet {
         // let the locator retrieve the file
         $file = $locator->locate($req);
 
+        error_log("Try to load: {$file->getFilename()}");
+
         // do not directly serve php files
         if(strpos($file->getFilename(), '.php') !== false) {
             throw new PermissionDeniedException(sprintf(
