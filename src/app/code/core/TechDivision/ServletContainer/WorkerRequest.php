@@ -61,9 +61,6 @@ class WorkerRequest extends \Stackable {
 
             try {
 
-                // instanciate request and response containers
-                // $request = HttpServletRequest::factory($line);
-
                 // initialize response container
                 $response = new HttpServletResponse();
 
@@ -71,11 +68,7 @@ class WorkerRequest extends \Stackable {
                 $application = $this->worker->findApplication($request);
 
                 // try to locate a servlet which could service the current request
-                if (($servlet = $application->locate($request)) === false) {
-
-                    // if no servlet could be located for the request, use fallback
-                    $servlet = new StaticResourceServlet();
-                }
+                $servlet = $application->locate($request);
 
                 // let the servlet process the request and store the result in the response
                 $servlet->service($request, $response);

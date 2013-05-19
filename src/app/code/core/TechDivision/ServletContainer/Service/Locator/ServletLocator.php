@@ -19,6 +19,7 @@ use Symfony\Component\Routing\Matcher\UrlMatcher;
 use Symfony\Component\Routing\RequestContext;
 use Symfony\Component\Routing\RouteCollection;
 use Symfony\Component\Routing\Route;
+use Symfony\Component\Routing\Exception\ResourceNotFoundException;
 
 /**
  * The servlet resource locator implementation.
@@ -65,10 +66,8 @@ class ServletLocator implements ResourceLocatorInterface {
 
         // iterate over the available servlets and prepare the routes
         foreach ($servlets as $urlPattern => $servlet) {
-
-            $pattern = str_replace('*', "{placeholder_$counter}", $urlPattern);
-
-            $route = new Route($pattern, array($servlet));
+            $pattern = str_replace('/*', "/{placeholder_$counter}", $urlPattern);
+            $route = new Route($pattern, array($servlet), array("{placeholder_$counter}" => '.*'));
             $routes->add($counter++, $route);
         }
 
@@ -94,8 +93,18 @@ class ServletLocator implements ResourceLocatorInterface {
         // initialize the URL matcher
         $matcher = new UrlMatcher($routes, new RequestContext($path));
 
-        // check if the URL matches one of the servlets
-        $servlet = $matcher->match($path);
+        // traverse the path to find matching servlet
+        do {
+
+            try {
+                $servlet = $matcher->match($path);
+                $request->setScriptName($path);
+                break;
+            } catch(ResourceNotFoundException $rnfe) {
+                $path = substr($path, 0, strrpos($path, '/'));
+            }
+
+        } while (strpos($path, '/') !== FALSE);
 
         // return the servlet instance
         return current($servlet);

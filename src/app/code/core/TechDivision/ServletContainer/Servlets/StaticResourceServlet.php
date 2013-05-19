@@ -46,12 +46,22 @@ class StaticResourceServlet extends HttpServlet implements Servlet {
         // let the locator retrieve the file
         $file = $locator->locate($req);
 
-        error_log("Try to load: {$file->getFilename()}");
-
         // do not directly serve php files
-        if(strpos($file->getFilename(), '.php') !== false) {
+        if (strpos($file->getFilename(), '.php') !== false) {
             throw new PermissionDeniedException(sprintf(
                 '403 - You do not have permission to access %s', $file->getFilename()));
+        }
+
+        if (strpos($file->getFilename(), '.css') !== false) {
+            $res->addHeader('Content-Type', 'text/css');
+        } elseif (strpos($file->getFilename(), '.gif') !== false) {
+            $res->addHeader('Content-Type', 'image/gif');
+        } elseif (strpos($file->getFilename(), '.jpg') !== false) {
+            $res->addHeader('Content-Type', 'image/jpg');
+        } elseif (strpos($file->getFilename(), '.js') !== false) {
+            $res->addHeader('Content-Type', 'text/javascript');
+        }  else {
+            error_log("Can't serve filename: " . $file->getFilename());
         }
 
         // store the file's contents in the response

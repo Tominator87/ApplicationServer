@@ -2,7 +2,11 @@ imports:
     - { resource: config.yml }
 
 framework:
-    router:   { resource: "%kernel.root_dir%/config/routing_dev.yml" }
+    router:
+        resource:  "%kernel.root_dir%/config/routing_dev.yml"
+        http_port:  8586
+        https_port: 8586
+
     profiler: { only_exceptions: false }
 
 web_profiler:

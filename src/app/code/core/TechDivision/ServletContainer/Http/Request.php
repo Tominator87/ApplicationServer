@@ -103,18 +103,15 @@ class Request implements ServletRequest {
      */
     protected $_isValid = FALSE;
 
-
-    public function __construct(){
-
-    }
+    protected $_scriptName = '';
 
     /**
      * Parsing inputstream and validate Request
      * @param $inputStream
      * @return mixed
      */
-    static function parse($inputStream)
-    {
+    static function parse($inputStream) {
+
         $method = strstr($inputStream, " ", true);
 
         $req = Request::factory($method);
@@ -133,7 +130,7 @@ class Request implements ServletRequest {
      * Returns the request state
      * @return bool
      */
-    public function isValid(){
+    public function isValid() {
         return $this->_isValid;
     }
 
@@ -142,7 +139,7 @@ class Request implements ServletRequest {
      * @param $method
      * @return mixed
      */
-    public static function factory($method){
+    public static function factory($method) {
         $className =  __NAMESPACE__ . '\\' . ucfirst(strtolower($method))."Request";
         return new $className;
     }
@@ -151,7 +148,7 @@ class Request implements ServletRequest {
      * Returns Pathinfo
      * @return string
      */
-    public function getPathInfo(){
+    public function getPathInfo() {
         return $this->_pathInfo;
     }
 
@@ -159,7 +156,7 @@ class Request implements ServletRequest {
      * @param $pathInfo
      * @return $this
      */
-    public function setPathInfo($pathInfo){
+    public function setPathInfo($pathInfo) {
         $this->_pathInfo = $pathInfo;
         return $this;
     }
@@ -167,8 +164,7 @@ class Request implements ServletRequest {
     /**
      * @return string
      */
-    public function getQueryString()
-    {
+    public function getQueryString() {
         return $this->_queryString;
     }
 
@@ -176,8 +172,7 @@ class Request implements ServletRequest {
      * @param $queryString
      * @return $this
      */
-    public function setQueryString($queryString)
-    {
+    public function setQueryString($queryString) {
         $this->_queryString = $queryString;
         return $this;
     }
@@ -185,8 +180,7 @@ class Request implements ServletRequest {
     /**
      * @return string
      */
-    public function getMethod()
-    {
+    public function getMethod() {
         return $this->_method;
     }
 
@@ -194,8 +188,7 @@ class Request implements ServletRequest {
      * @param $method
      * @return $this
      */
-    public function setMethod($method)
-    {
+    public function setMethod($method) {
         $this->_method = $method;
         return $this;
     }
@@ -204,7 +197,7 @@ class Request implements ServletRequest {
      * @param $inputStream
      * @return $this
      */
-    public function setInputStream($inputStream){
+    public function setInputStream($inputStream) {
         $this->_inputStream = $inputStream;
         return $this;
     }
@@ -212,7 +205,7 @@ class Request implements ServletRequest {
     /**
      * @return string
      */
-    public function getInputStream(){
+    public function getInputStream() {
         return $this->_inputStream;
     }
 
@@ -220,7 +213,7 @@ class Request implements ServletRequest {
      * @param $inputStream
      * @return $this
      */
-    public function transform($inputStream){
+    public function transform($inputStream) {
         $this->_transformedInputStream = explode("\r\n", $inputStream);
         return $this;
     }
@@ -228,14 +221,14 @@ class Request implements ServletRequest {
     /**
      * @return array
      */
-    public function getTransformedInputStream(){
+    public function getTransformedInputStream() {
         return $this->_transformedInputStream;
     }
 
     /**
      * @return string
      */
-    public function getUri(){
+    public function getUri() {
         return $this->_uri;
     }
 
@@ -243,7 +236,7 @@ class Request implements ServletRequest {
      * @param $uri
      * @return $this
      */
-    public function setUri($uri){
+    public function setUri($uri) {
         $this->_uri = $uri;
         return $this;
     }
@@ -251,7 +244,7 @@ class Request implements ServletRequest {
     /**
      * @return string
      */
-    public function getProtocol(){
+    public function getProtocol() {
         return $this->_protocol;
     }
 
@@ -259,7 +252,7 @@ class Request implements ServletRequest {
      * @param $protocol
      * @return $this
      */
-    public function setProtocol($protocol){
+    public function setProtocol($protocol) {
         $this->_protocol = $protocol;
         return $this;
     }
@@ -267,11 +260,11 @@ class Request implements ServletRequest {
     /**
      * @return array
      */
-    public function getHeaders(){
+    public function getHeaders() {
         return $this->_headers;
     }
 
-    public function ParseUriInformation(){
+    public function ParseUriInformation() {
         return $this;
     }
 
@@ -279,7 +272,7 @@ class Request implements ServletRequest {
      * parsing the Header content and return as Array
      * @return array
      */
-    public function parseHeaders(){
+    public function parseHeaders() {
         $transformedInputStream = $this->getTransformedInputStream();
         $headers = array();
         for ($i = 1; $i < count($transformedInputStream); $i++) {
@@ -301,7 +294,7 @@ class Request implements ServletRequest {
     /**
      * @return $this
      */
-    public function setHeaders(){
+    public function setHeaders() {
         $this->_headers = $this->parseHeaders();
         return $this;
     }
@@ -310,13 +303,15 @@ class Request implements ServletRequest {
      * Parse and set request informations (Method, uri and protocol)
      * @return $this
      */
-    public function parseRequestInformation(){
+    public function parseRequestInformation() {
+
         $transformedInputStream = $this->getTransformedInputStream();
+
         $requestInfo = explode(" ", $transformedInputStream[0]);
 
-        $this->setMethod( $requestInfo[0] );
-        $this->setUri( $requestInfo[1] );
-        $this->setProtocol( $requestInfo[2] );
+        $this->setMethod($requestInfo[0]);
+        $this->setUri($requestInfo[1]);
+        $this->setProtocol($requestInfo[2]);
 
         return $this;
     }
@@ -324,7 +319,7 @@ class Request implements ServletRequest {
     /**
      * @return int
      */
-    public function getContentHelper(){
+    public function getContentHelper() {
         return $this->_contentStartId;
     }
 
@@ -332,7 +327,7 @@ class Request implements ServletRequest {
      * @param $contentStartId
      * @return $this
      */
-    public function setContentHelper($contentStartId){
+    public function setContentHelper($contentStartId) {
         $this->_contentStartId = $contentStartId;
         return $this;
     }
@@ -340,14 +335,14 @@ class Request implements ServletRequest {
     /**
      * @return string
      */
-    public function getContent(){
+    public function getContent() {
         return $this->_content;
     }
 
     /**
      * @return $this
      */
-    public function setContent(){
+    public function setContent() {
         $content = $this->parseContent();
         $this->_content = $content;
         return $this;
@@ -356,7 +351,7 @@ class Request implements ServletRequest {
     /**
      * @return string
      */
-    protected function parseContent(){
+    protected function parseContent() {
         $tis = $this->getTransformedInputStream();
         $id = $this->getContentHelper();
         $content = '';
@@ -378,15 +373,15 @@ class Request implements ServletRequest {
     /**
      * @return string
      */
-    public function getParameter(){
+    public function getParameter() {
         return $this->_parameter;
     }
 
     /**
      * @return $this
      */
-    public function setParameterMap(){
-        $this->_parameterMap = $this->parseParameter( $this->getParameter() );
+    public function setParameterMap() {
+        $this->_parameterMap = $this->parseParameter($this->getParameter());
         return $this;
     }
 
@@ -394,7 +389,7 @@ class Request implements ServletRequest {
      * @param $queryString
      * @return mixed
      */
-    public function parseParameter($queryString){
+    public function parseParameter($queryString) {
         parse_str($queryString, $paramMap);
         return $paramMap;
     }
@@ -404,8 +399,53 @@ class Request implements ServletRequest {
      * @TODO: Dummy implementationen
      * @return bool
      */
-    protected function validate(){
+    protected function validate() {
         $this->_isValid = TRUE;
     }
 
+    public function setScriptName($scriptName) {
+        $this->_scriptName = $scriptName;
+    }
+
+    public function getScriptName() {
+        return $this->_scriptName;
+    }
+
+    public function getServerVars() {
+        return array(
+            'HTTP_HOST' => 'localhost',
+            'HTTP_CONNECTION' => 'keep-alive',
+            'HTTP_CACHE_CONTROL' => 'max-age=0',
+            'HTTP_ACCEPT' => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+            'HTTP_USER_AGENT' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_3) AppleWebKit/537.31 (KHTML, like Gecko) Chrome/26.0.1410.65 Safari/537.31',
+            'HTTP_REFERER' => 'http://localhost/symfony2/web/app_dev.php',
+            'HTTP_ACCEPT_ENCODING' => 'gzip,deflate,sdch',
+            'HTTP_ACCEPT_LANGUAGE' => 'en-US,en;q=0.8',
+            'HTTP_ACCEPT_CHARSET' => 'ISO-8859-1,utf-8;q=0.7,*;q=0.3',
+            'HTTP_COOKIE' => 'PHPSESSID=ot2d5n4js6rgvciua4bg93bsl2',
+            'PATH' => '/usr/bin:/bin:/usr/sbin:/sbin',
+            'SERVER_SIGNATURE' => '',
+            'SERVER_SOFTWARE' => 'Apache/2.2.22 (Unix) DAV/2 PHP/5.4.11 mod_ssl/2.2.22 OpenSSL/0.9.8r',
+            'SERVER_NAME' => 'localhost',
+            'SERVER_ADDR' => '::1',
+            'SERVER_PORT' => '80',
+            'REMOTE_HOST' => 'localhost',
+            'REMOTE_ADDR' => '::1',
+            'DOCUMENT_ROOT' => '/Library/WebServer/Documents/appserver',
+            'SERVER_ADMIN' => 'you@example.com',
+            'SCRIPT_FILENAME' => '/Library/WebServer/Documents/appserver' . $this->getScriptName(),
+            'REMOTE_PORT' => '53983',
+            'GATEWAY_INTERFACE' => 'CGI/1.1',
+            'SERVER_PROTOCOL' => 'HTTP/1.1',
+            'REQUEST_METHOD' => $this->getMethod(),
+            'QUERY_STRING' => '',
+            'REQUEST_URI' => $this->getUri(),
+            'SCRIPT_NAME' => $this->getScriptName(),
+            'PATH_INFO' => '/demo/',
+            'PATH_TRANSLATED' => '/Library/WebServer/Documents/appserver/demo/',
+            'PHP_SELF' => $this->getUri(),
+            'REQUEST_TIME_FLOAT' => 1368976493.147,
+            'REQUEST_TIME' => 1368976493,
+        );
+    }
 }

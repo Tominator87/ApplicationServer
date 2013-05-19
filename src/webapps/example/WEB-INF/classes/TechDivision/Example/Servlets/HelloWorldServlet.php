@@ -21,21 +21,6 @@ use TechDivision\PersistenceContainerClient\Context\Connection\Factory;
 
 class HelloWorldServlet extends HttpServlet implements Servlet {
 
-    public function __construct() {
-        error_log(__METHOD__);
-    }
-
-    /**
-     * @param TechDivision\ServletContainer\ServletConfig $config
-     * @return mixed|void
-     */
-    public function init(ServletConfig $config = null) {
-
-        error_log(__METHOD__);
-
-        return;
-    }
-
     /**
      * @param ServletRequest $req
      * @param ServletResponse $res

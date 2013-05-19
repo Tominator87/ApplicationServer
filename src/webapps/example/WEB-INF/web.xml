@@ -18,43 +18,14 @@
         <servlet-class>\TechDivision\Example\Servlets\HelloWorldServlet</servlet-class>
     </servlet>
 
-    <servlet>
-        <description><![CDATA[Static resource content servlet, e. g. for images or CSS]]></description>
-        <display-name>StaticResourceServlet</display-name>
-        <servlet-name>StaticResourceServlet</servlet-name>
-        <servlet-class>\TechDivision\ServletContainer\Servlets\StaticResourceServlet</servlet-class>
-    </servlet>
-
     <servlet-mapping>
         <servlet-name>HelloWorldServlet</servlet-name>
         <url-pattern>/hello-world.do</url-pattern>
     </servlet-mapping>
 
     <servlet-mapping>
-        <servlet-name>StaticResourceServlet</servlet-name>
-        <url-pattern>/WEB-INF/images/*</url-pattern>
-    </servlet-mapping>
-
-    <!--
-    <servlet-mapping>
         <servlet-name>PhpServlet</servlet-name>
         <url-pattern>/*.php</url-pattern>
     </servlet-mapping>
-
-    <servlet-mapping>
-        <servlet-name>StaticResourceServlet</servlet-name>
-        <url-pattern>/*.css</url-pattern>
-    </servlet-mapping>
-
-    <servlet-mapping>
-        <servlet-name>StaticResourceServlet</servlet-name>
-        <url-pattern>/*.js</url-pattern>
-    </servlet-mapping>
-
-    <servlet-mapping>
-        <servlet-name>StaticResourceServlet</servlet-name>
-        <url-pattern>/*.gif</url-pattern>
-    </servlet-mapping>
-    -->
 
 </web-app>

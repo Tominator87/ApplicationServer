@@ -15,16 +15,6 @@ use TechDivision\PersistenceContainerClient\Context\Connection\Factory;
 
 class SymfonyServlet extends HttpServlet implements Servlet {
 
-    public function __construct() {
-    }
-
-    /**
-     * @param TechDivision\ServletContainer\ServletConfig $config
-     * @return mixed|void
-     */
-    public function init(ServletConfig $config = null) {
-    }
-
     /**
      * @param ServletRequest $req
      * @param ServletResponse $res
@@ -55,12 +45,16 @@ class SymfonyServlet extends HttpServlet implements Servlet {
         Request::enableHttpMethodParameterOverride();
         // $request = Request::createFromGlobals();
 
-        $request = new Request($req->getParameterMap());
+        $request = Request::create($req->getRequestUri(), $req->getMethod(), $req->getParameterMap(), array(), array(), $req->getServerVars());
         $response = $kernel->handle($request);
 
         // $response->send();
         $kernel->terminate($request, $response);
 
         $res->setContent($response->getContent());
+    }
+
+    public function doPost(ServletRequest $req, ServletResponse $res) {
+        $this->doGet($req, $res);
     }
 }

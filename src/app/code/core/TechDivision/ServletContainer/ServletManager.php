@@ -13,6 +13,7 @@
 namespace TechDivision\ServletContainer;
 
 use TechDivision\ServletContainer\Interfaces\Servlet;
+use TechDivision\ServletContainer\Servlets\StaticResourceServlet;
 
 /**
  * The servlet manager handles the servlets registered for the application.
@@ -71,7 +72,18 @@ class ServletManager {
         foreach (new \RegexIterator(new \FilesystemIterator($this->getWebappPath()), '/^.*\.phar$/') as $archive) {
             $this->deployArchive($archive);
         }
+    }
 
+    /**
+     * Registers the default servlet for the passed webapp.
+     *
+     * @param $key The webapp name to register the default servlet for
+     * @return false
+     */
+    protected function addDefaultServlet($key) {
+        $defaultServlet = new StaticResourceServlet();
+        $defaultServlet->init();
+        $this->addServlet("/$key/*", $defaultServlet);
     }
 
     /**
@@ -130,6 +142,9 @@ class ServletManager {
                 // the servlet is added to the dictionary using the complete request path as the key
                 $this->addServlet('/' . basename($folder) . '/' . $urlPattern,  $servlet);
             }
+
+            // add the default servlet (StaticResourceServlet)
+            $this->addDefaultServlet(basename($folder));
         }
     }
 

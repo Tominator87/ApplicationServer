@@ -23,19 +23,13 @@ namespace TechDivision\ServletContainer\Http;
  */
 class PostRequest extends Request {
 
-    public function __construct(){
-        parent::__construct();
-    }
-
     /**
      * @TODO: possible useless or a bug
      * @return $this
      */
-    public function ParseUriInformation(){
+    public function ParseUriInformation() {
         $uriMod = explode( "?", $this->getUri() );
-
         $this->setPathInfo( $uriMod[0] );
-
         return $this;
     }
 
@@ -43,11 +37,10 @@ class PostRequest extends Request {
      * setting post-vars as string and as array
      * @return $this
      */
-    public function setParameter(){
+    public function setParameter() {
         $content = $this->getContent();
         $this->_parameter = $content;
         $this->setParameterMap();
-
         return $this;
     }
 
@@ -57,6 +50,10 @@ class PostRequest extends Request {
      */
     public function getRequestUrl() {
         return $this->getPathInfo();
+    }
+
+    public function getRequestUri() {
+        return $this->getUri();
     }
 
     public function getRequestMethod() {

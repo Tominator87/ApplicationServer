@@ -79,6 +79,10 @@ class HttpServletRequest implements ServletRequest {
         return $this->getRequest()->getPathInfo();
     }
 
+    public function getRequestUri() {
+        return $this->getRequest()->getUri();
+    }
+
     public function getRequestQueryString() {
         return $this->getRequest()->getQueryString();
     }

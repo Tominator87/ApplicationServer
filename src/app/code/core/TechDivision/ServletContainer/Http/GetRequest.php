@@ -42,10 +42,9 @@ class GetRequest extends Request {
         return $this;
     }
 
-    public function setParameter(){
+    public function setParameter() {
         $this->_parameter = $this->getQueryString();
         $this->setParameterMap();
-
         return $this;
     }
 
@@ -55,6 +54,10 @@ class GetRequest extends Request {
      */
     public function getRequestUrl() {
         return $this->getPathInfo();
+    }
+
+    public function getRequestUri() {
+        return $this->getUri();
     }
 
     public function getRequestMethod() {
