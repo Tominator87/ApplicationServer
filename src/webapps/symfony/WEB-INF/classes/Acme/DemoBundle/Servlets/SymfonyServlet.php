@@ -38,7 +38,6 @@ class SymfonyServlet extends HttpServlet implements Servlet {
         */
 
         $loader = require_once 'webapps/symfony/bootstrap.php.cache';
-        require_once 'webapps/symfony/WEB-INF/classes/AppKernel.php';
 
         $kernel = new \AppKernel('dev', true);
         $kernel->loadClassCache();
@@ -51,6 +50,7 @@ class SymfonyServlet extends HttpServlet implements Servlet {
         // $response->send();
         $kernel->terminate($request, $response);
 
+        $res->addHeader('Set-Cookie', 'APPSERVER_SESSID=' . uniqid());
         $res->setContent($response->getContent());
     }
 
