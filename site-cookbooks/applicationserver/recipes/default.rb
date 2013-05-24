@@ -13,7 +13,10 @@
   git-core
   apache2-mpm-prefork
   apache2-prefork-dev
+  php5
+  php-pear
   php5-dev
+  libapache2-mod-php5
   libxml2
   libxml2-dev
   libbz2-dev
@@ -31,6 +34,7 @@
   libpng12-dev
   libfreetype6
   libfreetype6-dev
+  libcurl4-openssl-dev
   g++
   re2c
   memcached
@@ -81,114 +85,161 @@ end
 # PHP
 #
 
-node.default['php']['install_method'] = "source"
-node.default['php']['url'] = 'http://us.php.net/distributions'
-node.default['php']['version'] = '5.4.14'
-node.default['php']['prefix_dir'] = '/usr'
+#node.default['php']['install_method'] = "source"
+#node.default['php']['url'] = 'http://us.php.net/distributions'
+#node.default['php']['version'] = '5.4.14'
+#node.default['php']['prefix_dir'] = '/opt/appserver'
 
-node.default['php']['configure_options'] = [
-  "--with-apxs2=/usr/bin/apxs2",
-  "--prefix=/usr",
-  "--with-libdir=lib64",
-  "--with-config-file-path=/etc/php5/apache2",
-  "--with-config-file-scan-dir=/etc/php5/conf.d",
-  "--enable-libxml",
-  "--enable-session",
-  "--with-pcre-regex",
-  "--enable-xml",
-  "--enable-simplexml",
-  "--enable-filter",
-  "--disable-debug",
-  "--enable-inline-optimization",
-  "--disable-rpath",
-  "--disable-static",
-  "--enable-shared",
-  "--with-pic",
-  "--with-gnu-ld",
-  "--with-mysql",
-  "--with-gd",
-  "--with-jpeg-dir",
-  "--with-png-dir",
-  "--enable-exif",
-  "--with-zlib",
-  "--with-bz2",
-  "--with-curl",
-  "--with-mysqli",
-  "--with-freetype-dir",
-  "--enable-sockets",
-  "--enable-mbstring",
-  "--enable-gd-native-ttf",
-  "--enable-bcmath",
-  "--enable-zip",
-  "--with-pear",
-  "--with-openssl",
-  "--enable-phar",
-  "--enable-pdo",
-  "--with-pdo-mysql",
-  "--with-mysqli",
-  "--enable-maintainer-zts",
-  "--enable-roxen-zts",
-  "--with-mcrypt",
-  "--with-tsrm-pthreads",
-  "--enable-pcntl"
-]
+#node.default['php']['configure_options'] = [
+#  "--prefix=/opt/appserver",
+#  "--with-libdir=lib64",
+#  "--with-config-file-path=/opt/appserver/etc",
+#  "--with-config-file-scan-dir=/opt/appserver/etc/conf.d",
+#  "--enable-libxml",
+#  "--enable-session",
+#  "--with-pcre-regex",
+#  "--enable-xml",
+#  "--enable-simplexml",
+#  "--enable-filter",
+#  "--disable-debug",
+#  "--enable-inline-optimization",
+#  "--disable-rpath",
+#  "--disable-static",
+#  "--enable-shared",
+#  "--with-pic",
+#  "--with-gnu-ld",
+#  "--with-mysql",
+#  "--with-gd",
+#  "--with-jpeg-dir",
+#  "--with-png-dir",
+#  "--enable-exif",
+#  "--with-zlib",
+#  "--with-bz2",
+#  "--with-curl",
+#  "--with-mysqli",
+#  "--with-freetype-dir",
+#  "--enable-sockets",
+#  "--enable-mbstring",
+#  "--enable-gd-native-ttf",
+#  "--enable-bcmath",
+#  "--enable-zip",
+#  "--with-pear",
+#  "--with-openssl",
+#  "--enable-phar",
+#  "--enable-pdo",
+#  "--with-pdo-mysql",
+#  "--with-mysqli",
+#  "--enable-maintainer-zts",
+#  "--enable-roxen-zts",
+#  "--with-mcrypt",
+#  "--with-tsrm-pthreads",
+#  "--enable-pcntl"
+#]
 
-include_recipe 'php'
+#include_recipe 'php'
+
+bash "build php" do
+  cwd Chef::Config[:file_cache_path]
+  code <<-EOF
+  git clone git://github.com/php/php-src.git -b PHP-5.4.15
+  #git clone https://github.com/krakjoe/pthreads.git php-src/ext/pthreads
+  #git --git-dir=php-src/ext/pthreads/.git reset --hard 908be34abe6e600b9bbb29556111cad3080a8db3
+  git clone https://github.com/php-memcached-dev/php-memcached.git php-src/ext/memcached
+  cd php-src
+  ./buildconf --force
+  ./configure --prefix=/opt/appserver --with-libdir=lib64 --with-config-file-path=/opt/appserver/etc --with-config-file-scan-dir=/opt/appserver/etc/conf.d --enable-libxml --enable-session --with-pcre-regex --enable-xml --enable-simplexml --enable-filter --disable-debug --enable-inline-optimization --disable-rpath --disable-static --enable-shared --with-pic --with-gnu-ld --with-mysql --with-gd --with-jpeg-dir --with-png-dir --enable-exif --with-zlib --with-bz2 --with-curl --with-mysqli --with-freetype-dir --enable-sockets --enable-mbstring --enable-gd-native-ttf --enable-bcmath --enable-zip --with-pear --with-openssl --enable-phar --enable-pdo --with-pdo-mysql --with-mysqli --enable-maintainer-zts --enable-roxen-zts --with-mcrypt --with-tsrm-pthreads --enable-pcntl
+  make && make install
+  /opt/appserver/bin/pecl install pthreads-beta
+  /opt/appserver/bin/pecl install memcached
+  mkdir /opt/appserver/etc/conf.d
+  EOF
+  not_if "/opt/appserver/bin/php -i | grep PHP 5.4.15 (cli)"
+end
 
 template "100-general-additions.ini" do
-  path "/etc/php5/conf.d/100-general-additions.ini"
+  path "/opt/appserver/etc/conf.d/100-general-additions.ini"
   source "100-general-additions.ini"
   owner "root"
   group "root"
   mode "0644"
-  notifies :restart, resources(:service => "apache2")
+  #notifies :restart, resources(:service => "apache2")
+end
+
+template "200-pthreads.ini" do
+  path "/opt/appserver/etc/conf.d/200-pthreads.ini"
+  source "200-pthreads.ini"
+  owner "root"
+  group "root"
+  mode "0644"
+  #notifies :restart, resources(:service => "apache2")
+end
+
+template "300-memcached.ini" do
+  path "/opt/appserver/etc/conf.d/300-memcached.ini"
+  source "300-memcached.ini"
+  owner "root"
+  group "root"
+  mode "0644"
+  #notifies :restart, resources(:service => "apache2")
 end
 
 #
 # PTHREADS
 #
 
-bash "build php-pthreads" do
-  cwd Chef::Config[:file_cache_path]
-  code <<-EOF
-  git clone https://github.com/krakjoe/pthreads.git
-  cd pthreads
-  phpize
-  ./configure --enable-shared --enable-static
-  make && make install
-  EOF
-  not_if "php -m |grep pthreads"
-end
+#bash "build php-pthreads" do
+#  cwd Chef::Config[:file_cache_path]
+#  code <<-EOF
+#  git clone https://github.com/krakjoe/pthreads.git
+#  cd pthreads
+#  phpize
+#  ./configure --enable-shared --enable-static
+#  make && make install
+#  EOF
+#  not_if "php -m | grep pthreads"
+#end
 
-template "pthreads.ini" do
-  path "/etc/php5/conf.d/pthreads.ini"
-  source "pthreads.ini"
-  owner "root"
-  group "root"
-  mode "0644"
-  notifies :restart, resources(:service => "apache2")
-end
+#bash "build php-pthreads" do
+#  cwd Chef::Config[:file_cache_path]
+#  code <<-EOF
+#  git clone https://github.com/krakjoe/pthreads.git
+#  cd pthreads
+#  phpize
+#  ./configure --enable-shared --enable-static
+#  make && make install
+#  EOF
+#  not_if "php -m | grep pthreads"
+#end
+
+#template "pthreads.ini" do
+#  path "/opt/appserver/etc/conf.d/pthreads.ini"
+#  source "pthreads.ini"
+#  owner "root"
+#  group "root"
+#  mode "0644"
+#  #notifies :restart, resources(:service => "apache2")
+#end
 
 #
 # FURTHER PHP MODULES
 #
 
-file "#{node['apache']['dir']}/conf.d/php.conf" do
-  action :delete
-  backup false
-end
+#file "#{node['apache']['dir']}/conf.d/php.conf" do
+#  action :delete
+#  backup false
+#end
 
-apache_module "php5" do
-  case node['platform_family']
-  when "rhel", "fedora", "freebsd"
-    conf true
-    filename "libphp5.so"
-  end
-end
+#apache_module "php5" do
+#  case node['platform_family']
+#  when "rhel", "fedora", "freebsd"
+#    conf true
+#    filename "libphp5.so"
+#  end
+#end
 
-php_pear "memcached" do
-  action :install
-end
+#php_pear "memcached" do
+#  action :install
+#end
 
 #
 # Application Server
@@ -217,8 +268,8 @@ web_app "applicationserver" do
 
   template "app.conf.erb"
 
-  server_name "applicationserver.devbox"
-  server_aliases ["applicationserver.prodbox"]
+  server_name "appserver.local"
+  server_aliases ["appserver.dev"]
 
   docroot "/var/www/appserver"
 

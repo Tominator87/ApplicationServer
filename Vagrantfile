@@ -7,9 +7,9 @@ Vagrant::Config.run do |config|
 
 	config.vm.customize [
 		"modifyvm", :id,
-		"--name", "Techdivision Application Server",
+		"--name", "PHP Application Server",
 		"--cpus", "2",
-		"--memory", "1024"
+		"--memory", "2048"
 	]
 	config.vm.customize ["setextradata", :id, "VBoxInternal2/SharedFoldersEnableSymlinksCreate/web", "1"]
 	config.ssh.forward_agent = true
