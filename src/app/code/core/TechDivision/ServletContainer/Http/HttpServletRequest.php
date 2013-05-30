@@ -37,10 +37,18 @@ class HttpServletRequest implements ServletRequest {
     protected $request;
 
     /**
+     * @var PersistentSessionManager
+     */
+    protected $sessionManager;
+
+    protected $cookies = array();
+
+    /**
      * @param \TechDivision\ServletContainer\Http\Request $request
      */
     private function __construct( $request ) {
         $this->setRequest($request);
+        $this->sessionManager = new PersistentSessionManager();
     }
 
     /**
@@ -107,4 +115,27 @@ class HttpServletRequest implements ServletRequest {
         return $this->getRequest()->getMethod();
     }
 
+    public function hasCookie($cookieName) {
+        return array_key_exists($cookieName, $this->cookies);
+    }
+
+    public function getCookie($cookieName) {
+        if ($this->hasCookie($cookieName)) {
+            return $this->cookies[$cookieName];
+        }
+    }
+
+    /**
+     * Returns the session for this request.
+     *
+     * @return Session
+     */
+    public function getSession() {
+
+        if (is_null($this->session)) {
+            $this->session = $this->sessionManager->getSessionForRequest($this);
+        }
+
+        return $this->session;
+    }
 }

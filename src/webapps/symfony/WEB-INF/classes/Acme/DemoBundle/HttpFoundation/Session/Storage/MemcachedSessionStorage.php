@@ -129,6 +129,7 @@ class MemcachedSessionStorage implements SessionStorageInterface
             return true;
         }
 
+        /*
         if (ini_get('session.use_cookies') && headers_sent()) {
             throw new \RuntimeException('Failed to start the session because headers have already been sent.');
         }
@@ -137,6 +138,7 @@ class MemcachedSessionStorage implements SessionStorageInterface
         if (!session_start()) {
             throw new \RuntimeException('Failed to start the session');
         }
+        */
 
         $this->loadSession();
 
