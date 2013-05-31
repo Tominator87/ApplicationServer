@@ -13,6 +13,7 @@
 namespace TechDivision\ServletContainer\Http;
 
 use TechDivision\ServletContainer\Interfaces\ServletResponse;
+use TechDivision\ServletContainer\Http\Cookie;
 
 /**
  * A servlet response implementation.
@@ -36,6 +37,8 @@ class HttpServletResponse implements ServletResponse {
      * @var array
      */
     protected $headers = array();
+
+    protected $cookies = array();
 
     public function __construct()
     {
@@ -124,4 +127,7 @@ class HttpServletResponse implements ServletResponse {
         $this->content = $content;
     }
 
+    public function addCookie(Cookie $cookie) {
+        $this->cookies[] = $cookie;
+    }
 }

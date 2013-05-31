@@ -62,7 +62,7 @@ class WorkerRequest extends \Stackable {
             try {
 
                 // initialize response container
-                $response = new HttpServletResponse();
+                $request->setResponse($response = new HttpServletResponse());
 
                 // load the application to handle the request
                 $application = $this->worker->findApplication($request);

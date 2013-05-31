@@ -139,6 +139,11 @@ class ServletSession {
     protected $request;
 
     /**
+     * @var \TechDivision\ServletContainer\Interfaces\ServletResponse
+     */
+    protected $response;
+
+    /**
      * Constructs this session
      *
      * If $sessionIdentifier is specified, this constructor will create a session
@@ -165,6 +170,7 @@ class ServletSession {
             }
 
             $this->request = $request;
+            $this->response = $request->getResponse();
 
             $this->sessionIdentifier = $sessionIdentifier;
             $this->storageIdentifier = $storageIdentifier;
@@ -231,15 +237,17 @@ class ServletSession {
      * @api
      */
     public function start() {
+
         if ($this->request === NULL) {
             $this->initializeHttpAndCookie();
         }
+
         if ($this->started === FALSE) {
             $this->sessionIdentifier = Algorithms::generateRandomString(32);
             $this->storageIdentifier = Algorithms::generateUUID();
             $this->sessionCookie = new Cookie($this->sessionCookieName, $this->sessionIdentifier, $this->sessionCookieLifetime, NULL, $this->sessionCookieDomain, $this->sessionCookiePath, $this->sessionCookieSecure, $this->sessionCookieHttpOnly);
 
-            $this->response->setCookie($this->sessionCookie);
+            $this->response->addCookie($this->sessionCookie);
 
             $this->lastActivityTimestamp = $this->now;
             $this->started = TRUE;

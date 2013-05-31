@@ -14,6 +14,7 @@ namespace TechDivision\ServletContainer\Http;
 
 use TechDivision\ServletContainer\Http\Request;
 use TechDivision\ServletContainer\Interfaces\ServletRequest;
+use TechDivision\ServletContainer\Interfaces\ServletResponse;
 
 /**
  * The Http servlet request implementation.
@@ -37,6 +38,11 @@ class HttpServletRequest implements ServletRequest {
     protected $request;
 
     /**
+     * @var \TechDivision\ServletContainer\Interfaces\ServletResponse
+     */
+    protected $response;
+
+    /**
      * @var PersistentSessionManager
      */
     protected $sessionManager;
@@ -46,7 +52,7 @@ class HttpServletRequest implements ServletRequest {
     /**
      * @param \TechDivision\ServletContainer\Http\Request $request
      */
-    private function __construct( $request ) {
+    private function __construct($request) {
         $this->setRequest($request);
         $this->sessionManager = new PersistentSessionManager();
     }
@@ -123,6 +129,14 @@ class HttpServletRequest implements ServletRequest {
         if ($this->hasCookie($cookieName)) {
             return $this->cookies[$cookieName];
         }
+    }
+
+    public function setResponse(ServletResponse $response) {
+        $this->response = $response;
+    }
+
+    public function getResponse() {
+        return $this->response;
     }
 
     /**
