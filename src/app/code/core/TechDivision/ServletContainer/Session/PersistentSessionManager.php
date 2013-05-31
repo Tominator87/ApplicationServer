@@ -12,7 +12,7 @@ namespace TechDivision\ServletContainer\Session;
 use TechDivision\ServletContainer\Interfaces\ServletRequest;
 use TechDivision\ServletContainer\Interfaces\ServletResponse;
 use TechDivision\ServletContainer\Http\HttpServletRequest;
-use TechDivision\ServletContainer\Session\Storage\FileSystemStorage;
+use TechDivision\ServletContainer\Session\Storage\MemcachedStorage;
 
 class PersistentSessionManager implements SessionManager {
 
@@ -36,7 +36,7 @@ class PersistentSessionManager implements SessionManager {
     {
         /** @var $request HttpServletRequest */
         // @todo merge refactoring for headers getter by bcmzero
-        $headers = $request->getRequest()->getHeaders();
+        $headers = $request->getHeaders();
         $sessionId = null;
 
         // try to retrieve the session id from the cookies in request header
@@ -56,14 +56,14 @@ class PersistentSessionManager implements SessionManager {
         // @todo merge refactoring for query string parameters getter by bcmzero
         $params = array();
 
-        parse_str($request->getRequest()->getQueryString(), $params);
+        parse_str($request->getQueryString(), $params);
 
         if (isset($params[self::SESSION_NAME])) {
             $sessionId = $params[self::SESSION_NAME];
         }
 
         // initialize a new session if none is present yet
-        if (is_null($sessionId)) {
+        if ($sessionId == null) {
             // @todo make session id really unique over all requests
             $sessionId = uniqid(self::SESSION_NAME);
         }
@@ -77,9 +77,9 @@ class PersistentSessionManager implements SessionManager {
         $settings['session']['garbageCollectionProbability'] = 1;
         $settings['session']['inactivityTimeout'] = 1440;
 
-        $persistentSession = new ServletSession($request, $sessionId, __CLASS__);
+        $persistentSession = new ServletSession($request, $sessionId, __CLASS__, time());
         $persistentSession->injectSettings($settings);
-        $persistentSession->injectCache(new FileSystemStorage());
+        $persistentSession->injectCache(new MemcachedStorage());
 
         /*
         // register the session id with php's standard logic

@@ -3,7 +3,7 @@
 namespace TechDivision\ServletContainer\Session\Storage;
 
 
-interface Storage {
+interface StorageInterface {
 
     /**
      * "Magic" tag for class-related entries

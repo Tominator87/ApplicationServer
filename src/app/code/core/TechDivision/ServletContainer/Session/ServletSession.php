@@ -16,7 +16,7 @@ use TechDivision\ServletContainer\Http\Cookie;
 use TechDivision\ApplicationServer\Utilities\Alogrithm;
 use TechDivision\ServletContainer\Interfaces\ServletRequest;
 use TechDivision\ServletContainer\Interfaces\ServletResponse;
-use TechDivision\ServletContainer\Session\StorageInterface;
+use TechDivision\ServletContainer\Session\Storage\StorageInterface;
 use TechDivision\ServletContainer\Session\Exceptions\SessionNotStartedException;
 use TechDivision\ServletContainer\Session\Exceptions\OperationNotSupportedException;
 use TechDivision\ServletContainer\Session\Exceptions\DataNotSerializableException;
@@ -185,7 +185,7 @@ class ServletSession {
     /**
      * Injects the cache manager to persist session data.
      *
-     * @param \TechDivision\ServletContainer\Session\StorageInterface $cache The session cache
+     * @param \TechDivision\ServletContainer\Session\Storage\StorageInterface $cache The session cache
      * @return void
      */
     public function injectCache(StorageInterface $cache) {

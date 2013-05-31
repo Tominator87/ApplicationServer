@@ -9,7 +9,7 @@
 
 namespace TechDivision\ServletContainer\Session\Storage;
 
-use TechDivision\ServletContainer\Session\StorageInterface;
+use TechDivision\ServletContainer\Session\Storage\StorageInterface;
 
 class MemcachedStorage implements StorageInterface {
 

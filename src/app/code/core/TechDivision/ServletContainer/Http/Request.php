@@ -13,6 +13,8 @@
 namespace TechDivision\ServletContainer\Http;
 
 use TechDivision\ServletContainer\Interfaces\ServletRequest;
+use TechDivision\ServletContainer\Interfaces\ServletResponse;
+use TechDivision\ServletContainer\Session\PersistentSessionManager;
 
 /**
  * A web request implementation.
@@ -104,6 +106,29 @@ class Request implements ServletRequest {
     protected $_isValid = FALSE;
 
     protected $_scriptName = '';
+
+    /**
+     * @var \TechDivision\ServletContainer\Http\Request
+     */
+    protected $request;
+
+    /**
+     * @var \TechDivision\ServletContainer\Interfaces\ServletResponse
+     */
+    protected $response;
+
+    /**
+     * @var PersistentSessionManager
+     */
+    protected $sessionManager;
+
+    protected $cookies = array();
+
+    protected $session;
+
+    public function __construct() {
+        $this->sessionManager = new PersistentSessionManager();
+    }
 
     /**
      * Parsing inputstream and validate Request
@@ -447,5 +472,37 @@ class Request implements ServletRequest {
             'REQUEST_TIME_FLOAT' => 1368976493.147,
             'REQUEST_TIME' => 1368976493,
         );
+    }
+
+    public function hasCookie($cookieName) {
+        return array_key_exists($cookieName, $this->cookies);
+    }
+
+    public function getCookie($cookieName) {
+        if ($this->hasCookie($cookieName)) {
+            return $this->cookies[$cookieName];
+        }
+    }
+
+    public function setResponse(ServletResponse $response) {
+        $this->response = $response;
+    }
+
+    public function getResponse() {
+        return $this->response;
+    }
+
+    /**
+     * Returns the session for this request.
+     *
+     * @return Session
+     */
+    public function getSession() {
+
+        if ($this->session == null) {
+            $this->session = $this->sessionManager->getSessionForRequest($this);
+        }
+
+        return $this->session;
     }
 }
