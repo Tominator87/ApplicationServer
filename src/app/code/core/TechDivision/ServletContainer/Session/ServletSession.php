@@ -13,7 +13,7 @@ namespace TechDivision\ServletContainer\Session;
  *                                                                        */
 
 use TechDivision\ServletContainer\Http\Cookie;
-use TechDivision\ApplicationServer\Utilities\Alogrithm;
+use TechDivision\ApplicationServer\Utilities\Algorithms;
 use TechDivision\ServletContainer\Interfaces\ServletRequest;
 use TechDivision\ServletContainer\Interfaces\ServletResponse;
 use TechDivision\ServletContainer\Session\Storage\StorageInterface;
@@ -163,14 +163,14 @@ class ServletSession {
      */
     public function __construct(ServletRequest $request, $sessionIdentifier = NULL, $storageIdentifier = NULL, $lastActivityTimestamp = NULL, array $tags = array()) {
 
+        $this->request = $request;
+        $this->response = $request->getResponse();
+
         if ($sessionIdentifier !== NULL) {
 
             if ($storageIdentifier === NULL || $lastActivityTimestamp === NULL) {
                 throw new \InvalidArgumentException('Session requires a storage identifier and last activity timestamp for remote sessions.', 1354045988);
             }
-
-            $this->request = $request;
-            $this->response = $request->getResponse();
 
             $this->sessionIdentifier = $sessionIdentifier;
             $this->storageIdentifier = $storageIdentifier;
@@ -179,6 +179,7 @@ class ServletSession {
             $this->remote = TRUE;
             $this->tags = $tags;
         }
+
         $this->now = time();
     }
 
@@ -238,11 +239,21 @@ class ServletSession {
      */
     public function start() {
 
+        error_log(__METHOD__ . ':' . __LINE__);
+
         if ($this->request === NULL) {
+
+            error_log(__METHOD__ . ':' . __LINE__);
+
             $this->initializeHttpAndCookie();
         }
 
+        error_log(__METHOD__ . ':' . __LINE__);
+
         if ($this->started === FALSE) {
+
+            error_log(__METHOD__ . ':' . __LINE__);
+
             $this->sessionIdentifier = Algorithms::generateRandomString(32);
             $this->storageIdentifier = Algorithms::generateUUID();
             $this->sessionCookie = new Cookie($this->sessionCookieName, $this->sessionIdentifier, $this->sessionCookieLifetime, NULL, $this->sessionCookieDomain, $this->sessionCookiePath, $this->sessionCookieSecure, $this->sessionCookieHttpOnly);

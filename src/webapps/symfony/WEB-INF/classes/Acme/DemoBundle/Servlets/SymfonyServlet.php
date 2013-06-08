@@ -37,7 +37,16 @@ class SymfonyServlet extends HttpServlet implements Servlet {
         }
         */
 
+        /*
         $req->getSession()->start();
+
+        if ($req->getSession()->hasKey('testKey') === false) {
+            $req->getSession()->putData('testKey', 'TestData');
+        } else {
+            $value = $req->getSession()->getData('testKey');
+            error_log("Found '$value' for session key 'testKey'");
+        }
+        */
 
         $loader = require_once 'webapps/symfony/bootstrap.php.cache';
 

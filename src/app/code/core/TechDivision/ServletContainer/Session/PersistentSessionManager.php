@@ -62,16 +62,18 @@ class PersistentSessionManager implements SessionManager {
             $sessionId = $params[self::SESSION_NAME];
         }
 
+        /*
         // initialize a new session if none is present yet
         if ($sessionId == null) {
             // @todo make session id really unique over all requests
             $sessionId = uniqid(self::SESSION_NAME);
         }
+        */
 
         $settings['session']['name'] = self::SESSION_NAME;
-        $settings['session']['cookie']['lifetime'] = 86400;
-        $settings['session']['cookie']['domain'] = '';
-        $settings['session']['cookie']['path'] = '/';
+        $settings['session']['cookie']['lifetime'] = time() + 86400;
+        $settings['session']['cookie']['domain'] = null;
+        $settings['session']['cookie']['path'] = null;
         $settings['session']['cookie']['secure'] = false;
         $settings['session']['cookie']['httponly'] = false;
         $settings['session']['garbageCollectionProbability'] = 1;

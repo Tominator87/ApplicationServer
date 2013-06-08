@@ -98,6 +98,10 @@ class HttpServletResponse implements ServletResponse {
             }
         }
 
+        foreach ($this->cookies as $cookie) {
+            $headers .= "Set-Cookie: $cookie\r\n";
+        }
+
         return $headers;
     }
 
