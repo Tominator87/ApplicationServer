@@ -244,4 +244,105 @@
             </tarfileset>
         </tar>
     </target>
+    <!-- ==================================================================== -->
+    <!-- Creates a debian package with the local ApplicationServer runtime    -->
+    <!-- ==================================================================== -->
+    <target name="build-local-debian-package" depends="prepare" description="Creates a debian package with the local ApplicationServer runtime.">
+        <copy todir="${php-target.dir}">
+            <fileset dir="${basedir}/debian">
+                <include name="**/*"/>
+            </fileset>
+            <filterchain>
+                <expandproperties/>
+            </filterchain>
+        </copy>
+
+
+        <get src="https://github.com/php/php-src/archive/php-${debian.php.version}.tar.gz" dest="${php-target.dir}"/>
+
+        <untar src="${php-target.dir}/php-${debian.php.version}.tar.gz" dest="${php-target.dir}" compression="gzip"/>
+
+        <get src="http://pecl.php.net/get/pthreads" dest="${php-target.dir}/pthreads-latest.tar.gz"/>
+
+        <untar src="${php-target.dir}/pthreads-latest.tar.gz" dest="${php-target.dir}/php-src-php-${debian.php.version}/ext/pthreads" compression="gzip"/>
+
+        <chmod perm="+x">
+            <fileset dir="${php-target.dir}/php-src-php-${debian.php.version}">
+                <include name="**/*"/>
+            </fileset>
+        </chmod>
+
+        <exec dir="${php-target.dir}/php-src-php-${debian.php.version}" executable="sh">
+            <arg line="buildconf --force"/>
+        </exec>
+
+        <exec dir="${php-target.dir}/php-src-php-${debian.php.version}" executable="sh">
+            <arg line="configure"/>
+            <arg value="--prefix=/opt/appserver"/>
+            <arg value="--with-libdir=lib64"/>
+            <arg value="--with-config-file-path=/opt/appserver/etc"/>
+            <arg value="--with-config-file-scan-dir=/opt/appserver/etc/conf.d"/>
+            <arg value="--enable-libxml"/>
+            <arg value="--enable-session"/>
+            <arg value="--with-pcre-regex"/>
+            <arg value="--enable-xml"/>
+            <arg value="--enable-simplexml"/>
+            <arg value="--enable-filter"/>
+            <arg value="--disable-debug"/>
+            <arg value="--enable-inline-optimization"/>
+            <arg value="--disable-rpath"/>
+            <arg value="--disable-static"/>
+            <arg value="--enable-shared"/>
+            <arg value="--with-pic"/>
+            <arg value="--with-gnu-ld"/>
+            <arg value="--with-mysql"/>
+            <arg value="--with-gd"/>
+            <arg value="--with-jpeg-dir"/>
+            <arg value="--with-png-dir"/>
+            <arg value="--enable-exif"/>
+            <arg value="--with-zlib"/>
+            <arg value="--with-bz2"/>
+            <arg value="--with-curl"/>
+            <arg value="--with-mysqli"/>
+            <arg value="--with-freetype-dir"/>
+            <arg value="--enable-sockets"/>
+            <arg value="--enable-mbstring"/>
+            <arg value="--enable-gd-native-ttf"/>
+            <arg value="--enable-bcmath"/>
+            <arg value="--enable-zip"/>
+            <arg value="--with-pear"/>
+            <arg value="--with-openssl"/>
+            <arg value="--enable-phar"/>
+            <arg value="--enable-pdo"/>
+            <arg value="--with-pdo-mysql"/>
+            <arg value="--with-mysqli"/>
+            <arg value="--enable-maintainer-zts"/>
+            <arg value="--enable-roxen-zts"/>
+            <arg value="--with-mcrypt"/>
+            <arg value="--with-tsrm-pthreads"/>
+            <arg value="--enable-pcntl"/>
+            <arg value="--enable-pthreads=static"/>
+        </exec>
+
+        <chmod perm="+x">
+            <fileset dir="${php-target.dir}/php-src-php-${debian.php.version}">
+                <include name="configure"/>
+            </fileset>
+        </chmod>
+
+        <exec dir="${php-target.dir}/php-src-php-${debian.php.version}" executable="make"/>
+        <exec dir="${php-target.dir}/php-src-php-${debian.php.version}" executable="make">
+            <arg value="install"/>
+        </exec>
+
+        <mkdir dir="${php-target.dir}/opt/appserver"/>
+        <copy todir="${php-target.dir}/opt/appserver">
+            <fileset dir="/opt/appserver">
+                <include name="**/*"/>
+            </fileset>
+        </copy>
+        <exec dir="${php-target.dir}" executable="dpkg-deb">
+            <arg line="--build ${php-target.dir} td-appserver-php5-re_1.0.0_amd64.deb"/>
+        </exec>
+    </target>
 </project>
