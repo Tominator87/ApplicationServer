@@ -25,6 +25,6 @@ Depends: libc6,
   libjpeg62,
   libcurl3
 Architecture: amd64
-Version: ${VERSION}
+Version: ${appserver.version}
 Homepage: https://github.com/techdivision/ApplicationServer
-Description: php-5.4.16 compiled with ptheads and memcached
+Description: php-${debian.php.version} compiled with ptheads and memcached
