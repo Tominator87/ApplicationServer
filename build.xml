@@ -1,5 +1,6 @@
 <?xml version="1.0"?>
 <project name="ApplicationServer" default="deploy" basedir=".">
+
     <property file="${basedir}/build.properties"/>
     <property file="${basedir}/build.default.properties"/>
     <property file="${basedir}/build.${os.family}.properties"/>
@@ -10,18 +11,21 @@
     <property name="php-src.dir" value="${basedir}/src" />
     <property name="php-test.dir" value="${basedir}/tests" />
     <property name="php-target.dir" value="${basedir}/target"/>
+
     <!-- ==================================================================== -->
     <!-- Cleans the directories with the generated source files				  -->
     <!-- ==================================================================== -->
     <target name="clean" description="Cleans almost everything, so use carefully.">
         <delete dir="${php-target.dir}" includeemptydirs="true" quiet="false" verbose="true" failonerror="true"/>
     </target>
+
     <!-- ==================================================================== -->
     <!-- Prepares all the required directories								  -->
     <!-- ==================================================================== -->
     <target name="prepare" depends="clean" description="Prepares all the required directories.">
         <mkdir dir="${php-target.dir}" />
     </target>
+
     <!-- ==================================================================== -->
     <!-- Copies the sources to the target directory							  -->
     <!-- ==================================================================== -->
@@ -42,6 +46,7 @@
             </fileset>
         </copy>
     </target>
+
     <!-- ==================================================================== -->
     <!-- Generates the API documentation                                      -->
     <!-- ==================================================================== -->
@@ -50,6 +55,7 @@
             <arg line="-ct type -ue on -s on -t ${php-target.dir}/docs -o HTML:frames:earthli -d ${php-src.dir}/app/code/core"/>
         </exec>
     </target>
+
     <!-- ==================================================================== -->
     <!-- Runs the code sniffer and generates a report                         -->
     <!-- ==================================================================== -->
@@ -58,6 +64,7 @@
             <arg line="--standard=ZEND --report=checkstyle ${php-src.dir}"/>
         </exec>
     </target>
+
     <!-- ==================================================================== -->
     <!-- Runs the copy and paste detection                                    -->
     <!-- ==================================================================== -->
@@ -66,6 +73,7 @@
             <arg line="--log-pmd ${php-target.dir}/reports/pmd-cpd.xml ${php-src.dir}"/>
         </exec>
     </target>
+
     <!-- ==================================================================== -->
     <!-- Generate phploc.csv                                                  -->
     <!-- ==================================================================== -->
@@ -74,6 +82,7 @@
             <arg line="--log-xml ${php-target.dir}/reports/phploc.xml ${php-src.dir}"/>
         </exec>
     </target>
+
     <!-- ==================================================================== -->
     <!-- Runs the PHPDepend tool and generats a graphs                        -->
     <!-- ==================================================================== -->
@@ -82,6 +91,7 @@
             <arg line="--summary-xml=${php-target.dir}/reports/pdepend.xml --jdepend-xml=${php-target.dir}/reports/jdepend.xml --jdepend-chart=${php-target.dir}/reports/jdepend.svg --overview-pyramid=${php-target.dir}/reports/pdepend-pyramid.svg ${php-src.dir}" />
         </exec>
     </target>
+
     <!-- ==================================================================== -->
     <!-- Runs the PHP mess detector tool                                      -->
     <!-- ==================================================================== -->
@@ -90,6 +100,7 @@
             <arg line="${php-src.dir} xml codesize,unusedcode --reportfile ${php-target.dir}/reports/pmd.xml" />
         </exec>
     </target>
+
     <!-- ==================================================================== -->
     <!-- Copies the test sources to the target directory					  -->
     <!-- ==================================================================== -->
@@ -103,6 +114,7 @@
             </filterchain>
         </copy>
     </target>
+
     <!-- ==================================================================== -->
     <!-- Runs the PHPUnit tests and generates a report                        -->
     <!-- ==================================================================== -->
@@ -111,6 +123,7 @@
             <arg line="--bootstrap bootstrap.php --configuration phpunit.xml.dist" />
         </exec>
     </target>
+
     <!-- ==================================================================== -->
     <!-- Runs the PHPUnit tests and generates a report						  -->
     <!-- ==================================================================== -->
@@ -118,12 +131,14 @@
         <antcall target="phpmd"/>
         <antcall target="run-tests"/>
     </target>
+
     <!-- ==================================================================== -->
     <!-- Prepares all the required directories								  -->
     <!-- ==================================================================== -->
     <target name="UPDATE-prepare" depends="clean" description="Prepares all the required directories.">
         <mkdir dir="${php-target.dir}/pear/cfg" />
     </target>
+
     <!-- ==================================================================== -->
     <!-- Copies the sources to the target directory                           -->
     <!-- ==================================================================== -->
@@ -135,6 +150,7 @@
         </copy>
         <chmod file="${php-target.dir}/pear/bin/webapp" perm="ugo+rx" />
     </target>
+
     <!-- ==================================================================== -->
     <!-- Prepares the PEAR channel in the target directory, necessary for the -->
     <!-- packages this project is related                                     -->
@@ -215,6 +231,7 @@
             <arg value="pear.php.net" />
         </exec>
     </target>
+
     <!-- ==================================================================== -->
     <!-- Initializes the PEAR channel in the target directory, necessary for  -->
     <!-- the packages this project is related                                 -->
@@ -224,6 +241,7 @@
             <arg value="setup" />
         </exec>
     </target>
+
     <!-- ==================================================================== -->
     <!-- Merges the PEAR files with the TDProject sources                     -->
     <!-- ==================================================================== -->
@@ -234,6 +252,7 @@
             </fileset>
         </move>
     </target>
+
     <!-- ==================================================================== -->
     <!-- Creates the zipped TAR file                                 		  -->
     <!-- ==================================================================== -->
@@ -244,44 +263,42 @@
             </tarfileset>
         </tar>
     </target>
+
     <!-- ==================================================================== -->
-    <!-- Creates a debian package with the local ApplicationServer runtime    -->
+    <!-- Compiles the ApplicationServer runtime environment                   -->
     <!-- ==================================================================== -->
-    <target name="build-local-debian-package" depends="prepare" description="Creates a debian package with the local ApplicationServer runtime.">
-        <copy todir="${php-target.dir}">
-            <fileset dir="${basedir}/debian">
-                <include name="**/*"/>
-            </fileset>
-            <filterchain>
-                <expandproperties/>
-            </filterchain>
-        </copy>
+    <target name="build-runtime" description="Compiles the ApplicationServer runtime environment.">
 
+        <antcall target="prepare"/>
 
-        <get src="https://github.com/php/php-src/archive/php-${debian.php.version}.tar.gz" dest="${php-target.dir}"/>
+        <get src="https://github.com/php/php-src/archive/php-${appserver.php.version}.tar.gz" dest="${php-target.dir}"/>
 
-        <untar src="${php-target.dir}/php-${debian.php.version}.tar.gz" dest="${php-target.dir}" compression="gzip"/>
+        <untar src="${php-target.dir}/php-${appserver.php.version}.tar.gz" dest="${php-target.dir}" compression="gzip"/>
 
-        <get src="http://pecl.php.net/get/pthreads" dest="${php-target.dir}/pthreads-latest.tar.gz"/>
+        <get src="http://pecl.php.net/get/pthreads-${appserver.pthreads.version}.tgz" dest="${php-target.dir}"/>
 
-        <untar src="${php-target.dir}/pthreads-latest.tar.gz" dest="${php-target.dir}/php-src-php-${debian.php.version}/ext/pthreads" compression="gzip"/>
+        <untar src="${php-target.dir}/pthreads-${appserver.pthreads.version}.tgz" dest="${php-target.dir}" compression="gzip"/>
+
+        <move todir="${php-target.dir}/php-src-php-${appserver.php.version}/ext/pthreads">
+            <fileset dir="${php-target.dir}/pthreads-${appserver.pthreads.version}"/>
+        </move>
 
         <chmod perm="+x">
-            <fileset dir="${php-target.dir}/php-src-php-${debian.php.version}">
+            <fileset dir="${php-target.dir}/php-src-php-${appserver.php.version}">
                 <include name="**/*"/>
             </fileset>
         </chmod>
 
-        <exec dir="${php-target.dir}/php-src-php-${debian.php.version}" executable="sh">
+        <exec dir="${php-target.dir}/php-src-php-${appserver.php.version}" executable="sh">
             <arg line="buildconf --force"/>
         </exec>
 
-        <exec dir="${php-target.dir}/php-src-php-${debian.php.version}" executable="sh">
+        <exec dir="${php-target.dir}/php-src-php-${appserver.php.version}" executable="sh">
             <arg line="configure"/>
-            <arg value="--prefix=/opt/appserver"/>
-            <arg value="--with-libdir=lib64"/>
-            <arg value="--with-config-file-path=/opt/appserver/etc"/>
-            <arg value="--with-config-file-scan-dir=/opt/appserver/etc/conf.d"/>
+            <arg value="--prefix=${appserver.compile.prefix}"/>
+            <arg value="--with-libdir=${appserver.compile.libdir}"/>
+            <arg value="--with-config-file-path=${appserver.compile.prefix}/etc"/>
+            <arg value="--with-config-file-scan-dir=${appserver.compile.prefix}/etc/conf.d"/>
             <arg value="--enable-libxml"/>
             <arg value="--enable-session"/>
             <arg value="--with-pcre-regex"/>
@@ -325,24 +342,47 @@
         </exec>
 
         <chmod perm="+x">
-            <fileset dir="${php-target.dir}/php-src-php-${debian.php.version}">
+            <fileset dir="${php-target.dir}/php-src-php-${appserver.php.version}">
                 <include name="configure"/>
             </fileset>
         </chmod>
 
-        <exec dir="${php-target.dir}/php-src-php-${debian.php.version}" executable="make"/>
-        <exec dir="${php-target.dir}/php-src-php-${debian.php.version}" executable="make">
+        <exec dir="${php-target.dir}/php-src-php-${appserver.php.version}" executable="make"/>
+
+        <exec dir="${php-target.dir}/php-src-php-${appserver.php.version}" executable="make">
+            <env key="INSTALL_ROOT" value="${php-target.dir}/re"/>
             <arg value="install"/>
         </exec>
 
-        <mkdir dir="${php-target.dir}/opt/appserver"/>
-        <copy todir="${php-target.dir}/opt/appserver">
-            <fileset dir="/opt/appserver">
-                <include name="**/*"/>
+    </target>
+
+    <!-- ==================================================================== -->
+    <!-- Creates a DEBIAN package with the local ApplicationServer runtime    -->
+    <!-- ==================================================================== -->
+    <target name="DEBIAN-build-package" description="Creates a DEBIAN package with the local ApplicationServer runtime.">
+
+        <!--
+        <antcall target="compile-runtime"/>
+
+        <copy todir="${php-target.dir}/re">
+            <fileset dir="${php-target.dir}/tmp">
+                <include name="${appserver.compile.prefix}/**"/>
             </fileset>
         </copy>
+        -->
+
+        <copy todir="${php-target.dir}/re">
+            <fileset dir="${basedir}/debian">
+                <include name="**/*"/>
+            </fileset>
+            <filterchain>
+                <expandproperties/>
+            </filterchain>
+        </copy>
+
         <exec dir="${php-target.dir}" executable="dpkg-deb">
-            <arg line="--build ${php-target.dir} td-appserver-php5-re_1.0.0_amd64.deb"/>
+            <arg line="--build ${php-target.dir}/re td-appserver-php5-re_${appserver.version}_amd64.deb"/>
         </exec>
+
     </target>
 </project>

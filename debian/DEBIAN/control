@@ -27,4 +27,4 @@ Depends: libc6,
 Architecture: amd64
 Version: ${appserver.version}
 Homepage: https://github.com/techdivision/ApplicationServer
-Description: php-${debian.php.version} compiled with ptheads and memcached
+Description: php-${appserver.php.version} compiled with ptheads and memcached
