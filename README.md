@@ -164,7 +164,7 @@ Extension installieren zu können benötigen wir libmemcache. libmemcache herunt
 ```
 $ wget https://launchpad.net/libmemcached/1.0/1.0.15/+download/libmemcached-1.0.15.tar.gz
 $ tar xvfz libmemcached-1.0.15.tar.gz
-$ cd libmemcache-1.0.15
+$ cd libmemcached-1.0.15
 $ ./configure
 $ make
 $ make install
