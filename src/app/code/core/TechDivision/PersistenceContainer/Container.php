@@ -14,6 +14,7 @@ namespace TechDivision\PersistenceContainer;
 
 use TechDivision\ApplicationServer\AbstractContainer;
 use TechDivision\ApplicationServer\Configuration;
+use TechDivision\PersistenceContainer\Exceptions\InvalidApplicationArchiveException;
 
 /**
  * @package     TechDivision\PersistenceContainer
@@ -56,7 +57,7 @@ class Container extends AbstractContainer {
 
                 // it's no valid application without at least the appserver-ds.xml file
                 if (!file_exists($ds = $folder . DS . 'META-INF' . DS . 'appserver-ds.xml')) {
-                    throw new InvalidApplicationArchiveException(sprintf('Folder %s contains no valid webapp.'));
+                    throw new InvalidApplicationArchiveException(sprintf('Folder %s contains no valid webapp.', $folder));
                 }
                 
                 $configuration = Configuration::loadFromFile($ds);

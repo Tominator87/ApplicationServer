@@ -14,6 +14,7 @@ namespace TechDivision\ServletContainer;
 
 use TechDivision\ServletContainer\Interfaces\Servlet;
 use TechDivision\ServletContainer\Servlets\StaticResourceServlet;
+use TechDivision\ServletContainer\Exceptions\InvalidApplicationArchiveException;
 
 /**
  * The servlet manager handles the servlets registered for the application.
@@ -99,7 +100,7 @@ class ServletManager {
 
             // it's no valid application without at least the web.xml file
             if (!file_exists($web = $folder . DS . 'WEB-INF' . DS . 'web.xml')) {
-                throw new InvalidApplicationArchiveException(sprintf('Folder %s contains no valid webapp.'));
+                throw new InvalidApplicationArchiveException(sprintf('Folder %s contains no valid webapp.', $folder));
             }
 
             // add the servlet-specific include path

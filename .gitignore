@@ -3,5 +3,6 @@
 /tmp
 /instance-src
 /.vagrant
+/.idea
 Cheffile.lock
 build.properties
