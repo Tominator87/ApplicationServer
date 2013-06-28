@@ -19,7 +19,7 @@ namespace TechDivision\PersistenceContainer\Exceptions;
  * @copyright  	Copyright (c) 2010 <info@techdivision.com> - TechDivision GmbH
  * @license    	http://opensource.org/licenses/osl-3.0.php
  *              Open Software License (OSL 3.0)
- * @author      Johann Zelger <j.zelger@techdivision.com>
+ * @author      Johann Zelger <jz@techdivision.com>
  */
 class InvalidApplicationArchiveException extends \Exception {
 }

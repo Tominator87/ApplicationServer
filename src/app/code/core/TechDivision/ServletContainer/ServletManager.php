@@ -25,6 +25,7 @@ use TechDivision\ServletContainer\Exceptions\InvalidApplicationArchiveException;
  *              Open Software License (OSL 3.0)
  * @author      Markus Stockbauer <ms@techdivision.com>
  * @author      Tim Wagner <tw@techdivision.com>
+ * @author      Johann Zelger <jz@techdivision.com>
  */
 class ServletManager {
 
